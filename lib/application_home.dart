@@ -46,7 +46,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       child: new Scaffold(
         appBar: new AppBar(
           title: Text(widget.title),
-
         ),
         body: new TabBarView(
           controller: _tabController,

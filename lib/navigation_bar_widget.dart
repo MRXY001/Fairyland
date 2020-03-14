@@ -37,8 +37,12 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar> w
   void initState() {
     _select(selectedIndex);
     controller.addListener(() {
-      select(controller.index);
+      _select(controller.index);
+      setState(() {
+
+      });
     });
+
     super.initState();
   }
 
@@ -70,6 +74,7 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar> w
                 return GestureDetector(
                   onTap: () => setState(() {
                     _select(index);
+                    controller.animateTo(index);
                   }),
                   child: _buildItemWidget(item, index == selectedIndex),
                 );
@@ -95,14 +100,8 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar> w
     );
   }
 
-  select(int index) {
-    _select(index);
-    setState(() {
-    });
-  }
-
   _select(int index) {
-    print('select' + index.toString());
+//    print('select' + index.toString());
     selectedIndex = index;
     indicatorAlignX = -1 + (2 / (items.length - 1) * index);
   }
