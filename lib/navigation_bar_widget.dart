@@ -1,65 +1,18 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '写作天下',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MainWidget(),
-    );
-  }
-}
-
-class MainWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: new AppBar(key: key),
-      body: new Text('Hello'),
-      bottomNavigationBar: TitledBottomBarWidget(),
-    );
-  }
-
-}
-
-class TitledBottomBarWidget extends StatefulWidget {
-  @override
-  State createState() => _TitledBottomBarWidgetState();
-}
-
-
-class _TitledBottomBarWidgetState extends State<TitledBottomBarWidget> {
-  final List<Item> items = [
-    Item('Home', Icons.home),
-    Item('Search', Icons.search),
-    Item('Person', Icons.person),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return TitledBottomNavigationBar(
-      items: items,
-    );
-  }
-}
-
+/// 导航栏中显示图标/文字/指示线的Widget
 class TitledBottomNavigationBar extends StatefulWidget {
-  final List<Item> items;
+  final List<PageBean> items;
+  final TabController controller;
 
-  const TitledBottomNavigationBar({Key key, this.items}) : super(key: key);
+  const TitledBottomNavigationBar({Key key, this.items, this.controller}) : super(key: key);
 
   @override
   _TitledBottomNavigationBarState createState() => _TitledBottomNavigationBarState();
 }
 
 class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar> with SingleTickerProviderStateMixin {
-  List<Item> get items => widget.items;
+  List<PageBean> get items => widget.items;
   int selectedIndex = 0;
   static const double BAR_HEIGHT = 60;
   static const double INDICATOR_HEIGHT = 2;
@@ -93,7 +46,7 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar> w
       child: Stack(
 //        overflow: Overflow.visible,// Debug使用
         children: <Widget>[
-          Positioned( // 标签正文
+          Positioned( // 标签正文（文字+图标）
             top: INDICATOR_HEIGHT,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -132,7 +85,7 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar> w
     indicatorAlignX = -1 + (2 / (items.length - 1) * index);
   }
 
-  Widget _buildItemWidget(Item item, bool isSelected) {
+  Widget _buildItemWidget(PageBean item, bool isSelected) {
     return Container(
       color: Colors.white,
       height: BAR_HEIGHT,
@@ -140,13 +93,13 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar> w
       child: Stack(
         alignment: AlignmentDirectional.center,
         children: <Widget>[
-          AnimatedOpacity( // 文字
+          AnimatedOpacity(
             opacity: isSelected ? 0.0 : 1.0,
             duration: duration,
             curve: Curves.linear,
             child: Text(item.title),
           ),
-          AnimatedAlign( // 图标
+          AnimatedAlign(
             duration: duration,
             alignment: isSelected ? Alignment.center : Alignment(0, 2.6),
             child: Icon(item.icon),
@@ -157,9 +110,10 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar> w
   }
 }
 
-class Item {
-  final String title;
-  final IconData icon;
+class PageBean {
+  PageBean({this.title, this.icon, this.widget});
 
-  Item(this.title, this.icon);
+  String title;
+  IconData icon;
+  Widget widget;
 }
