@@ -30,20 +30,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     _tabController = TabController(
       length: _pages.length,
       vsync: this,
-    )..addListener(() {
-      switch (_tabController.index) {
-        case 0:
-          print(1);
-          break;
-        case 1:
-          print(2);
-          break;
-        case 2:
-          print(3);
-          break;
-      }
-      print(_tabController.offset);
-    });
+    );
   }
 
   @override
