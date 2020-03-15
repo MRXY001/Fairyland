@@ -47,7 +47,26 @@ class _MyHomePageState extends State<MyHomePage>
       length: _pages.length,
       child: new Scaffold(
         appBar: AppBar(
-          title: Text('写作天下'),
+          title: Text('这是什么神仙写作'),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.add),
+              tooltip: 'icon1',
+              onPressed: () {},
+            ),
+            PopupMenuButton<String>(
+              itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
+                PopupMenuItem<String>(
+                  value: "item1",
+                  child: Text('item1 value'),
+                ),
+                PopupMenuItem<String>(
+                  value: "item2",
+                  child: Text('item2 value'),
+                ),
+              ],
+            )
+          ],
         ),
         body: new TabBarView(
           controller: _tabController,
