@@ -1,3 +1,4 @@
+import 'package:fairyland/my_drawer.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fairyland/square/square_page.dart';
@@ -5,7 +6,7 @@ import 'package:fairyland/directory/dir_page.dart';
 import 'package:fairyland/editor/editor_page.dart';
 import 'package:fairyland/assist/assist_page.dart';
 
-import 'navigation_bar_widget.dart';
+import 'my_navigation_bar.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -16,9 +17,10 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
   static List<PageBean> _pages = <PageBean>[
-    PageBean(title: '目录', icon: Icons.list, widget: ExpansionPanelPage()),
+    PageBean(title: '目录', icon: Icons.list, widget: DirPage()),
     PageBean(title: '写作', icon: Icons.edit, widget: EditPage()),
     PageBean(title: '助手', icon: Icons.school, widget: AssistPage()),
   ];
@@ -44,20 +46,18 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     return DefaultTabController(
       length: _pages.length,
       child: new Scaffold(
-        appBar: new AppBar(
-          title: Text(widget.title),
+        appBar: AppBar(
+          title: Text('写作天下'),
         ),
         body: new TabBarView(
           controller: _tabController,
-          children: _pages.map((PageBean page) {
-            return new Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: page.widget,
-            );
-          }).toList(),
+          children: _pages.map((PageBean page) => page.widget ).toList(),
         ),
-        bottomNavigationBar: TitledBottomNavigationBar(items: _pages, controller: _tabController),
-      ),
+        drawer: MyDrawer(),
+        bottomNavigationBar: new TitledBottomNavigationBar(
+            items: _pages, controller: _tabController),
+      )
+
     );
   }
 }

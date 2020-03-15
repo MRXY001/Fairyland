@@ -14,30 +14,14 @@ class _DirPageState extends State<DirPage> {
 
   @override
   Widget build(BuildContext context) {
-    return new Column(
-      children: <Widget>[
-
-        new ListView(
-          padding: const EdgeInsets.all(8),
-          children: <Widget>[
-            Container(
-              height: 50,
-              color: Colors.amber[600],
-              child: const Center(child: Text('Entry A')),
-            ),
-            Container(
-              height: 50,
-              color: Colors.amber[500],
-              child: const Center(child: Text('Entry B')),
-            ),
-            Container(
-              height: 50,
-              color: Colors.amber[100],
-              child: const Center(child: Text('Entry C')),
-            ),
-          ],
-        )
-      ],
+    return new Scaffold(
+      body: new Column(
+        children: <Widget>[
+          new Expanded(
+            child: new ExpansionPanelPage(),
+          ),
+        ],
+      )
     );
   }
 }
@@ -55,7 +39,7 @@ class Item {
   Item({
     this.expandedValue,
     this.headerValue,
-    this.isExpanded = false,
+    this.isExpanded = true,
   });
 
   String expandedValue;
@@ -63,15 +47,7 @@ class Item {
   bool isExpanded;
 }
 
-List<Item> generateItems(int numberOfItems) {
-  return List.generate(numberOfItems, (int index) {
-    return Item(
-      headerValue: 'Panel $index',
-      expandedValue: 'This is item number $index',
-    );
-  });
-}
-
+/// Expansion参考
 class ExpansionPanelPage extends StatefulWidget {
   ExpansionPanelPage({Key key}) : super(key: key);
 
@@ -80,18 +56,18 @@ class ExpansionPanelPage extends StatefulWidget {
 }
 
 class _ExpansionPanelPageState extends State<ExpansionPanelPage> {
-  List<Item> _data = generateItems(8);
+  List<Item> _data = List.generate(8, (int index) {
+    return Item(
+      headerValue: 'Panel $index',
+      expandedValue: 'This is item number $index',
+    );
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('ExpansionPanelPage'),
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          child: _buildPanel(),
-        ),
+    return new SingleChildScrollView(
+      child: Container(
+        child: _buildPanel(),
       ),
     );
   }
