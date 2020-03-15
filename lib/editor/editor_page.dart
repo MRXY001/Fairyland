@@ -1,8 +1,10 @@
 import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
+import 'package:quill_delta/quill_delta.dart';
+import 'package:zefyr/zefyr.dart';
 
-class EditPage extends MainPageBase {
-  EditPage({Key key}) : super(key: key);
+class EditorPage extends MainPageBase {
+  EditorPage({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -16,10 +18,35 @@ class EditPage extends MainPageBase {
 
 }
 
-class _EditPageState extends State<EditPage> {
+class _EditPageState extends State<EditorPage> {
+  ZefyrController _controller;
+  FocusNode _focusNode;
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    final document = _loadDocument();
+    _controller = ZefyrController(document);
+    _focusNode = FocusNode();
+  }
+  
   @override
   Widget build(BuildContext context) {
-    return Text('写作');
+    return Scaffold(
+      body: ZefyrScaffold(
+        child: ZefyrEditor(
+          padding: EdgeInsets.all(16),
+          controller: _controller,
+          focusNode: _focusNode,
+        ),
+      ),
+    );
+  }
+  
+  NotusDocument _loadDocument() {
+    final Delta delta = Delta()..insert('Zefyr Quick Start\n');
+    return NotusDocument.fromDelta(delta);
   }
 
 }

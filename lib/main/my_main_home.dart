@@ -21,7 +21,7 @@ class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   List<PageBean> _pages = <PageBean>[
     PageBean(title: '目录', icon: Icons.list, widget: DirPage()),
-    PageBean(title: '写作', icon: Icons.edit, widget: EditPage()),
+    PageBean(title: '写作', icon: Icons.edit, widget: EditorPage()),
     PageBean(title: '助手', icon: Icons.school, widget: AssistPage()),
   ];
   TabController _tabController;
