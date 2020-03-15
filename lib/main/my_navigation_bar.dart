@@ -1,3 +1,4 @@
+import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
 
 /// 保存页面的List
@@ -6,7 +7,7 @@ class PageBean {
 
   String title;
   IconData icon;
-  Widget widget;
+  MainPageBase widget;
 }
 
 /// 底部导航栏

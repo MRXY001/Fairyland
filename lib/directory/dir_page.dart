@@ -1,11 +1,17 @@
+import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
 
-class DirPage extends StatefulWidget {
+class DirPage extends MainPageBase {
   DirPage({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
     return new _DirPageState();
+  }
+
+  @override
+  Widget getAppBarTitle() {
+    return Text('目录');
   }
 }
 

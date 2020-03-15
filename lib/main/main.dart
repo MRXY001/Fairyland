@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fairyland/application_home.dart';
+import 'file:///E:/Flutter/fairyland/lib/main/my_main_home.dart';
 
 void main() => runApp(MyApp());
 

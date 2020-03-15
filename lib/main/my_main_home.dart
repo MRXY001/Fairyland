@@ -1,4 +1,4 @@
-import 'package:fairyland/my_drawer.dart';
+import 'file:///E:/Flutter/fairyland/lib/main/my_drawer.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fairyland/square/square_page.dart';
@@ -19,7 +19,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
-  static List<PageBean> _pages = <PageBean>[
+  List<PageBean> _pages = <PageBean>[
     PageBean(title: '目录', icon: Icons.list, widget: DirPage()),
     PageBean(title: '写作', icon: Icons.edit, widget: EditPage()),
     PageBean(title: '助手', icon: Icons.school, widget: AssistPage()),
@@ -33,6 +33,13 @@ class _MyHomePageState extends State<MyHomePage>
       length: _pages.length,
       vsync: this,
     );
+
+    // 页面切换
+    _tabController.addListener(() {
+      setState(() {
+      
+      });
+    });
   }
 
   @override
@@ -41,43 +48,33 @@ class _MyHomePageState extends State<MyHomePage>
     super.dispose();
   }
 
+  Widget _getAppBarTitle() {
+    print('刷新标题');
+    return _pages[_tabController.index].widget.getAppBarTitle();
+//    return Text('这是什么神仙写作');
+  }
+
+  List<Widget> _getAppBarActions() {
+    return _pages[_tabController.index].widget.getAppBarActions();
+    //    return <Widget>[];
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: _pages.length,
-      child: new Scaffold(
-        appBar: AppBar(
-          title: Text('这是什么神仙写作'),
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.add),
-              tooltip: 'icon1',
-              onPressed: () {},
-            ),
-            PopupMenuButton<String>(
-              itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
-                PopupMenuItem<String>(
-                  value: "item1",
-                  child: Text('item1 value'),
-                ),
-                PopupMenuItem<String>(
-                  value: "item2",
-                  child: Text('item2 value'),
-                ),
-              ],
-            )
-          ],
-        ),
-        body: new TabBarView(
-          controller: _tabController,
-          children: _pages.map((PageBean page) => page.widget ).toList(),
-        ),
-        drawer: MyDrawer(),
-        bottomNavigationBar: new TitledBottomNavigationBar(
-            items: _pages, controller: _tabController),
-      )
-
-    );
+        length: _pages.length,
+        child: new Scaffold(
+          appBar: AppBar(
+            title: _getAppBarTitle(),
+            actions: _getAppBarActions(),
+          ),
+          body: new TabBarView(
+            controller: _tabController,
+            children: _pages.map((PageBean page) => page.widget).toList(),
+          ),
+          drawer: MyDrawer(),
+          bottomNavigationBar: new TitledBottomNavigationBar(
+              items: _pages, controller: _tabController),
+        ));
   }
 }
-
