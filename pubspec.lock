@@ -255,10 +255,12 @@ packages:
   zefyr:
     dependency: "direct main"
     description:
-      name: zefyr
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.8.0"
+      path: "packages/zefyr"
+      ref: HEAD
+      resolved-ref: "002d62476f98ba3defd1267871a099e736245550"
+      url: "git@github.com:memspace/zefyr.git"
+    source: git
+    version: "0.10.0"
 sdks:
   dart: ">=2.4.0 <3.0.0"
   flutter: ">=1.12.8 <2.0.0"
