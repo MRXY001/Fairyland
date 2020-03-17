@@ -43,13 +43,12 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Widget _getAppBarTitle() {
-//    print('刷新标题' + pageController.page.toString());
-    return _pages[0].widget.getAppBarTitle();
+    return _pages[currentPage].widget.getAppBarTitle();
 //        return Text('这是什么神仙写作');
   }
 
   List<Widget> _getAppBarActions() {
-    return _pages[0].widget.getAppBarActions();
+    return _pages[currentPage].widget.getAppBarActions();
 //    return <Widget>[];
   }
 
@@ -65,7 +64,9 @@ class _MyHomePageState extends State<MyHomePage>
           controller: pageController,
           physics: BouncingScrollPhysics(),
           onPageChanged: (page) {
-            print('====pageChanged  ' + page.toString());
+            setState(() {
+              currentPage = page;
+            });
           },
         ),
         drawer: MyDrawer(),
