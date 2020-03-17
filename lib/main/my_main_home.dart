@@ -43,42 +43,29 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Widget _getAppBarTitle() {
-    print('刷新标题' + pageController.page.toString());
+//    print('刷新标题' + pageController.page.toString());
     return _pages[0].widget.getAppBarTitle();
-    //    return Text('这是什么神仙写作');
+//        return Text('这是什么神仙写作');
   }
 
   List<Widget> _getAppBarActions() {
     return _pages[0].widget.getAppBarActions();
-    //    return <Widget>[];
+//    return <Widget>[];
   }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
         appBar: AppBar(
-//          title: _getAppBarTitle(),
-//          actions: _getAppBarActions(),
+          title: _getAppBarTitle(),
+          actions: _getAppBarActions(),
         ),
         body: new PageView(
-//          children: _pages.map((PageBean page) => page.widget).toList(),
-          children: <Widget>[
-            Container(
-              color: Colors.grey.shade200,
-            ),
-            Container(
-              color: Colors.redAccent,
-            ),
-            Container(
-              color: Colors.blueAccent,
-            ),
-          ],
+          children: _pages.map((PageBean page) => page.widget).toList(),
           controller: pageController,
           physics: BouncingScrollPhysics(),
           onPageChanged: (page) {
-            setState((){
-            
-            });
+            print('====pageChanged  ' + page.toString());
           },
         ),
         drawer: MyDrawer(),
