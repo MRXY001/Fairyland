@@ -24,57 +24,65 @@ class _MyHomePageState extends State<MyHomePage>
     PageBean(title: '写作', icon: Icons.edit, widget: EditorPage()),
     PageBean(title: '助手', icon: Icons.school, widget: AssistPage()),
   ];
-  TabController _tabController;
+  PageController pageController;
+  var currentPage = 0;
+  TitledBottomNavigationBar bottomBar;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: _pages.length,
-      vsync: this,
-    );
-
-    // 页面切换
-    _tabController.addListener(() {
-      setState(() {
-      
-      });
-    });
+    pageController = PageController();
+    bottomBar = new TitledBottomNavigationBar(
+        items: _pages, controller: pageController,);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    pageController.dispose();
     super.dispose();
   }
 
   Widget _getAppBarTitle() {
-    print('刷新标题');
-    return _pages[_tabController.index].widget.getAppBarTitle();
-//    return Text('这是什么神仙写作');
+    print('刷新标题' + pageController.page.toString());
+    return _pages[0].widget.getAppBarTitle();
+    //    return Text('这是什么神仙写作');
   }
 
   List<Widget> _getAppBarActions() {
-    return _pages[_tabController.index].widget.getAppBarActions();
+    return _pages[0].widget.getAppBarActions();
     //    return <Widget>[];
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-        length: _pages.length,
-        child: new Scaffold(
-          appBar: AppBar(
-            title: _getAppBarTitle(),
-            actions: _getAppBarActions(),
-          ),
-          body: new TabBarView(
-            controller: _tabController,
-            children: _pages.map((PageBean page) => page.widget).toList(),
-          ),
-          drawer: MyDrawer(),
-          bottomNavigationBar: new TitledBottomNavigationBar(
-              items: _pages, controller: _tabController),
-        ));
+    return new Scaffold(
+        appBar: AppBar(
+//          title: _getAppBarTitle(),
+//          actions: _getAppBarActions(),
+        ),
+        body: new PageView(
+//          children: _pages.map((PageBean page) => page.widget).toList(),
+          children: <Widget>[
+            Container(
+              color: Colors.grey.shade200,
+            ),
+            Container(
+              color: Colors.redAccent,
+            ),
+            Container(
+              color: Colors.blueAccent,
+            ),
+          ],
+          controller: pageController,
+          physics: BouncingScrollPhysics(),
+          onPageChanged: (page) {
+            setState((){
+            
+            });
+          },
+        ),
+        drawer: MyDrawer(),
+        bottomNavigationBar: bottomBar
+    );
   }
 }
