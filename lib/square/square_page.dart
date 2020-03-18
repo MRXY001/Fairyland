@@ -2,7 +2,7 @@ import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
 
 class SquarePage extends MainPageBase {
-  SquarePage({Key key, BuildContext context}) : super(key: key, context: context);
+  SquarePage({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {

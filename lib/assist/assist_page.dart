@@ -2,7 +2,7 @@ import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
 
 class AssistPage extends MainPageBase {
-  AssistPage({Key key, BuildContext context}) : super(key: key, context: context);
+  AssistPage({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {

@@ -1,3 +1,4 @@
+import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:flutter/material.dart';
 import 'file:///E:/Flutter/fairyland/lib/main/my_main_home.dart';
 
@@ -13,6 +14,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: MyHomePage(title: '写作天下'),
+      routes: {
+        "bookshelf":(BuildContext context)=>new Bookshelf(),
+      },
     );
   }
 }

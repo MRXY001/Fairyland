@@ -1,12 +1,11 @@
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
-
 import 'chapter_list.dart';
 
 class DirPage extends MainPageBase {
-  DirPage({Key key, BuildContext context}) : super(key: key, context: context);
-  
+  DirPage({Key key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return new _DirPageState();
@@ -15,20 +14,23 @@ class DirPage extends MainPageBase {
   @override
   Widget getAppBarTitle() {
     var s = _DirPageState.currentNovelName;
-    if (s.isEmpty)
-      s = '目录';
-    return new GestureDetector(
-      child: new Text(s),
-      onTap: (){
-        Navigator.push<String>(getContext(), new MaterialPageRoute(builder: (BuildContext context){
-          return new Bookshelf();
-        })).then((value) => (String result) {
-        
-        });
+    if (s.isEmpty) s = '目录';
+    return Builder(
+      builder: (BuildContext context) {
+        // 获取context后才能跳转页面
+        return new GestureDetector(
+          child: new Text(s),
+          onTap: () {
+            Navigator.push<String>(context,
+                new MaterialPageRoute(builder: (BuildContext context) {
+              return new Bookshelf();
+            })).then((value) => (String result) {});
+          },
+        );
       },
     );
   }
-  
+
   @override
   List<Widget> getAppBarActions() {
     return <Widget>[
@@ -38,8 +40,7 @@ class DirPage extends MainPageBase {
         onPressed: () {},
       ),
       PopupMenuButton<String>(
-        itemBuilder: (BuildContext content) =>
-        <PopupMenuItem<String>>[
+        itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
           PopupMenuItem<String>(
             value: "book_new_roll",
             child: Text('添加新卷'),
@@ -84,14 +85,12 @@ class _DirPageState extends State<DirPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new Column(
-        children: <Widget>[
-          new Expanded(
-            child: new ExpansionPanelPage(),
-          ),
-        ],
-      )
-    );
+        body: new Column(
+      children: <Widget>[
+        new Expanded(
+          child: new ExpansionPanelPage(),
+        ),
+      ],
+    ));
   }
 }
-
