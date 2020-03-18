@@ -14,62 +14,77 @@ class _BookFields extends State<BookFields> {
   final formKey = GlobalKey<FormState>();
   bool isAutoValidate = false;
   var name;
-  var tel;
-  var email;
+  var type;
+  var author;
+  bool isChanged = false;
+  bool isModified = false;
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: AppBar(title: Text('创建作品')),
-      body: Form(
-            key: formKey,
-            autovalidate: isAutoValidate,
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Name'),
-                  keyboardType: TextInputType.text,
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'Please enter some text';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) => name = value,
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Tel'),
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value.length != 11)
-                      return 'Tel Number must be 11 digit';
-                    else
-                      return null;
-                  },
-                  onSaved: (value) => tel = value,
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    Pattern pattern =
-                        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-                    RegExp regex = new RegExp(pattern);
-                    if (!regex.hasMatch(value))
-                      return 'Not Valid Email';
-                    else
-                      return null;
-                  },
-                  onSaved: (value) => email = value,
-                ),
-                SizedBox(height: 10),
-                RaisedButton(
-                  onPressed: validateInputs,
-                  child: Text('Validate'),
-                )
-              ],
+      body: ListView(
+        children: <Widget>[
+          Card(
+            clipBehavior: Clip.antiAlias,
+            color: Theme.of(context).backgroundColor,
+            elevation: 16,
+            margin: EdgeInsets.all(16),
+            semanticContainer: true,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)
             ),
+            child: Padding(padding: EdgeInsets.all(16),
+              child: createForm(),
+            ),
+          ),
+        ],
+      )
+    );
+  }
+  
+  Widget createForm() {
+    return Form(
+      key: formKey,
+      autovalidate: isAutoValidate,
+      onWillPop: willPop,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          TextFormField(
+            decoration: const InputDecoration(labelText: '书名 *'),
+            keyboardType: TextInputType.text,
+            validator: (value) {
+              value = value.trim();
+              if (value.isEmpty) {
+                return '请输入作品名字';
+              } else {
+                Pattern pattern = r'^[\w\d@\-\._:?！ \u4e00-\u9fa5]+$';
+                RegExp regex = new RegExp(pattern);
+                if (!regex.hasMatch(value))
+                  return '请输入正确的书名格式';
+              }
+              return null;
+            },
+            onSaved: (value) => name = value,
+          ),
+          TextFormField(
+            decoration: const InputDecoration(labelText: '风格'),
+            keyboardType: TextInputType.text,
+            onSaved: (value) => type = value,
+          ),
+          TextFormField(
+            decoration: const InputDecoration(labelText: '作者'),
+            keyboardType: TextInputType.text,
+            onSaved: (value) => author = value,
+          ),
+          SizedBox(height: 10),
+          FlatButton(
+            onPressed: validateInputs,
+            child: Text('创建'),
           )
+        ],
+      ),
     );
   }
 
@@ -82,10 +97,15 @@ class _BookFields extends State<BookFields> {
     }
   }
 
+  /// 退出前是否提示
   Future<bool> willPop() {
+    if (!isChanged) {
+      Navigator.pop(context, true);
+      return null;
+    }
     return showDialog(
       builder: (context) => AlertDialog(
-        title: Text('Exit the page?'),
+        title: Text('退出当前页'),
         actions: <Widget>[
           FlatButton(
             child: Text('No'),
