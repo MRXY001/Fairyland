@@ -14,7 +14,7 @@ class DirPage extends MainPageBase {
   @override
   Widget getAppBarTitle() {
     var s = _DirPageState.currentNovelName;
-    if (s.isEmpty) s = '目录';
+    if (s.isEmpty) s = '选择或创建作品';
     return Builder(
       builder: (BuildContext context) {
         // 获取context后才能跳转页面
@@ -24,7 +24,21 @@ class DirPage extends MainPageBase {
             Navigator.push<String>(context,
                 new MaterialPageRoute(builder: (BuildContext context) {
               return new Bookshelf();
-            })).then((value) => (String result) {});
+            })).then((String result) {
+              if (result.isEmpty) {
+                // 按返回键返回是没有传回的参数的
+                return ;
+              }
+              
+              // 判断有没有切换作品
+              if (_DirPageState.currentNovelName == result) {
+                // 没有切换作品
+                return ;
+              }
+              
+              // 读取作品
+              
+            });
           },
         );
       },
@@ -54,26 +68,38 @@ class DirPage extends MainPageBase {
             child: Text('修改书名'),
           ),
           PopupMenuItem<String>(
-            value: "book_delete",
-            child: Text('删除作品'),
-          ),
-          PopupMenuItem<String>(
             value: "book_export",
             child: Text('导出作品'),
+          ),
+          PopupMenuItem<String>(
+            value: "book_duplicate",
+            child: Text('暂存作品'),
+          ),
+          PopupMenuItem<String>(
+            value: "book_delete",
+            child: Text('删除作品'),
           ),
           PopupMenuItem<String>(
             value: "book_settings",
             child: Text('目录设置'),
           ),
           PopupMenuItem<String>(
-            value: "book_duplicate",
-            child: Text('复制作品'),
-          ),
-          PopupMenuItem<String>(
             value: "book_recycles",
             child: Text('回收站'),
           ),
         ],
+        onSelected: (String value) {
+          switch (value) {
+            case 'book_new_roll': {
+            
+            }
+              break;
+            default: {
+            
+            }
+            break;
+          }
+        },
       )
     ];
   }
