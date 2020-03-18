@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
 abstract class MainPageBase extends StatefulWidget {
-  MainPageBase({Key key}) : super(key: key);
+  MainPageBase({Key key, this.context}) : super(key: key);
+  
+  final BuildContext context;
+  
+  BuildContext getContext() {
+    return context;
+  }
   
   Widget getAppBarTitle() {
     return new Text('这是什么神仙写作');

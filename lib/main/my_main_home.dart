@@ -19,6 +19,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
+  var context;
   List<PageBean> _pages = <PageBean>[
     PageBean(title: '目录', icon: Icons.list, widget: DirPage()),
     PageBean(title: '写作', icon: Icons.edit, widget: EditorPage()),
@@ -54,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
+    this.context = context;
     return new Scaffold(
         appBar: AppBar(
           title: _getAppBarTitle(),

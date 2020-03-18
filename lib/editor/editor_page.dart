@@ -4,7 +4,7 @@ import 'package:quill_delta/quill_delta.dart';
 import 'package:zefyr/zefyr.dart';
 
 class EditorPage extends MainPageBase {
-  EditorPage({Key key}) : super(key: key);
+  EditorPage({Key key, BuildContext context}) : super(key: key, context: context);
 
   @override
   State<StatefulWidget> createState() {

@@ -1,9 +1,12 @@
+import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
 
-class DirPage extends MainPageBase {
-  DirPage({Key key}) : super(key: key);
+import 'chapter_list.dart';
 
+class DirPage extends MainPageBase {
+  DirPage({Key key, BuildContext context}) : super(key: key, context: context);
+  
   @override
   State<StatefulWidget> createState() {
     return new _DirPageState();
@@ -11,12 +14,72 @@ class DirPage extends MainPageBase {
 
   @override
   Widget getAppBarTitle() {
-    return Text('目录');
+    var s = _DirPageState.currentNovelName;
+    if (s.isEmpty)
+      s = '目录';
+    return new GestureDetector(
+      child: new Text(s),
+      onTap: (){
+        Navigator.push<String>(getContext(), new MaterialPageRoute(builder: (BuildContext context){
+          return new Bookshelf();
+        })).then((value) => (String result) {
+        
+        });
+      },
+    );
+  }
+  
+  @override
+  List<Widget> getAppBarActions() {
+    return <Widget>[
+      IconButton(
+        icon: Icon(Icons.add),
+        tooltip: '添加新章',
+        onPressed: () {},
+      ),
+      PopupMenuButton<String>(
+        itemBuilder: (BuildContext content) =>
+        <PopupMenuItem<String>>[
+          PopupMenuItem<String>(
+            value: "book_new_roll",
+            child: Text('添加新卷'),
+          ),
+          PopupMenuItem<String>(
+            value: "book_info",
+            child: Text('全书统计'),
+          ),
+          PopupMenuItem<String>(
+            value: "book_rename",
+            child: Text('修改书名'),
+          ),
+          PopupMenuItem<String>(
+            value: "book_delete",
+            child: Text('删除作品'),
+          ),
+          PopupMenuItem<String>(
+            value: "book_export",
+            child: Text('导出作品'),
+          ),
+          PopupMenuItem<String>(
+            value: "book_settings",
+            child: Text('目录设置'),
+          ),
+          PopupMenuItem<String>(
+            value: "book_duplicate",
+            child: Text('复制作品'),
+          ),
+          PopupMenuItem<String>(
+            value: "book_recycles",
+            child: Text('回收站'),
+          ),
+        ],
+      )
+    ];
   }
 }
 
 class _DirPageState extends State<DirPage> {
-  String currentNovelName;
+  static String currentNovelName = "";
 
   @override
   Widget build(BuildContext context) {
@@ -32,79 +95,3 @@ class _DirPageState extends State<DirPage> {
   }
 }
 
-class ChapterItem {
-  String id;
-  String name;
-  String fullName; // 带有章序的章节名
-  DateTime time;
-  String content;
-  int wordCount;
-}
-
-class Item {
-  Item({
-    this.expandedValue,
-    this.headerValue,
-    this.isExpanded = true,
-  });
-
-  String expandedValue;
-  String headerValue;
-  bool isExpanded;
-}
-
-/// Expansion参考
-class ExpansionPanelPage extends StatefulWidget {
-  ExpansionPanelPage({Key key}) : super(key: key);
-
-  @override
-  _ExpansionPanelPageState createState() => _ExpansionPanelPageState();
-}
-
-class _ExpansionPanelPageState extends State<ExpansionPanelPage> {
-  List<Item> _data = List.generate(8, (int index) {
-    return Item(
-      headerValue: 'Panel $index',
-      expandedValue: 'This is item number $index',
-    );
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return new SingleChildScrollView(
-      child: Container(
-        child: _buildPanel(),
-      ),
-    );
-  }
-
-  Widget _buildPanel() {
-    return ExpansionPanelList.radio(
-      expansionCallback: (int index, bool isExpanded) {
-        setState(() {
-          _data[index].isExpanded = !isExpanded;
-        });
-      },
-      children: _data.map<ExpansionPanel>((Item item) {
-        return ExpansionPanelRadio(
-          canTapOnHeader: true,
-          headerBuilder: (BuildContext context, bool isExpanded) {
-            return ListTile(
-              title: Text(item.headerValue),
-            );
-          },
-          body: ListTile(
-              title: Text(item.expandedValue),
-              subtitle: Text('To delete this panel, tap the trash can icon'),
-              trailing: Icon(Icons.delete),
-              onTap: () {
-                setState(() {
-                  _data.removeWhere((currentItem) => item == currentItem);
-                });
-              }),
-          value: item.headerValue,
-        );
-      }).toList(),
-    );
-  }
-}
