@@ -50,8 +50,18 @@ class FileUtil {
 		directory.renameSync(newPath);
 	}
 	
-	static bool copyDir(String oldPath, String newPath, {bool override=false}) {
-	
+	static copyDir(String oldPath, String newPath, {bool override=false}) {
+		var oldDir = Directory(oldPath);
+		if (!oldDir.existsSync())
+			return ;
+		var newDir = Directory(newPath);
+		if (newDir.existsSync()) {
+			if (!override)
+				return ;
+			newDir.deleteSync();
+		}
+		
+		var directory = new Directory(oldPath);
 	}
 	
 	static bool isDirExists(String path) {
@@ -96,7 +106,20 @@ class FileUtil {
 		  	return ;
 		  newFile.deleteSync();
 		}
-		return File(oldPath).renameSync(newPath);
+		return oldFile.renameSync(newPath);
+	}
+	
+	static copyFile(String oldPath, String newPath, {bool override = false}) {
+		var oldFile = File(oldPath);
+		if (!oldFile.existsSync())
+			return ;
+		var newFile = File(newPath);
+		if (newFile.existsSync()) {
+			if (!override)
+				return ;
+			newFile.deleteSync();
+		}
+		return oldFile.copySync(newPath);
 	}
 	
 	static deleteFile(String path) {

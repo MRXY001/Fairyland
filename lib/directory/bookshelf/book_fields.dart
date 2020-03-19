@@ -1,3 +1,4 @@
+import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,11 +14,11 @@ class _BookFields extends State<BookFields> {
   final formKey = GlobalKey<FormState>();
   bool isAutoValidate = false;
   var coverPath;
-  var name;
-  var type;
-  var author;
+  String name;
+  String type;
+  String author;
   bool isChanged = false;
-  bool isModified = false;
+  bool modifyModel = false;
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +104,12 @@ class _BookFields extends State<BookFields> {
   void validateInputs() {
     if (formKey.currentState.validate()) {
       formKey.currentState.save();
+      
+      if (modifyModel) {
+        save();
+      } else {
+        create();
+      }
     } else {
       // 输入后再开启自动检查
       setState(() => isAutoValidate = true);
@@ -145,9 +152,19 @@ class _BookFields extends State<BookFields> {
   }
   
   /// 创建新的小说
-  void create()
+  bool create()
   {
-  
+    if (name.isEmpty) {
+      return false;
+    }
+    if (FileUtil.isDirExists('novels/' + name)) {
+      return false;
+    }
+    
+    // 创建默认的小说内容
+    
+    
+    return true;
   }
   
   /// 保存修改的信息
