@@ -42,6 +42,7 @@ class _BookFields extends State<BookFields> {
         ));
   }
 
+  /// 创建小说的表单
   Widget createForm() {
     return Form(
       key: formKey,
@@ -90,6 +91,7 @@ class _BookFields extends State<BookFields> {
     );
   }
   
+  /// 获取封面控件
   Widget getCoverImage(var path)
   {
     if (path == null)
@@ -97,6 +99,7 @@ class _BookFields extends State<BookFields> {
     return new Image.file(path);
   }
 
+  /// 验证表单
   void validateInputs() {
     if (formKey.currentState.validate()) {
       formKey.currentState.save();
@@ -108,7 +111,7 @@ class _BookFields extends State<BookFields> {
 
   /// 退出前是否提示
   Future<bool> willPop() {
-    // 直接 pop 会导致返回的时候出错
+    // 不知道为什么直接 pop 会导致返回的时候出错
     /*if (!isChanged) {
       Navigator.pop(context, true);
       return Future.value(true);
@@ -132,13 +135,24 @@ class _BookFields extends State<BookFields> {
         false;
   }
   
+  /// 获取新的封面
   void selectCover() async
   {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-    print('========image========');
-    print(image);
     setState(() {
       coverPath = image;
     });
+  }
+  
+  /// 创建新的小说
+  void create()
+  {
+  
+  }
+  
+  /// 保存修改的信息
+  void save()
+  {
+  
   }
 }
