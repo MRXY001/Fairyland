@@ -1,13 +1,21 @@
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:flutter/material.dart';
-import 'file:///E:/Flutter/fairyland/lib/main/my_main_home.dart';
+import 'common/global.dart';
+import 'main/my_main_home.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized(); // 不加这句启动就会报错
+  Global.init().then((e) {
+    runApp(MyApp());
+  });
+}
+//void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
+    print(Global.dataPath);
+    print(Global.storagePath);
     return MaterialApp(
       title: '写作天下',
       theme: ThemeData(
@@ -15,9 +23,8 @@ class MyApp extends StatelessWidget {
       ),
       home: MyHomePage(title: '写作天下'),
       routes: {
-        "bookshelf":(BuildContext context)=>new Bookshelf(),
+        "bookshelf": (BuildContext context) => new Bookshelf(),
       },
     );
   }
 }
-
