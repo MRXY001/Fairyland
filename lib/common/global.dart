@@ -32,6 +32,6 @@ class Global {
 
     storagePath = (await getExternalStorageDirectory()).path;
     dataPath = (await getApplicationDocumentsDirectory()).path;
-    novelPath = dataPath + '/novels';
+    novelPath = dataPath + '/novels/';
   }
 }

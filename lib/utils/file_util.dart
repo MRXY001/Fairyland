@@ -152,9 +152,9 @@ class FileUtil {
 	
 	// -------------------------------------------------------------
 
-	List<String> entityDirPaths(String path) {
+	static List<String> entityDirPaths(String path) {
 		var pDir = Directory(path);
-		List<String> files;
+		List<String> files = [];
 		if (!pDir.existsSync())
 			return files;
 		List<FileSystemEntity> entityList = pDir.listSync(recursive: false, followLinks: false);
@@ -166,9 +166,9 @@ class FileUtil {
 		return files;
 	}
 	
-	List<String> entityDirNames(String path) {
+	static List<String> entityDirNames(String path) {
 		var pDir = Directory(path);
-		List<String> files;
+		List<String> files = [];
 		if (!pDir.existsSync())
 			return files;
 		List<FileSystemEntity> entityList = pDir.listSync(recursive: false, followLinks: false);
@@ -185,9 +185,9 @@ class FileUtil {
 		return files;
 	}
 	
-	List<String> entityFilePaths(String path) {
+	static List<String> entityFilePaths(String path) {
 		var pDir = Directory(path);
-		List<String> files;
+		List<String> files = [];
 		if (!pDir.existsSync())
 			return files;
 		List<FileSystemEntity> entityList = pDir.listSync(recursive: false, followLinks: false);
@@ -199,9 +199,9 @@ class FileUtil {
 		return files;
 	}
 	
-	List<String> entityFileNames(String path) {
+	static List<String> entityFileNames(String path) {
 		var pDir = Directory(path);
-		List<String> files;
+		List<String> files = [];
 		if (!pDir.existsSync())
 			return files;
 		List<FileSystemEntity> entityList = pDir.listSync(recursive: false, followLinks: false);

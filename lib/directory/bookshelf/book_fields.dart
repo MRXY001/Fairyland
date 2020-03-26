@@ -1,3 +1,4 @@
+import 'package:fairyland/common/global.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -91,12 +92,16 @@ class _BookFields extends State<BookFields> {
       ),
     );
   }
-  
+
   /// 获取封面控件
-  Widget getCoverImage(var path)
-  {
+  Widget getCoverImage(var path) {
     if (path == null)
-      return new Image.asset('assets/covers/default.png');
+      return Column(
+        children: <Widget>[
+          new Image.asset('assets/covers/default.png'),
+          Text("设置封面(建议200×300)")
+        ],
+      );
     return new Image.file(path);
   }
 
@@ -104,11 +109,14 @@ class _BookFields extends State<BookFields> {
   void validateInputs() {
     if (formKey.currentState.validate()) {
       formKey.currentState.save();
-      
+
       if (modifyModel) {
         save();
       } else {
-        create();
+        if (create()) {
+          // 创建成功，返回并切换
+          Navigator.pop(context, name);
+        }
       }
     } else {
       // 输入后再开启自动检查
@@ -141,35 +149,34 @@ class _BookFields extends State<BookFields> {
         ) ??
         false;
   }
-  
+
   /// 获取新的封面
-  void selectCover() async
-  {
+  void selectCover() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
       coverPath = image;
     });
   }
-  
+
   /// 创建新的小说
-  bool create()
-  {
+  bool create() {
     if (name.isEmpty) {
       return false;
     }
     if (FileUtil.isDirExists('novels/' + name)) {
       return false;
     }
-    
+
     // 创建默认的小说内容
-    
-    
+    String path = Global.novelPath + name + "/";
+    FileUtil.createDir(Global.novelPath);
+    FileUtil.createDir(path);
+    FileUtil.createDir(path + "chapters");
+    print(FileUtil.entityDirNames(Global.novelPath));
+
     return true;
   }
-  
+
   /// 保存修改的信息
-  void save()
-  {
-  
-  }
+  void save() {}
 }
