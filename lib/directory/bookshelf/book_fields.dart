@@ -184,8 +184,6 @@ class _BookFields extends State<BookFields> {
     List<int> bytes = oldCoverFile.readAsBytesSync();
     newCoverFile.writeAsBytesSync(bytes);
 
-    print(FileUtil.entityDirNames(Global.novelPath));
-
     return true;
   }
 

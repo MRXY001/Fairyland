@@ -83,7 +83,10 @@ class _BookshelfState extends State<Bookshelf> {
             itemBuilder: (BuildContext context, int index) {
               return Row(
                 children: <Widget>[
-                  books[index].cover,
+                  new Container(
+                    constraints: BoxConstraints(maxWidth: 100, minWidth: 100),
+                    child: books[index].cover,
+                  ),
                   new Text(books[index].name)
                 ],
               );
