@@ -37,6 +37,13 @@ class _BookshelfState extends State<Bookshelf> {
     return Scaffold(
       appBar: AppBar(
         title: Text('我的书架'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add),
+            tooltip: '添加新章',
+            onPressed: () => gotoCreate(),
+          ),
+        ],
       ),
       body: Builder(builder: (BuildContext context) {
         // 读取目录里的数据
@@ -54,19 +61,7 @@ class _BookshelfState extends State<Bookshelf> {
                 '新建作品',
                 textScaleFactor: 2,
               ),
-              onPressed: () {
-                Navigator.push<String>(context,
-                    new MaterialPageRoute(builder: (BuildContext context) {
-                  return new BookFields();
-                })).then((String result) {
-                  if (result.isEmpty) {
-                    return;
-                  }
-
-                  // 刷新列表
-                  setState(() {});
-                });
-              },
+              onPressed: () => gotoCreate(),
             ),
           );
         }
@@ -81,18 +76,55 @@ class _BookshelfState extends State<Bookshelf> {
             padding: const EdgeInsets.all(8),
             itemCount: books.length,
             itemBuilder: (BuildContext context, int index) {
-              return Row(
-                children: <Widget>[
-                  new Container(
-                    constraints: BoxConstraints(maxWidth: 100, minWidth: 100),
-                    child: books[index].cover,
-                  ),
-                  new Text(books[index].name)
-                ],
+              return GestureDetector(
+                onTap: () => openBook(books[index].name),
+                child: Row(
+                  children: <Widget>[
+                    new Container(
+                      constraints: BoxConstraints(
+                          maxWidth: 100,
+                          minWidth: 100,
+                          minHeight: 150,
+                          maxHeight: 150),
+                      child: books[index].cover,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        new Text(books[index].name,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 25
+                          )),
+                        new Text('作者：您'),
+                        new Text('字数：待统计'),
+                        new Text('最近：待统计'),
+                        new Text('简介：待输入'),
+                      ],
+                    )
+                  ],
+                ),
               );
-            }
-        );
+            });
       }),
     );
+  }
+  
+  void gotoCreate() {
+    Navigator.push<String>(context,
+        new MaterialPageRoute(builder: (BuildContext context) {
+          return new BookFields();
+        })).then((String result) {
+      if (result.isEmpty) {
+        return;
+      }
+    
+      // 刷新列表
+      setState(() {});
+    });
+  }
+  
+  void openBook(String name) {
+    print('打开：' + name);
   }
 }

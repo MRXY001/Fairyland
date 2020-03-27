@@ -14,7 +14,8 @@ class DirPage extends MainPageBase {
   @override
   Widget getAppBarTitle() {
     var s = _DirPageState.currentNovelName;
-    if (s.isEmpty) s = '选择或创建作品';
+    if (s.isEmpty)
+      s = '创建或切换作品';
     return Builder(
       builder: (BuildContext context) {
         // 获取context后才能跳转页面
