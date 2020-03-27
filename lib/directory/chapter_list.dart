@@ -1,5 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:fairyland/directory/book_beans.dart';
 
+class BookDirectoryView extends StatefulWidget {
+	BookDirectoryView({Key key}) : super(key: key);
+	
+	@override
+	_BookDirectoryViewState createState() => _BookDirectoryViewState();
+}
+
+class _BookDirectoryViewState extends State<BookDirectoryView> {
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    throw UnimplementedError();
+  }
+	
+}
 
 
 class Item {
