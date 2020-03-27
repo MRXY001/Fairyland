@@ -1,8 +1,28 @@
+import 'dart:io';
+
 import 'package:fairyland/common/global.dart';
 import 'package:fairyland/directory/bookshelf/book_fields.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+class BookBean {
+  String name; // 名字
+  Image cover; // 封面
+  int wordCount; // 字数
+  String description; // 简介
+  String lastModify;
+
+  BookBean(this.name) {
+    // 读取作品
+    String path = Global.novelPath + name + '/';
+    if (FileUtil.isFileExists(path + 'cover.png')) {
+      cover = Image.file(File(path + 'cover.png'));
+    } else {
+      cover = Image.asset('assets/covers/default.png');
+    }
+  }
+}
 
 class Bookshelf extends StatefulWidget {
   @override
@@ -20,10 +40,10 @@ class _BookshelfState extends State<Bookshelf> {
       ),
       body: Builder(builder: (BuildContext context) {
         // 读取目录里的数据
-        List<String> books = FileUtil.entityDirNames(Global.novelPath);
+        List<String> bookFiles = FileUtil.entityDirNames(Global.novelPath);
 
         // 如果没有作品的话，只居中显示一个“新建作品”
-        if (books.length == 0) {
+        if (bookFiles.length == 0) {
           return new Center(
             child: OutlineButton.icon(
               icon: Icon(
@@ -52,8 +72,23 @@ class _BookshelfState extends State<Bookshelf> {
         }
 
         // 显示书架列表
-        
-        return new Text('');
+        List<BookBean> books = [];
+        bookFiles.forEach((element) {
+          books.add(BookBean(element));
+        });
+
+        return ListView.builder(
+            padding: const EdgeInsets.all(8),
+            itemCount: books.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Row(
+                children: <Widget>[
+                  books[index].cover,
+                  new Text(books[index].name)
+                ],
+              );
+            }
+        );
       }),
     );
   }
