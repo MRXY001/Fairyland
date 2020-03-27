@@ -2,7 +2,9 @@ import 'package:fairyland/common/global.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class BookFields extends StatefulWidget {
   @override
@@ -14,7 +16,8 @@ class BookFields extends StatefulWidget {
 class _BookFields extends State<BookFields> {
   final formKey = GlobalKey<FormState>();
   bool isAutoValidate = false;
-  var coverPath;
+  Image coverImage = Image.asset('assets/covers/default.png');
+  String coverPath;
   String name;
   String type;
   String author;
@@ -55,7 +58,7 @@ class _BookFields extends State<BookFields> {
         children: <Widget>[
           GestureDetector(
             onTap: () => selectCover(),
-            child: getCoverImage(coverPath),
+            child: getCoverImage(coverImage),
           ),
           TextFormField(
             decoration: const InputDecoration(labelText: '书名 *'),
@@ -94,15 +97,17 @@ class _BookFields extends State<BookFields> {
   }
 
   /// 获取封面控件
-  Widget getCoverImage(var path) {
-    if (path == null)
+  Widget getCoverImage(Image image) {
+    if (image == null) {
       return Column(
         children: <Widget>[
           new Image.asset('assets/covers/default.png'),
           Text("设置封面(建议200×300)")
         ],
       );
-    return new Image.file(path);
+    } else {
+      return image;
+    }
   }
 
   /// 验证表单
@@ -153,8 +158,9 @@ class _BookFields extends State<BookFields> {
   /// 获取新的封面
   void selectCover() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    coverPath = image.path;
     setState(() {
-      coverPath = image;
+      coverImage = Image.file(image);
     });
   }
 
@@ -172,6 +178,12 @@ class _BookFields extends State<BookFields> {
     FileUtil.createDir(Global.novelPath);
     FileUtil.createDir(path);
     FileUtil.createDir(path + "chapters");
+    
+    File newCoverFile = File(path + 'cover.png');
+    File oldCoverFile = File(coverPath);
+    List<int> bytes = oldCoverFile.readAsBytesSync();
+    newCoverFile.writeAsBytesSync(bytes);
+
     print(FileUtil.entityDirNames(Global.novelPath));
 
     return true;
