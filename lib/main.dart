@@ -14,8 +14,6 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    print(Global.dataPath);
-    print(Global.storagePath);
     return MaterialApp(
       title: '写作天下',
       theme: ThemeData(

@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+import 'package:ini/ini.dart';
+
 class BookFields extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -16,11 +18,12 @@ class BookFields extends StatefulWidget {
 class _BookFields extends State<BookFields> {
   final formKey = GlobalKey<FormState>();
   bool isAutoValidate = false;
+  String coverPath = '';
   Image coverImage = Image.asset('assets/covers/default.png');
-  String coverPath;
-  String name;
-  String type;
-  String author;
+  String name = '';
+  String type = '';
+  String author = '';
+  String description = '';
   bool isChanged = false;
   bool modifyModel = false;
 
@@ -158,8 +161,9 @@ class _BookFields extends State<BookFields> {
   /// 获取新的封面
   void selectCover() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-    coverPath = image.path;
+    if (image == null) return;
     setState(() {
+      coverPath = image.path;
       coverImage = Image.file(image);
     });
   }
@@ -178,11 +182,23 @@ class _BookFields extends State<BookFields> {
     FileUtil.createDir(Global.novelPath);
     FileUtil.createDir(path);
     FileUtil.createDir(path + "chapters");
-    
-    File newCoverFile = File(path + 'cover.png');
-    File oldCoverFile = File(coverPath);
-    List<int> bytes = oldCoverFile.readAsBytesSync();
-    newCoverFile.writeAsBytesSync(bytes);
+
+    // 保存封面
+    if (coverPath != null && coverPath.isNotEmpty) {
+      File newCoverFile = File(path + 'cover.png');
+      File oldCoverFile = File(coverPath);
+      List<int> bytes = oldCoverFile.readAsBytesSync();
+      newCoverFile.writeAsBytesSync(bytes);
+    }
+
+    // 保存小说配置
+    Config config = new Config();
+    config.addSection('info');
+    config.set('info', 'name', name);
+    config.set('info', 'author', author);
+    config.set('info', 'type', type);
+    config.set('info', 'description', description);
+    FileUtil.writeText(path + 'settings.ini', config.toString());
 
     return true;
   }

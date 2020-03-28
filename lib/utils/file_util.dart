@@ -137,7 +137,7 @@ class FileUtil {
 	
 	/// 保存纯文本文件
 	/// 如果文件不存在，自动创建
-	static saveText(String path, String content) {
+	static writeText(String path, String content) {
 		File(path).writeAsStringSync(content);
 	}
 	
