@@ -1,19 +1,13 @@
-import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:zefyr/zefyr.dart';
 
-class EditorPage extends MainPageBase {
+class EditorPage extends StatefulWidget {
   EditorPage({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
     return new _EditPageState();
-  }
-  
-  @override
-  Widget getAppBarTitle() {
-    return Text('编辑');
   }
 
 }
@@ -34,6 +28,9 @@ class _EditPageState extends State<EditorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: new AppBar(
+        title: Text('编辑'),
+      ),
       body: ZefyrScaffold(
         child: ZefyrEditor(
           padding: EdgeInsets.all(16),

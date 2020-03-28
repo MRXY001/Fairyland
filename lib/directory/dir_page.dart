@@ -1,24 +1,34 @@
 import 'package:fairyland/common/global.dart';
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
-import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
 import 'chapter_list.dart';
 
-class DirPage extends MainPageBase {
+class DirPage extends StatefulWidget {
   DirPage({Key key}) : super(key: key);
-
+  
   @override
   State<StatefulWidget> createState() {
     return new _DirPageState();
   }
-  
 }
 
 class _DirPageState extends State<DirPage> {
-  
+  AppBar appbar;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    appbar = new AppBar(
+      title: getAppBarTitle(),
+      actions: getAppBarActions()
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+      appBar: appbar,
         body: new Column(
       children: <Widget>[
         new Expanded(
@@ -38,19 +48,19 @@ class _DirPageState extends State<DirPage> {
           onTap: () {
             Navigator.push<String>(context,
                 new MaterialPageRoute(builder: (BuildContext context) {
-                  return new Bookshelf();
-                })).then((String result) {
+              return new Bookshelf();
+            })).then((String result) {
               if (result.isEmpty) {
                 // 按返回键返回是没有传回的参数的
-                return ;
+                return;
               }
-            
+
               // 判断有没有切换作品
               if (Global.currentBookName == result) {
                 // 没有切换作品
-                return ;
+                return;
               }
-            
+
               // 读取作品
               openBook(result);
             });
@@ -104,14 +114,12 @@ class _DirPageState extends State<DirPage> {
         ],
         onSelected: (String value) {
           switch (value) {
-            case 'book_new_roll': {
-            
-            }
-            break;
-            default: {
-            
-            }
-            break;
+            case 'book_new_roll':
+              {}
+              break;
+            default:
+              {}
+              break;
           }
         },
       )
@@ -122,9 +130,7 @@ class _DirPageState extends State<DirPage> {
     print('打开Book：' + name);
     setState(() {
       Global.currentBookName = name;
-      widget.getAppBarTitle();
-      widget.getAppBarActions();
+      
     });
-  
   }
 }

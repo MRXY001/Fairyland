@@ -1,17 +1,11 @@
-import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
 
-class AssistPage extends MainPageBase {
+class AssistPage extends StatefulWidget {
   AssistPage({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
     return new _AssistPageState();
-  }
-
-  @override
-  Widget getAppBarTitle() {
-    return Text('辅助');
   }
 
 }

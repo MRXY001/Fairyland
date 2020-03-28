@@ -1,7 +1,6 @@
-import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
 
-class SquarePage extends MainPageBase {
+class SquarePage extends StatefulWidget {
   SquarePage({Key key}) : super(key: key);
 
   @override

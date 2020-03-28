@@ -1,4 +1,3 @@
-import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
 
 /// 保存页面的List
@@ -7,7 +6,7 @@ class PageBean {
 
   String title;
   IconData icon;
-  MainPageBase widget;
+  StatefulWidget widget;
 }
 
 typedef void MainPageChangedCallback(int page);
