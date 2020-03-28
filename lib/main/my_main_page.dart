@@ -8,27 +8,7 @@ abstract class MainPageBase extends StatefulWidget {
   }
 
   List<Widget> getAppBarActions() {
-//    return <Widget>[];
-    return <Widget>[
-      IconButton(
-        icon: Icon(Icons.add),
-        tooltip: '添加',
-        onPressed: () {},
-      ),
-      PopupMenuButton<String>(
-        itemBuilder: (BuildContext content) =>
-        <PopupMenuItem<String>>[
-          PopupMenuItem<String>(
-            value: "item1",
-            child: Text('item1 value'),
-          ),
-          PopupMenuItem<String>(
-            value: "item2",
-            child: Text('item2 value'),
-          ),
-        ],
-      )
-    ];
+    return <Widget>[];
   }
 
 }

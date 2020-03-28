@@ -64,7 +64,14 @@ class _BookFields extends State<BookFields> {
         children: <Widget>[
           GestureDetector(
             onTap: () => selectCover(),
-            child: getCoverImage(coverImage),
+            child:new Container(
+              constraints: BoxConstraints(
+                  maxWidth: 200,
+                  minWidth: 200,
+                  minHeight: 300,
+                  maxHeight: 300),
+              child: getCoverImage(coverImage),
+            ),
           ),
           TextFormField(
             decoration: const InputDecoration(labelText: '书名 *'),

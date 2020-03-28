@@ -125,6 +125,6 @@ class _BookshelfState extends State<Bookshelf> {
   }
   
   void openBook(String name) {
-    print('打开：' + name);
+    Navigator.pop(context, name);
   }
 }

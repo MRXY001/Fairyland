@@ -1,4 +1,4 @@
-import 'file:///E:/Flutter/fairyland/lib/main/my_drawer.dart';
+import 'package:fairyland/main/my_drawer.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fairyland/square/square_page.dart';
@@ -9,9 +9,10 @@ import 'package:fairyland/assist/assist_page.dart';
 import 'my_navigation_bar.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key key, this.title, this.drawer}) : super(key: key);
 
   final String title;
+  final MyDrawer drawer;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -28,13 +29,17 @@ class _MyHomePageState extends State<MyHomePage>
   PageController pageController;
   var currentPage = 0;
   TitledBottomNavigationBar bottomBar;
+  MyDrawer drawer;
 
   @override
   void initState() {
     super.initState();
     pageController = PageController();
     bottomBar = new TitledBottomNavigationBar(
-        items: _pages, controller: pageController,);
+      items: _pages,
+      controller: pageController,
+    );
+    drawer = new MyDrawer();
   }
 
   @override
@@ -45,12 +50,12 @@ class _MyHomePageState extends State<MyHomePage>
 
   Widget _getAppBarTitle() {
     return _pages[currentPage].widget.getAppBarTitle();
-//        return Text('这是什么神仙写作');
+    //        return Text('这是什么神仙写作');
   }
 
   List<Widget> _getAppBarActions() {
     return _pages[currentPage].widget.getAppBarActions();
-//    return <Widget>[];
+    //    return <Widget>[];
   }
 
   @override
@@ -71,8 +76,7 @@ class _MyHomePageState extends State<MyHomePage>
             });
           },
         ),
-        drawer: MyDrawer(),
-        bottomNavigationBar: bottomBar
-    );
+        drawer: drawer,
+        bottomNavigationBar: bottomBar);
   }
 }

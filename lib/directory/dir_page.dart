@@ -1,3 +1,4 @@
+import 'package:fairyland/common/global.dart';
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:fairyland/main/my_main_page.dart';
 import 'package:flutter/material.dart';
@@ -10,12 +11,25 @@ class DirPage extends MainPageBase {
   State<StatefulWidget> createState() {
     return new _DirPageState();
   }
+  
+}
 
+class _DirPageState extends State<DirPage> {
+  
   @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+        body: new Column(
+      children: <Widget>[
+        new Expanded(
+          child: new ExpansionPanelPage(),
+        ),
+      ],
+    ));
+  }
+
   Widget getAppBarTitle() {
-    var s = _DirPageState.currentNovelName;
-    if (s.isEmpty)
-      s = '创建或切换作品';
+    var s = Global.currentBookName ?? '创建或切换作品';
     return Builder(
       builder: (BuildContext context) {
         // 获取context后才能跳转页面
@@ -24,21 +38,21 @@ class DirPage extends MainPageBase {
           onTap: () {
             Navigator.push<String>(context,
                 new MaterialPageRoute(builder: (BuildContext context) {
-              return new Bookshelf();
-            })).then((String result) {
+                  return new Bookshelf();
+                })).then((String result) {
               if (result.isEmpty) {
                 // 按返回键返回是没有传回的参数的
                 return ;
               }
-              
+            
               // 判断有没有切换作品
-              if (_DirPageState.currentNovelName == result) {
+              if (Global.currentBookName == result) {
                 // 没有切换作品
                 return ;
               }
-              
+            
               // 读取作品
-              
+              openBook(result);
             });
           },
         );
@@ -46,7 +60,6 @@ class DirPage extends MainPageBase {
     );
   }
 
-  @override
   List<Widget> getAppBarActions() {
     return <Widget>[
       IconButton(
@@ -94,7 +107,7 @@ class DirPage extends MainPageBase {
             case 'book_new_roll': {
             
             }
-              break;
+            break;
             default: {
             
             }
@@ -104,20 +117,14 @@ class DirPage extends MainPageBase {
       )
     ];
   }
-}
 
-class _DirPageState extends State<DirPage> {
-  static String currentNovelName = "";
-
-  @override
-  Widget build(BuildContext context) {
-    return new Scaffold(
-        body: new Column(
-      children: <Widget>[
-        new Expanded(
-          child: new ExpansionPanelPage(),
-        ),
-      ],
-    ));
+  void openBook(String name) {
+    print('打开Book：' + name);
+    setState(() {
+      Global.currentBookName = name;
+      widget.getAppBarTitle();
+      widget.getAppBarActions();
+    });
+  
   }
 }

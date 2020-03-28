@@ -27,6 +27,9 @@ class Global {
   // 设置
   static SharedPreferences sp;
   static Config config;
+  
+  // 运行中
+  static String currentBookName;
 
   //初始化全局信息，会在APP启动时执行
   static Future init() async {
