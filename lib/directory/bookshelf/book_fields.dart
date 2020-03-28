@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:fairyland/common/global.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,6 +22,7 @@ class _BookFields extends State<BookFields> {
   bool isAutoValidate = false;
   String coverPath = '';
   Image coverImage = Image.asset('assets/covers/default.png');
+  String UBID = '';
   String name = '';
   String type = '';
   String author = '';
@@ -201,6 +204,24 @@ class _BookFields extends State<BookFields> {
     FileUtil.writeText(path + 'settings.ini', config.toString());
 
     return true;
+  }
+  
+  /// 获取 UserBookID（不是BookID）
+  /// 唯一的该用户作品ID
+  /// 已废弃（想不开用小说ID干嘛。。。）
+  String getUBID() {
+    List<String> UBIDs = FileUtil.entityDirNames(Global.novelPath);
+    String randString = 'abcdefghijklmnopqrstuvwxyz';
+    String result = '';
+    do {
+      result = '';
+      int len = 6;
+      while (len-- > 0) {
+        String c = randString[Random().nextInt(randString.length)];
+        result += c;
+      }
+    } while (UBIDs.indexOf(result) != -1);
+    return result;
   }
 
   /// 保存修改的信息
