@@ -48,13 +48,34 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar>
     controller.addListener(() {
       setState(() {
         final pageWidth = MediaQuery.of(context).size.width;
-        int index = (controller.offset + pageWidth / 2) ~/ pageWidth;
-        if (index < 0)
+        int index = (controller.offset + pageWidth / 2) ~/ pageWidth; //
+        if (index < 0) {
           index = 0;
-        else if (index >= items.length) index = items.length - 1;
-        indicatorAlignX = -1 + controller.offset / width;
+        } else if (index >= items.length) {
+          index = items.length - 1;
+        }
+        // controller.offset is pixel of screen width
+        // -1: align left, 0 align center, 1 align right
+        indicatorAlignX = -1 + controller.offset / width * 2 / (items.length-1);
+        /*switch (items.length) {
+          case 2:
+            indicatorAlignX = -1 + controller.offset / width * 2;
+            break;
+          case 3:
+            indicatorAlignX = -1 + controller.offset / width;
+            break;
+          case 4:
+            indicatorAlignX = -1 + controller.offset / width * 2 / 3;
+            break;
+          case 5:
+            indicatorAlignX = -1 + controller.offset / width * 2 / 4;
+            break;
+          default:
+            indicatorAlignX = -1 + controller.offset / width;
+        }*/
 
-        if (aimIndex == selectedIndex) { // 点击按钮跳转进来的
+        if (aimIndex == selectedIndex) {
+          // 点击按钮跳转进来的
           if (index == selectedIndex) {
             aimIndex = -1;
           }

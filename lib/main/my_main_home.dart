@@ -1,4 +1,6 @@
+import 'package:fairyland/assist/assist_page.dart';
 import 'package:fairyland/main/my_drawer.dart';
+import 'package:fairyland/square/square_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fairyland/directory/dir_page.dart';
 import 'package:fairyland/editor/editor_page.dart';
@@ -21,7 +23,6 @@ class _MyHomePageState extends State<MyHomePage>
 	PageController pageController;
 	var currentPage = 0;
 	TitledBottomNavigationBar bottomBar;
-	MyDrawer drawer;
 	
 	@override
 	void initState() {
@@ -37,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage>
 			items: _pages,
 			controller: pageController,
 		);
-		drawer = new MyDrawer();
+		MyDrawer.globalDrawer = new MyDrawer();
 	}
 	
 	@override
@@ -60,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage>
 						});
 					},
 				),
-				drawer: drawer,
+				drawer: MyDrawer.globalDrawer,
 				bottomNavigationBar: bottomBar
 		);
 	}
