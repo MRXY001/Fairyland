@@ -4,6 +4,7 @@ import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:xml/xml.dart';
 
 class DirPage extends StatefulWidget {
@@ -16,6 +17,8 @@ class DirPage extends StatefulWidget {
 }
 
 class _DirPageState extends State<DirPage> {
+  
+  String currentBookName;
   XmlDocument catalogXml; // 整个目录树的XML对象
   List<VCItem> vcList; // 当前分卷下的子分卷/子章节的list
 
@@ -50,6 +53,7 @@ class _DirPageState extends State<DirPage> {
                     }
 
                     // 读取作品
+                    closeCurrentBook();
                     openBook(result);
                   });
                 },
@@ -121,37 +125,58 @@ class _DirPageState extends State<DirPage> {
   }
 
   void openBook(String name) {
-    print('打开Book：' + name);
-    setState(() {
-      Global.currentBookName = name;
-      catalogXml = null;
+    print('openBook:' + name);
+    // 如果目录不存在或者文件有错误，弹出警告
+    String path = Global.novelPath + name;
+    if (FileUtil.isDirNotExists(path) ||
+        FileUtil.isFileNotExist(path + '/catalog.xml')) {
+      Fluttertoast.showToast(
+        msg: '无法读取作品：《' + name + '》所在数据',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+      );
+      return;
+    }
 
-      // 判断作品路径
-      String path = Global.novelPath + name;
-      // 如果目录不存在或者文件有错误，弹出警告
-      if (FileUtil.isDirNotExists(path) ||
-          FileUtil.isFileNotExist(path + '/catalog.xml')) {
-        showDialog(
-          builder: (context) => AlertDialog(
-            title: Text('无法读取作品：《' + name + '》所在数据'),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('确定'),
-                onPressed: () => Navigator.pop(context, false),
-              ),
-            ],
-          ),
-          context: context,
-        );
-        return;
-      }
-      // 读取作品目录
-    });
+    // 读取作品目录
+    Global.currentBookName = currentBookName = name;
+    String str = FileUtil.readText(path + 'catalog.xml');
+    str = '''<?xml version="1.0"?>
+<bookshelf>
+  <book>
+    <title lang="english">Growing a Language</title>
+    <price>29.99</price>
+  </book>
+  <book>
+    <title lang="english">Learning XML</title>
+    <price>39.95</price>
+  </book>
+  <price>132.00</price>
+</bookshelf>''';
+    try {
+      catalogXml = parse(str);
+      var textual = catalogXml.descendants
+          .where((node) => node is XmlText && node.text.trim().isNotEmpty)
+          .join('\n');
+      print(textual);
+    } catch (e) {
+      Fluttertoast.showToast(msg: '解析目录树错误');
+    }
+
+    setState(() {});
+  }
+
+  void closeCurrentBook() {
+    Global.currentBookName = currentBookName = null;
+    catalogXml = null;
+    vcList = null;
   }
 
   Widget getVolumeAndChapterListView() {
     if (catalogXml == null || vcList == null)
       return new Center(
+          // todo: 点击出现俏皮晃头晃脑动画
           child: new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品',
               style: TextStyle(fontSize: 20)));
     return ListView.separated(
