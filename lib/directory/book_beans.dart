@@ -1,18 +1,20 @@
-class ChapterItem {
+/// Volume or Chapter Item Base
+class VCItem {
   String id;
   String name;
-  int indexInRoll; // 在当前分卷的索引
   int indexInBook; // 在全部正文的索引（不包含作品相关）
   String fullName; // 带有章序的章节名
-  DateTime time;   // 修改时间
-  int wordCount;   // 字数
-  String content;  // 内容
+  int indexInList; // 在当前分卷的索引
+  DateTime modifyTime; // 修改时间
 }
 
-class RollItem {
-  String id;
-  String name;
-  int indexInBook;
-  String fullName;
+/// 分卷 Item
+class VolumeItem extends VCItem {
   List<ChapterItem> chapters;
+}
+
+/// 章节 Item
+class ChapterItem extends VCItem {
+  int wordCount; // 章节有效字数
+  String content; // 章节内容
 }
