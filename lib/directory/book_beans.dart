@@ -6,11 +6,12 @@ class VCItem {
   String fullName; // 带有章序的章节名
   int indexInList; // 在当前分卷的索引
   DateTime modifyTime; // 修改时间
+  bool isChapter;
 }
 
 /// 分卷 Item
 class VolumeItem extends VCItem {
-  List<ChapterItem> chapters;
+  List<VCItem> vcList;
 }
 
 /// 章节 Item

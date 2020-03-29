@@ -147,7 +147,8 @@ class _DirPageState extends State<DirPage> {
       var textual = catalogXml.descendants
           .where((node) => node is XmlText && node.text.trim().isNotEmpty)
           .join('\n');
-      print(textual);
+      print(textual); // 所有文字
+      
     } catch (e) {
       Fluttertoast.showToast(msg: '解析目录树错误');
     }

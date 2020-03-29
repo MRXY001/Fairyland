@@ -211,8 +211,8 @@ class _BookFields extends State<BookFields> {
     var dirTree = '''<?xml version="1.0"?>
 <BOOK>
   <VOLUME name="作品相关">
-    <CHAPTER name="世界观设定" cid="world"> </CHAPTER>
-    <CHAPTER name="灵感创意" cid="inspiration"> </CHAPTER>
+    <CHAPTER name="世界观设定">world</CHAPTER>
+    <CHAPTER name="灵感创意">inspiration</CHAPTER>
   </VOLUME>
   <VOLUME name="正文">
   </VOLUME>
