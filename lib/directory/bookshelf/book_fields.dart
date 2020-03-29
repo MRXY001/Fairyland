@@ -64,12 +64,9 @@ class _BookFields extends State<BookFields> {
         children: <Widget>[
           GestureDetector(
             onTap: () => selectCover(),
-            child:new Container(
+            child: new Container(
               constraints: BoxConstraints(
-                  maxWidth: 200,
-                  minWidth: 200,
-                  minHeight: 300,
-                  maxHeight: 300),
+                  maxWidth: 200, minWidth: 200, minHeight: 300, maxHeight: 300),
               child: getCoverImage(coverImage),
             ),
           ),
@@ -210,9 +207,22 @@ class _BookFields extends State<BookFields> {
     config.set('info', 'description', description);
     FileUtil.writeText(path + 'settings.ini', config.toString());
 
+    // 创建默认小说目录
+    var dirTree = """<?xml version="1.0"?>
+      <BOOK>
+        <VOLUME name="作品相关">
+          <CHAPTER name="世界观设定" cid="world"> </CHAPTER>
+          <CHAPTER name="灵感创意" cid="inspiration"> </CHAPTER>
+        </VOLUME>
+        <VOLUME name="正文">
+        </VOLUME>
+      </BOOK>
+      """;
+    FileUtil.writeText(path + 'directory.xml', dirTree);
+
     return true;
   }
-  
+
   /// 获取 UserBookID（不是BookID）
   /// 唯一的该用户作品ID
   /// 已废弃（想不开用小说ID干嘛。。。）

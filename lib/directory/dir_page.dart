@@ -1,8 +1,11 @@
 import 'package:fairyland/common/global.dart';
+import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:fairyland/main/my_drawer.dart';
+import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
-import 'chapter_list.dart';
+import 'package:xml/xml.dart';
+import 'book_dir_tree.dart';
 
 class DirPage extends StatefulWidget {
   DirPage({Key key}) : super(key: key);
@@ -14,7 +17,8 @@ class DirPage extends StatefulWidget {
 }
 
 class _DirPageState extends State<DirPage> {
-  AppBar appbar;
+  XmlDocument dirTreeXml;     // 整个目录树的XML对象
+  List<ChapterItem> chapters; // 当前分卷下的章节
 
   @override
   void initState() {
@@ -121,6 +125,24 @@ class _DirPageState extends State<DirPage> {
     print('打开Book：' + name);
     setState(() {
       Global.currentBookName = name;
+      
+      // 读取作品目录
+      String path = Global.novelPath + name;
+      if (FileUtil.isDirNotExists(path)) {
+        showDialog(
+          builder: (context) => AlertDialog(
+            title: Text('无法读取作品：《' + name + '》所在数据'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('确定'),
+                onPressed: () => Navigator.pop(context, false),
+              ),
+            ],
+          ),
+          context: context,
+        );
+        return ;
+      }
     });
   }
 }

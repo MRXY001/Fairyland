@@ -1,23 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:fairyland/directory/book_beans.dart';
+import 'package:xml/xml.dart';
 
-class BookDirectoryView extends StatefulWidget {
-	BookDirectoryView({Key key}) : super(key: key);
+class BookDirTreeView extends StatefulWidget {
+	BookDirTreeView({Key key}) : super(key: key);
 	
 	@override
-	_BookDirectoryViewState createState() => _BookDirectoryViewState();
+	_BookDirTreeViewState createState() => _BookDirTreeViewState();
 }
 
-class _BookDirectoryViewState extends State<BookDirectoryView> {
+class _BookDirTreeViewState extends State<BookDirTreeView> {
+	
+	XmlDocument dirTreeXml;
+	
+	
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     throw UnimplementedError();
+  }
+  
+  void openBook(String name) {
+  
   }
 	
 }
 
 
+/// 演示控件，可能就采用这个项目了
 class Item {
 	Item({
 		this.expandedValue,

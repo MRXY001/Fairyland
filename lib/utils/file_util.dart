@@ -68,6 +68,10 @@ class FileUtil {
 		return Directory(path).existsSync();
 	}
 	
+	static bool isDirNotExists(String path) {
+		return !isDirExists(path);
+	}
+	
 	// ------------------------------------------------------------
 	
 	static createFile(String path) {
@@ -131,6 +135,10 @@ class FileUtil {
 	
 	static bool isFileExists(String path) {
 		return File(path).existsSync();
+	}
+	
+	static bool isFileNotExist(String path) {
+		return !isFileExists(path);
 	}
 	
 	// -------------------------------------------------------------
