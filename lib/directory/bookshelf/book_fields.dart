@@ -205,20 +205,20 @@ class _BookFields extends State<BookFields> {
     config.set('info', 'author', author);
     config.set('info', 'type', type);
     config.set('info', 'description', description);
-    FileUtil.writeText(path + 'settings.ini', config.toString());
+    FileUtil.writeText(path + 'config.ini', config.toString());
 
     // 创建默认小说目录
     var dirTree = """<?xml version="1.0"?>
-      <BOOK>
-        <VOLUME name="作品相关">
-          <CHAPTER name="世界观设定" cid="world"> </CHAPTER>
-          <CHAPTER name="灵感创意" cid="inspiration"> </CHAPTER>
-        </VOLUME>
-        <VOLUME name="正文">
-        </VOLUME>
-      </BOOK>
-      """;
-    FileUtil.writeText(path + 'directory.xml', dirTree);
+<BOOK>
+  <VOLUME name="作品相关">
+    <CHAPTER name="世界观设定" cid="world"> </CHAPTER>
+    <CHAPTER name="灵感创意" cid="inspiration"> </CHAPTER>
+  </VOLUME>
+  <VOLUME name="正文">
+  </VOLUME>
+</BOOK>
+    """;
+    FileUtil.writeText(path + 'catalog.xml', dirTree);
 
     return true;
   }
