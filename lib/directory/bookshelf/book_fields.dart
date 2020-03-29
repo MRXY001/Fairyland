@@ -208,7 +208,7 @@ class _BookFields extends State<BookFields> {
     FileUtil.writeText(path + 'config.ini', config.toString());
 
     // 创建默认小说目录
-    var dirTree = """<?xml version="1.0"?>
+    var dirTree = '''<?xml version="1.0"?>
 <BOOK>
   <VOLUME name="作品相关">
     <CHAPTER name="世界观设定" cid="world"> </CHAPTER>
@@ -216,8 +216,7 @@ class _BookFields extends State<BookFields> {
   </VOLUME>
   <VOLUME name="正文">
   </VOLUME>
-</BOOK>
-    """;
+</BOOK>''';
     FileUtil.writeText(path + 'catalog.xml', dirTree);
 
     return true;

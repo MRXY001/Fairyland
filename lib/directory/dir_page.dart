@@ -127,9 +127,9 @@ class _DirPageState extends State<DirPage> {
   void openBook(String name) {
     print('openBook:' + name);
     // 如果目录不存在或者文件有错误，弹出警告
-    String path = Global.novelPath + name;
+    String path = Global.novelPath + name + '/';
     if (FileUtil.isDirNotExists(path) ||
-        FileUtil.isFileNotExist(path + '/catalog.xml')) {
+        FileUtil.isFileNotExist(path + 'catalog.xml')) {
       Fluttertoast.showToast(
         msg: '无法读取作品：《' + name + '》所在数据',
         toastLength: Toast.LENGTH_LONG,
@@ -142,18 +142,6 @@ class _DirPageState extends State<DirPage> {
     // 读取作品目录
     Global.currentBookName = currentBookName = name;
     String str = FileUtil.readText(path + 'catalog.xml');
-    str = '''<?xml version="1.0"?>
-<bookshelf>
-  <book>
-    <title lang="english">Growing a Language</title>
-    <price>29.99</price>
-  </book>
-  <book>
-    <title lang="english">Learning XML</title>
-    <price>39.95</price>
-  </book>
-  <price>132.00</price>
-</bookshelf>''';
     try {
       catalogXml = parse(str);
       var textual = catalogXml.descendants
