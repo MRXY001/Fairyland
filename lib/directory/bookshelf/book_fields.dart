@@ -180,13 +180,13 @@ class _BookFields extends State<BookFields> {
     if (name.isEmpty) {
       return false;
     }
-    if (FileUtil.isDirExists('novels/' + name)) {
+    if (FileUtil.isDirExists(Global.getCBPath() + name)) {
       return false;
     }
 
     // 创建默认的小说内容
-    String path = Global.novelPath + name + "/";
-    FileUtil.createDir(Global.novelPath);
+    String path = Global.booksPath;
+    FileUtil.createDir(Global.booksPath);
     FileUtil.createDir(path);
     FileUtil.createDir(path + "chapters");
 
@@ -210,11 +210,11 @@ class _BookFields extends State<BookFields> {
     // 创建默认小说目录
     var dirTree = '''<?xml version="1.0"?>
 <BOOK>
-  <VOLUME name="作品相关">
-    <CHAPTER name="世界观设定">world</CHAPTER>
-    <CHAPTER name="灵感创意">inspiration</CHAPTER>
+  <VOLUME name="作品相关" vid="about">
+    <CHAPTER name="世界观设定" cid="world"></CHAPTER>
+    <CHAPTER name="灵感创意" cid="inspiration"></CHAPTER>
   </VOLUME>
-  <VOLUME name="正文">
+  <VOLUME name="正文" vid="body">
   </VOLUME>
 </BOOK>''';
     FileUtil.writeText(path + 'catalog.xml', dirTree);
@@ -226,7 +226,7 @@ class _BookFields extends State<BookFields> {
   /// 唯一的该用户作品ID
   /// 已废弃（想不开用小说ID干嘛。。。）
   String getUBID() {
-    List<String> UBIDs = FileUtil.entityDirNames(Global.novelPath);
+    List<String> UBIDs = FileUtil.entityDirNames(Global.booksPath);
     String randString = 'abcdefghijklmnopqrstuvwxyz';
     String result = '';
     do {

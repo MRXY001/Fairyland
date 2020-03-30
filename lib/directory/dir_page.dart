@@ -19,9 +19,10 @@ class DirPage extends StatefulWidget {
 class _DirPageState extends State<DirPage> {
   String currentBookName;
   xml.XmlDocument catalogXml; // 整个目录树的XML对象
-  List<VCItem> catalogVCs; // 整个目录下的分卷/章节的list
+  xml.XmlElement currentXml; // 当前所在的element，用来操作增删改查等
+  List<VCItem> catalogTree; // 整个目录下的分卷/章节的list
   List<xml.XmlElement> currentRoute = []; // 当前列表所在路径，一开始length =0
-  List<VCItem> currentVCs; // 当前分卷下的子分卷/子章节的list
+  List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
 
   @override
   void initState() {
@@ -65,7 +66,7 @@ class _DirPageState extends State<DirPage> {
             IconButton(
               icon: Icon(Icons.add),
               tooltip: '添加新章',
-              onPressed: () {},
+              onPressed: () => actionAppendChapter(),
             ),
             PopupMenuButton<String>(
               itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
@@ -125,10 +126,34 @@ class _DirPageState extends State<DirPage> {
     );
   }
 
+  /// 获取 ListView
+  Widget getVolumeAndChapterListView() {
+    if (catalogXml == null || currentList == null) {
+      return new Center(
+        // todo: 点击出现俏皮晃头晃脑动画
+          child: new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品',
+              style: TextStyle(fontSize: 20)));
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.all(8),
+      itemCount: currentList.length,
+      itemBuilder: (BuildContext context, int index) {
+        return Container(
+          child: new Text(currentList[index].name),
+        );
+      },
+      separatorBuilder: (BuildContext context, int index) {
+        return new Divider();
+      },
+    );
+  }
+
+  /// 从头打开作品
+  /// 如果已经有打开的了，需要先调用 closeCurrentBook()
   void openBook(String name) {
-    print('openBook:' + name);
+    print('打开作品:' + name);
     // 如果目录不存在或者文件有错误，弹出警告
-    String path = Global.novelPath + name + '/';
+    String path = Global.booksPath + name + '/';
     if (FileUtil.isDirNotExists(path) ||
         FileUtil.isFileNotExist(path + 'catalog.xml')) {
       Fluttertoast.showToast(
@@ -146,10 +171,10 @@ class _DirPageState extends State<DirPage> {
     String str = FileUtil.readText(path + 'catalog.xml');
     try {
       catalogXml = xml.parse(str);
-      xml.XmlElement bookElement = catalogXml.findElements('BOOK').first;
-      catalogVCs = getVCItemsFromXml(
-          bookElement.children.whereType<xml.XmlElement>().toList());
-      currentVCs = catalogVCs;
+      currentXml = catalogXml.findElements('BOOK').first;
+      catalogTree = getVCItemsFromXml(
+          currentXml.children.whereType<xml.XmlElement>().toList());
+      currentList = catalogTree;
     } catch (e) {
       Fluttertoast.showToast(msg: '解析目录树错误');
     }
@@ -157,6 +182,7 @@ class _DirPageState extends State<DirPage> {
     setState(() {});
   }
 
+  /// 递归获取分卷/章节列表
   List<VCItem> getVCItemsFromXml(List<xml.XmlElement> elements) {
     List<VCItem> vcItems = [];
     int indexInList = 1;
@@ -168,12 +194,30 @@ class _DirPageState extends State<DirPage> {
       if (element.name.toString() == 'VOLUME') {
         // 读取分卷信息，继续遍历
         item = new VolumeItem();
+        item.isChapter = false;
         (item as VolumeItem).vcList = getVCItemsFromXml(
             element.children.whereType<xml.XmlElement>().toList());
+
+        // 读取分卷属性
+        element.attributes.forEach((xml.XmlAttribute attr) {
+          if (attr.name.toString() == "vid") {
+            (item as VolumeItem).vid = attr.value.toString();
+          }
+        });
       } else if (element.name.toString() == 'CHAPTER') {
         // 读取章节信息
         item = new ChapterItem();
+        item.isChapter = true;
         (item as ChapterItem).cid = element.text;
+
+        // 读取章节属性
+        element.attributes.forEach((xml.XmlAttribute attr) {
+          if (attr.name.toString() == "cid") {
+            (item as ChapterItem).cid = attr.value.toString();
+          } else if (attr.name.toString() == "wc") {
+            (item as ChapterItem).wordCount = int.parse(attr.value.toString());
+          }
+        });
       } else {
         // 出现了奇怪的标签
         return;
@@ -194,31 +238,37 @@ class _DirPageState extends State<DirPage> {
     return vcItems;
   }
 
+  /// 关闭当前一打开的作品
+  /// 并且保存一些状态变量，以便下次打开时恢复
   void closeCurrentBook() {
     Global.currentBookName = currentBookName = null;
     catalogXml = null;
+    currentXml = null;
     currentRoute = null;
-    currentVCs = null;
+    currentList = null;
   }
-
-  Widget getVolumeAndChapterListView() {
-    if (catalogXml == null || currentVCs == null) {
-      return new Center(
-        // todo: 点击出现俏皮晃头晃脑动画
-          child: new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品',
-              style: TextStyle(fontSize: 20)));
+  
+  /// 添加新的分卷
+  void actionAppendVolume() {
+  
+  }
+  
+  /// 添加新的章节
+  void actionAppendChapter() {
+    print('> 添加新章');
+    if (currentBookName==null || currentBookName.isEmpty) {
+      Fluttertoast.showToast(msg: '请点击左上方标题创建一部作品');
+      return ;
     }
-    return ListView.separated(
-      padding: const EdgeInsets.all(8),
-      itemCount: currentVCs.length,
-      itemBuilder: (BuildContext context, int index) {
-        return Container(
-          child: new Text(currentVCs[index].name),
-        );
-      },
-      separatorBuilder: (BuildContext context, int index) {
-        return new Divider();
-      },
-    );
+    
+    // 添加新章
+    
+    
+    print(currentXml.toString());
+  }
+  
+  /// 保存目录为XML
+  void saveCatalog() {
+  
   }
 }

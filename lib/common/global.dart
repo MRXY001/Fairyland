@@ -16,7 +16,13 @@ class Global {
   // 路径相关
   static String storagePath; // 外部存储目录
   static String dataPath; // 应用数据路径
-  static String novelPath; // 小说路径
+  static String booksPath; // 小说路径
+
+  static String currentBookName;
+  static String bookPath(String name) => booksPath + name + '/';
+  static String getCBPath() => dataPath + 'books/' + currentBookName + '/';
+  static String getCBCatalogPath() => getCBPath() + '/catalog.xml';
+  static String getCBChaptersPath() => getCBPath() + '/chapters/';
 
   // 可选的主题列表
   static List<MaterialColor> get themes => _themes;
@@ -29,7 +35,7 @@ class Global {
   static Config config;
   
   // 运行中
-  static String currentBookName;
+  
 
   //初始化全局信息，会在APP启动时执行
   static Future init() async {
@@ -38,6 +44,6 @@ class Global {
 
     storagePath = (await getExternalStorageDirectory()).path;
     dataPath = (await getApplicationDocumentsDirectory()).path + '/data/';
-    novelPath = dataPath + 'novels/';
+    booksPath = dataPath + 'books/';
   }
 }
