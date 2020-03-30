@@ -19,10 +19,16 @@ class Global {
   static String booksPath; // 小说路径
 
   static String currentBookName;
+
   static String bookPath(String name) => booksPath + name + '/';
-  static String bookCatalogPath(String name) => booksPath + name + '/';
+
+  static String bookCatalogPath(String name) =>
+      booksPath + name + '/catalog.json';
+
   static String cBookPath() => dataPath + 'books/' + currentBookName + '/';
+
   static String cBookCatalogPath() => cBookPath() + '/catalog.json';
+
   static String cBookChaptersPath() => cBookPath() + '/chapters/';
 
   // 可选的主题列表
@@ -34,9 +40,8 @@ class Global {
   // 设置
   static SharedPreferences sp;
   static Config config;
-  
+
   // 运行中
-  
 
   //初始化全局信息，会在APP启动时执行
   static Future init() async {

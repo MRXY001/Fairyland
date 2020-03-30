@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fairyland/common/global.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
@@ -18,7 +20,7 @@ class DirPage extends StatefulWidget {
 class _DirPageState extends State<DirPage> {
   String currentBookName;
   List<VCItem> catalogTree; // 整个目录下的分卷/章节的list
-  List<String> currentRoute = []; // 当前列表所在路径，一开始length =0
+  List<String> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
 
   @override
@@ -150,9 +152,9 @@ class _DirPageState extends State<DirPage> {
   void openBook(String name) {
     print('打开作品:' + name);
     // 如果目录不存在或者文件有错误，弹出警告
-    String path = Global.booksPath + name + '/';
+    String path = Global.bookPath(name);
     if (FileUtil.isDirNotExists(path) ||
-        FileUtil.isFileNotExist(path + 'catalog.xml')) {
+        FileUtil.isFileNotExist(Global.bookCatalogPath(name))) {
       Fluttertoast.showToast(
         msg: '无法读取作品：《' + name + '》所在数据',
         toastLength: Toast.LENGTH_LONG,
@@ -165,13 +167,19 @@ class _DirPageState extends State<DirPage> {
     // 读取作品目录
     Global.currentBookName = currentBookName = name;
     currentRoute = [];
+    catalogTree = [];
     String catalog = FileUtil.readText(Global.cBookCatalogPath());
     try {
       // 解析JSON
-      
-      currentList = catalogTree;
+	    Map<String, dynamic> map = json.decode(catalog);
+      List list = map['list'];
+      list.forEach((element) {
+      	catalogTree.add(VCItem.fromJson(element));
+      });
     } catch (e) {
-      Fluttertoast.showToast(msg: '解析目录树错误');
+	    Fluttertoast.showToast(msg: '解析目录树错误');
+    } finally {
+	    currentList = catalogTree;
     }
 
     setState(() {});

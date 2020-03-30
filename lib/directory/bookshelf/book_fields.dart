@@ -177,15 +177,12 @@ class _BookFields extends State<BookFields> {
 
   /// 创建新的小说
   bool create() {
-    if (name.isEmpty) {
-      return false;
-    }
-    if (FileUtil.isDirExists(Global.cBookPath() + name)) {
+    if (name.isEmpty || FileUtil.isDirExists(Global.bookPath(name))) {
       return false;
     }
 
     // 创建默认的小说内容
-    String path = Global.booksPath;
+    String path = Global.bookPath(name);
     FileUtil.createDir(Global.booksPath);
     FileUtil.createDir(path);
     FileUtil.createDir(path + "chapters");
@@ -208,18 +205,30 @@ class _BookFields extends State<BookFields> {
     FileUtil.writeText(path + 'config.ini', config.toString());
 
     // 创建默认小说目录
-    /*var dirTree = '''<?xml version="1.0"?>
-<BOOK>
-  <VOLUME name="作品相关" vid="about">
-    <CHAPTER name="世界观设定" cid="world"></CHAPTER>
-    <CHAPTER name="灵感创意" cid="inspiration"></CHAPTER>
-  </VOLUME>
-  <VOLUME name="正文" vid="body">
-  </VOLUME>
-</BOOK>''';
-    FileUtil.writeText(Global.bookCatalogPath(name), dirTree);*/
-    
     var dirTree = '''
+{
+  "id": "book",
+  "name": "$name",
+  "type": "0",
+  "list": [
+    {
+      "id": "about",
+      "name": "作品相关",
+      "list": [
+        {
+          "id": "world",
+          "name": "世界观设定",
+          "type": "2"
+        }
+      ]
+    },
+    {
+      "id": "body",
+      "name": "正文",
+      "list": []
+    }
+  ]
+}
 ''';
     FileUtil.writeText(Global.bookCatalogPath(name), dirTree);
 
