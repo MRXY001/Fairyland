@@ -20,6 +20,7 @@ class _DirPageState extends State<DirPage> {
   String currentBookName;
   xml.XmlDocument catalogXml; // 整个目录树的XML对象
   List<VCItem> catalogVCs; // 整个目录下的分卷/章节的list
+  List<xml.XmlElement> currentRoute = []; // 当前列表所在路径，一开始length =0
   List<VCItem> currentVCs; // 当前分卷下的子分卷/子章节的list
 
   @override
@@ -141,18 +142,14 @@ class _DirPageState extends State<DirPage> {
 
     // 读取作品目录
     Global.currentBookName = currentBookName = name;
+    currentRoute = [];
     String str = FileUtil.readText(path + 'catalog.xml');
     try {
       catalogXml = xml.parse(str);
-      /*var textual = catalogXml.descendants
-          .where((node) => node is xml.XmlText && node.text.trim().isNotEmpty)
-          .join('\n');
-      print(textual); // 所有文字*/
-
       xml.XmlElement bookElement = catalogXml.findElements('BOOK').first;
       catalogVCs = getVCItemsFromXml(
           bookElement.children.whereType<xml.XmlElement>().toList());
-//      print(bookElement.children);
+      currentVCs = catalogVCs;
     } catch (e) {
       Fluttertoast.showToast(msg: '解析目录树错误');
     }
@@ -171,8 +168,8 @@ class _DirPageState extends State<DirPage> {
       if (element.name.toString() == 'VOLUME') {
         // 读取分卷信息，继续遍历
         item = new VolumeItem();
-        //        (item as VolumeItem).vcList =
-        //            getVCItemsFromXml(element.children.whereType<xml.XmlElement>());
+        (item as VolumeItem).vcList = getVCItemsFromXml(
+            element.children.whereType<xml.XmlElement>().toList());
       } else if (element.name.toString() == 'CHAPTER') {
         // 读取章节信息
         item = new ChapterItem();
@@ -191,7 +188,6 @@ class _DirPageState extends State<DirPage> {
 
       // 遍历所有共有列表属性
       item.indexInList = indexInList++;
-      print('加载：' + item.name);
 
       vcItems.add(item);
     });
@@ -201,15 +197,17 @@ class _DirPageState extends State<DirPage> {
   void closeCurrentBook() {
     Global.currentBookName = currentBookName = null;
     catalogXml = null;
+    currentRoute = null;
     currentVCs = null;
   }
 
   Widget getVolumeAndChapterListView() {
-    if (catalogXml == null || currentVCs == null)
+    if (catalogXml == null || currentVCs == null) {
       return new Center(
-          // todo: 点击出现俏皮晃头晃脑动画
+        // todo: 点击出现俏皮晃头晃脑动画
           child: new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品',
               style: TextStyle(fontSize: 20)));
+    }
     return ListView.separated(
       padding: const EdgeInsets.all(8),
       itemCount: currentVCs.length,

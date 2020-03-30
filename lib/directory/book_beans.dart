@@ -10,6 +10,7 @@ class VCItem {
 
 /// 分卷 Item
 class VolumeItem extends VCItem {
+  String vid;
   List<VCItem> vcList;
 }
 
