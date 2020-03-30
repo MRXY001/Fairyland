@@ -76,54 +76,64 @@ class _BookshelfState extends State<Bookshelf> {
             padding: const EdgeInsets.all(8),
             itemCount: books.length,
             itemBuilder: (BuildContext context, int index) {
-              return GestureDetector(
-                onTap: () => openBook(books[index].name),
-                child: Row(
-                  children: <Widget>[
-                    new Container(
-                      constraints: BoxConstraints(
-                          maxWidth: 100,
-                          minWidth: 100,
-                          minHeight: 150,
-                          maxHeight: 150),
-                      child: books[index].cover,
+              return Card(
+                  clipBehavior: Clip.antiAlias,
+                  color: Theme.of(context).cardColor,
+                  elevation: 16,
+                  margin: EdgeInsets.all(16),
+                  semanticContainer: true,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: InkWell(
+                    onTap: () => openBook(books[index].name),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Row(
+                        children: <Widget>[
+                          new Container(
+                            constraints: BoxConstraints(
+                                maxWidth: 100,
+                                minWidth: 100,
+                                minHeight: 150,
+                                maxHeight: 150),
+                            child: books[index].cover,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              new Text(books[index].name,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 25)),
+                              new Text('作者：您'),
+                              new Text('字数：待统计'),
+                              new Text('最近：待统计'),
+                              new Text('简介：待输入'),
+                            ],
+                          )
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        new Text(books[index].name,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 25
-                          )),
-                        new Text('作者：您'),
-                        new Text('字数：待统计'),
-                        new Text('最近：待统计'),
-                        new Text('简介：待输入'),
-                      ],
-                    )
-                  ],
-                ),
-              );
+                  ));
             });
       }),
     );
   }
-  
+
   void gotoCreate() {
     Navigator.push<String>(context,
         new MaterialPageRoute(builder: (BuildContext context) {
-          return new BookFields();
-        })).then((String result) {
+      return new BookFields();
+    })).then((String result) {
       if (result.isEmpty) {
         return;
       }
-    
+
       // 刷新列表
       setState(() {});
     });
   }
-  
+
   void openBook(String name) {
     Navigator.pop(context, name);
   }

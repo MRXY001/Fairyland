@@ -129,7 +129,7 @@ class _DirPageState extends State<DirPage> {
   Widget getVCListView() {
     if (currentBookName == null || currentBookName.isEmpty) {
       return new Center(
-        // todo: 点击出现俏皮晃头晃脑动画
+          // todo: 点击出现俏皮晃头晃脑动画
           child: new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品',
               style: TextStyle(fontSize: 20)));
     }
@@ -137,9 +137,11 @@ class _DirPageState extends State<DirPage> {
       padding: const EdgeInsets.all(8),
       itemCount: currentList.length,
       itemBuilder: (BuildContext context, int index) {
-        return Container(
-          child: new Text(currentList[index].name),
-        );
+        return InkWell(
+            onTap: () {},
+            child: Container(
+              child: new Text(currentList[index].name),
+            ));
       },
       separatorBuilder: (BuildContext context, int index) {
         return new Divider();
@@ -171,21 +173,19 @@ class _DirPageState extends State<DirPage> {
     String catalog = FileUtil.readText(Global.cBookCatalogPath());
     try {
       // 解析JSON
-	    Map<String, dynamic> map = json.decode(catalog);
+      Map<String, dynamic> map = json.decode(catalog);
       List list = map['list'];
       list.forEach((element) {
-      	catalogTree.add(VCItem.fromJson(element));
+        catalogTree.add(VCItem.fromJson(element));
       });
     } catch (e) {
-	    Fluttertoast.showToast(msg: '解析目录树错误');
+      Fluttertoast.showToast(msg: '解析目录树错误');
     } finally {
-	    currentList = catalogTree;
+      currentList = catalogTree;
     }
 
     setState(() {});
   }
-  
-  
 
   /// 递归获取分卷/章节列表
 
@@ -196,26 +196,21 @@ class _DirPageState extends State<DirPage> {
     currentRoute = null;
     currentList = null;
   }
-  
+
   /// 添加新的分卷
-  void actionAppendVolume() {
-  
-  }
-  
+  void actionAppendVolume() {}
+
   /// 添加新的章节
   void actionAppendChapter() {
     print('> 添加新章');
-    if (currentBookName==null || currentBookName.isEmpty) {
+    if (currentBookName == null || currentBookName.isEmpty) {
       Fluttertoast.showToast(msg: '请点击左上方标题创建一部作品');
-      return ;
+      return;
     }
-    
+
     // 添加新章
-    
   }
-  
+
   /// 保存目录结构
-  void saveCatalog() {
-  
-  }
+  void saveCatalog() {}
 }

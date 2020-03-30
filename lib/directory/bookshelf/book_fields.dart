@@ -38,7 +38,7 @@ class _BookFields extends State<BookFields> {
           children: <Widget>[
             Card(
               clipBehavior: Clip.antiAlias,
-              color: Theme.of(context).backgroundColor,
+              color: Theme.of(context).cardColor,
               elevation: 16,
               margin: EdgeInsets.all(16),
               semanticContainer: true,
@@ -62,7 +62,7 @@ class _BookFields extends State<BookFields> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          GestureDetector(
+          InkWell(
             onTap: () => selectCover(),
             child: new Container(
               constraints: BoxConstraints(
