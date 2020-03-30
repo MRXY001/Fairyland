@@ -5,7 +5,7 @@ import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:xml/xml.dart';
+import 'package:xml/xml.dart' as xml;
 
 class DirPage extends StatefulWidget {
   DirPage({Key key}) : super(key: key);
@@ -17,10 +17,10 @@ class DirPage extends StatefulWidget {
 }
 
 class _DirPageState extends State<DirPage> {
-  
   String currentBookName;
-  XmlDocument catalogXml; // 整个目录树的XML对象
-  List<VCItem> vcList; // 当前分卷下的子分卷/子章节的list
+  xml.XmlDocument catalogXml; // 整个目录树的XML对象
+  List<VCItem> catalogVCs; // 整个目录下的分卷/章节的list
+  List<VCItem> currentVCs; // 当前分卷下的子分卷/子章节的list
 
   @override
   void initState() {
@@ -143,12 +143,16 @@ class _DirPageState extends State<DirPage> {
     Global.currentBookName = currentBookName = name;
     String str = FileUtil.readText(path + 'catalog.xml');
     try {
-      catalogXml = parse(str);
-      var textual = catalogXml.descendants
-          .where((node) => node is XmlText && node.text.trim().isNotEmpty)
+      catalogXml = xml.parse(str);
+      /*var textual = catalogXml.descendants
+          .where((node) => node is xml.XmlText && node.text.trim().isNotEmpty)
           .join('\n');
-      print(textual); // 所有文字
-      
+      print(textual); // 所有文字*/
+
+      xml.XmlElement bookElement = catalogXml.findElements('BOOK').first;
+      catalogVCs = getVCItemsFromXml(
+          bookElement.children.whereType<xml.XmlElement>().toList());
+//      print(bookElement.children);
     } catch (e) {
       Fluttertoast.showToast(msg: '解析目录树错误');
     }
@@ -156,24 +160,62 @@ class _DirPageState extends State<DirPage> {
     setState(() {});
   }
 
+  List<VCItem> getVCItemsFromXml(List<xml.XmlElement> elements) {
+    List<VCItem> vcItems = [];
+    int indexInList = 1;
+    elements.forEach((element) {
+      if (element.toString().trim().isEmpty) return;
+      VCItem item;
+
+      // 遍历单独数据
+      if (element.name.toString() == 'VOLUME') {
+        // 读取分卷信息，继续遍历
+        item = new VolumeItem();
+        //        (item as VolumeItem).vcList =
+        //            getVCItemsFromXml(element.children.whereType<xml.XmlElement>());
+      } else if (element.name.toString() == 'CHAPTER') {
+        // 读取章节信息
+        item = new ChapterItem();
+        (item as ChapterItem).cid = element.text;
+      } else {
+        // 出现了奇怪的标签
+        return;
+      }
+
+      // 遍历所有共有固定属性
+      element.attributes.forEach((xml.XmlAttribute attr) {
+        if (attr.name.toString() == "name") {
+          item.name = attr.value.toString();
+        }
+      });
+
+      // 遍历所有共有列表属性
+      item.indexInList = indexInList++;
+      print('加载：' + item.name);
+
+      vcItems.add(item);
+    });
+    return vcItems;
+  }
+
   void closeCurrentBook() {
     Global.currentBookName = currentBookName = null;
     catalogXml = null;
-    vcList = null;
+    currentVCs = null;
   }
 
   Widget getVolumeAndChapterListView() {
-    if (catalogXml == null || vcList == null)
+    if (catalogXml == null || currentVCs == null)
       return new Center(
           // todo: 点击出现俏皮晃头晃脑动画
           child: new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品',
               style: TextStyle(fontSize: 20)));
     return ListView.separated(
       padding: const EdgeInsets.all(8),
-      itemCount: vcList.length,
+      itemCount: currentVCs.length,
       itemBuilder: (BuildContext context, int index) {
         return Container(
-          child: new Text(vcList[index].name),
+          child: new Text(currentVCs[index].name),
         );
       },
       separatorBuilder: (BuildContext context, int index) {
