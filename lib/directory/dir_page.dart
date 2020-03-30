@@ -5,7 +5,6 @@ import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:xml/xml.dart' as xml;
 
 class DirPage extends StatefulWidget {
   DirPage({Key key}) : super(key: key);
@@ -18,10 +17,8 @@ class DirPage extends StatefulWidget {
 
 class _DirPageState extends State<DirPage> {
   String currentBookName;
-  xml.XmlDocument catalogXml; // 整个目录树的XML对象
-  xml.XmlElement currentXml; // 当前所在的element，用来操作增删改查等
   List<VCItem> catalogTree; // 整个目录下的分卷/章节的list
-  List<xml.XmlElement> currentRoute = []; // 当前列表所在路径，一开始length =0
+  List<String> currentRoute = []; // 当前列表所在路径，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
 
   @override
@@ -118,7 +115,7 @@ class _DirPageState extends State<DirPage> {
       body: new Column(
         children: <Widget>[
           new Expanded(
-            child: getVolumeAndChapterListView(),
+            child: getVCListView(),
           ),
         ],
       ),
@@ -127,8 +124,8 @@ class _DirPageState extends State<DirPage> {
   }
 
   /// 获取 ListView
-  Widget getVolumeAndChapterListView() {
-    if (catalogXml == null || currentList == null) {
+  Widget getVCListView() {
+    if (currentBookName == null || currentBookName.isEmpty) {
       return new Center(
         // todo: 点击出现俏皮晃头晃脑动画
           child: new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品',
@@ -168,12 +165,10 @@ class _DirPageState extends State<DirPage> {
     // 读取作品目录
     Global.currentBookName = currentBookName = name;
     currentRoute = [];
-    String str = FileUtil.readText(path + 'catalog.xml');
+    String catalog = FileUtil.readText(Global.cBookCatalogPath());
     try {
-      catalogXml = xml.parse(str);
-      currentXml = catalogXml.findElements('BOOK').first;
-      catalogTree = getVCItemsFromXml(
-          currentXml.children.whereType<xml.XmlElement>().toList());
+      // 解析JSON
+      
       currentList = catalogTree;
     } catch (e) {
       Fluttertoast.showToast(msg: '解析目录树错误');
@@ -181,69 +176,15 @@ class _DirPageState extends State<DirPage> {
 
     setState(() {});
   }
+  
+  
 
   /// 递归获取分卷/章节列表
-  List<VCItem> getVCItemsFromXml(List<xml.XmlElement> elements) {
-    List<VCItem> vcItems = [];
-    int indexInList = 1;
-    elements.forEach((element) {
-      if (element.toString().trim().isEmpty) return;
-      VCItem item;
-
-      // 遍历单独数据
-      if (element.name.toString() == 'VOLUME') {
-        // 读取分卷信息，继续遍历
-        item = new VolumeItem();
-        item.isChapter = false;
-        (item as VolumeItem).vcList = getVCItemsFromXml(
-            element.children.whereType<xml.XmlElement>().toList());
-
-        // 读取分卷属性
-        element.attributes.forEach((xml.XmlAttribute attr) {
-          if (attr.name.toString() == "vid") {
-            (item as VolumeItem).vid = attr.value.toString();
-          }
-        });
-      } else if (element.name.toString() == 'CHAPTER') {
-        // 读取章节信息
-        item = new ChapterItem();
-        item.isChapter = true;
-        (item as ChapterItem).cid = element.text;
-
-        // 读取章节属性
-        element.attributes.forEach((xml.XmlAttribute attr) {
-          if (attr.name.toString() == "cid") {
-            (item as ChapterItem).cid = attr.value.toString();
-          } else if (attr.name.toString() == "wc") {
-            (item as ChapterItem).wordCount = int.parse(attr.value.toString());
-          }
-        });
-      } else {
-        // 出现了奇怪的标签
-        return;
-      }
-
-      // 遍历所有共有固定属性
-      element.attributes.forEach((xml.XmlAttribute attr) {
-        if (attr.name.toString() == "name") {
-          item.name = attr.value.toString();
-        }
-      });
-
-      // 遍历所有共有列表属性
-      item.indexInList = indexInList++;
-
-      vcItems.add(item);
-    });
-    return vcItems;
-  }
 
   /// 关闭当前一打开的作品
   /// 并且保存一些状态变量，以便下次打开时恢复
   void closeCurrentBook() {
     Global.currentBookName = currentBookName = null;
-    catalogXml = null;
-    currentXml = null;
     currentRoute = null;
     currentList = null;
   }
@@ -263,11 +204,9 @@ class _DirPageState extends State<DirPage> {
     
     // 添加新章
     
-    
-    print(currentXml.toString());
   }
   
-  /// 保存目录为XML
+  /// 保存目录结构
   void saveCatalog() {
   
   }

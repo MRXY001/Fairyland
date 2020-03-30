@@ -180,7 +180,7 @@ class _BookFields extends State<BookFields> {
     if (name.isEmpty) {
       return false;
     }
-    if (FileUtil.isDirExists(Global.getCBPath() + name)) {
+    if (FileUtil.isDirExists(Global.cBookPath() + name)) {
       return false;
     }
 
@@ -208,7 +208,7 @@ class _BookFields extends State<BookFields> {
     FileUtil.writeText(path + 'config.ini', config.toString());
 
     // 创建默认小说目录
-    var dirTree = '''<?xml version="1.0"?>
+    /*var dirTree = '''<?xml version="1.0"?>
 <BOOK>
   <VOLUME name="作品相关" vid="about">
     <CHAPTER name="世界观设定" cid="world"></CHAPTER>
@@ -217,7 +217,11 @@ class _BookFields extends State<BookFields> {
   <VOLUME name="正文" vid="body">
   </VOLUME>
 </BOOK>''';
-    FileUtil.writeText(path + 'catalog.xml', dirTree);
+    FileUtil.writeText(Global.bookCatalogPath(name), dirTree);*/
+    
+    var dirTree = '''
+''';
+    FileUtil.writeText(Global.bookCatalogPath(name), dirTree);
 
     return true;
   }

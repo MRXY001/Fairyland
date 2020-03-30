@@ -20,9 +20,10 @@ class Global {
 
   static String currentBookName;
   static String bookPath(String name) => booksPath + name + '/';
-  static String getCBPath() => dataPath + 'books/' + currentBookName + '/';
-  static String getCBCatalogPath() => getCBPath() + '/catalog.xml';
-  static String getCBChaptersPath() => getCBPath() + '/chapters/';
+  static String bookCatalogPath(String name) => booksPath + name + '/';
+  static String cBookPath() => dataPath + 'books/' + currentBookName + '/';
+  static String cBookCatalogPath() => cBookPath() + '/catalog.json';
+  static String cBookChaptersPath() => cBookPath() + '/chapters/';
 
   // 可选的主题列表
   static List<MaterialColor> get themes => _themes;
