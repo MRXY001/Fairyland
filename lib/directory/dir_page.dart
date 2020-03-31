@@ -155,24 +155,37 @@ class _DirPageState extends State<DirPage> {
     Image image = Image.asset(item.isVolume()
         ? 'assets/icons/volume.png'
         : 'assets/icons/chapter.png');
-    return new Row(
-      children: <Widget>[
-        new Container(
-          child: image,
-          constraints: BoxConstraints(
-              maxWidth: 32, minWidth: 32, minHeight: 32, maxHeight: 32),
-        ),
-        new Padding(
-          padding: EdgeInsets.fromLTRB(16, 0, 0, 0),
-          child: new Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              new Text(name, style: TextStyle(fontSize: 16)), // 标题
-              new Text(item.wordCount.toString() + ' 字')
-            ],
-          ),
-        )
-      ],
+    
+    // 显示修改时间
+    String timeDisplayed = '';
+    if (item.modifyTime ?? 0 > 0) {
+      int timestamp = DateTime.now().millisecondsSinceEpoch;
+      int delta = timestamp - item.modifyTime;
+      if (delta < 60 * 1000) { // 一分钟以内
+        timeDisplayed = '刚刚';
+      } else if (delta < 60 * 60 * 1000) { // 一小时以内修改的
+        timeDisplayed = (delta ~/ 60000).toString() + ' 分钟前';
+      } else if (delta < 24 * 60 * 60 * 1000) { // 一天以内
+        timeDisplayed = (delta ~/ 3600000).toString() + ' 小时前';
+      } else {
+        DateTime time = DateTime.fromMillisecondsSinceEpoch(item.modifyTime);
+        timeDisplayed = time.toString();
+      }
+    }
+    return new ListTile(
+      leading: new Container(
+        child: image,
+        constraints: BoxConstraints(
+            maxWidth: 32, minWidth: 32, minHeight: 32, maxHeight: 32),
+      ),
+      title: new Text(name, style: TextStyle(fontSize: 16)),
+      subtitle: timeDisplayed.isNotEmpty ? new Text(timeDisplayed) : null,
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new Text(item.wordCount.toString() + ' 字')
+        ],
+      ),
     );
   }
 
