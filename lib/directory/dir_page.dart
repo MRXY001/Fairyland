@@ -1,11 +1,13 @@
 import 'dart:convert';
 
 import 'package:fairyland/common/global.dart';
+import 'package:fairyland/dialogs/my_template.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_beautiful_popup/main.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -27,21 +29,21 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   void initState() {
     super.initState();
   }
-  
+
   @override
   void dependOnInheritedWidgetOfExactType() {
     didChangeDependencies();
   }
 
   @override
-  bool get wantKeepAlive => true;//要点2
+  bool get wantKeepAlive => true; //要点2
 
   @override
   Widget build(BuildContext context) {
     // 通过重载 AutomaticKeepAliveClientMixin 的
     // wantKeepAlive 成员，使页面在切换 tab 时不重绘
     super.build(context);
-    
+
     return new Scaffold(
       appBar: new AppBar(
           title: Builder(
@@ -149,22 +151,25 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         maxHeight: 30,
       ),
       child: new Padding(
-        padding: EdgeInsets.only(left: 16, top: 4, bottom: 4),
-        child: new ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: currentRoute.length,
-          itemBuilder: (context, index) {
-            return InkWell(
-              onTap: () {
-                enterVolume(currentRoute[index]);
-              },
-              child: new Text(currentRoute[index].name),
-            );
-          },
-          separatorBuilder: (context, index) {
-            return new Text('>', style: TextStyle(color: new Color(0x88888888)),);
-          },
-      )),
+          padding: EdgeInsets.only(left: 16, top: 4, bottom: 4),
+          child: new ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: currentRoute.length,
+            itemBuilder: (context, index) {
+              return InkWell(
+                onTap: () {
+                  enterVolume(currentRoute[index]);
+                },
+                child: new Text(currentRoute[index].name),
+              );
+            },
+            separatorBuilder: (context, index) {
+              return new Text(
+                '>',
+                style: TextStyle(color: new Color(0x88888888)),
+              );
+            },
+          )),
     );
   }
 
@@ -188,7 +193,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         child: new Text('添加分卷', style: TextStyle(fontSize: 20)),
       ));
     }
-    return AnimationLimiter( // 这个会报很多警告
+    return AnimationLimiter(
+      // 这个会报很多警告
       child: ListView.builder(
           itemCount: currentList.length,
           itemBuilder: (context, index) {
@@ -319,7 +325,46 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       return;
     }
 
+    /*final popup = BeautifulPopup(
+      context: context,
+      template: TemplateSuccess,
+    );
+    final newColor = Colors.red.withOpacity(0.5);
+    popup.recolor(newColor);
+    popup.show(
+      title: 'String',
+      content: 'String',
+      actions: [
+        popup.button(
+          label: 'Close',
+          onPressed: Navigator.of(context).pop
+        )
+      ]
+    );*/
+    
     // 添加新章
+    /*showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('请输入新章节名字'),
+            content: TextField(
+              decoration: InputDecoration(
+                hintText: '章节名字',
+                hintMaxLines: 1,
+              ),
+              onChanged: (String value) {
+                print(value);
+              },
+            ),
+            actions: <Widget>[
+              InkWell(
+                child: Text('确定'),
+                onTap: (){},
+              )
+            ],
+          );
+        });*/
 
     // 保存修改
     saveCatalog();
@@ -393,13 +438,13 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 编辑器打开章节
   void openChapter(VCItem chapter) {}
-  
+
   /// 下拉刷新，快捷云同步方式
   Future<void> actionSync() async {
     // 模拟延迟（现在还是什么都不做的）
     await Future.delayed(Duration(seconds: 1), () {
       print('refresh finished');
-      setState((){});
+      setState(() {});
     });
   }
 }
