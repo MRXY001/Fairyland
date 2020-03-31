@@ -83,7 +83,7 @@ class VCItem {
   }
   
   /// 获取显示的带序号的名字
-  String getDisplayString() {}
+  String getDisplayName() {}
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> map = {
@@ -109,7 +109,6 @@ class VCItem {
       vcList = [];
       if (list != null) { // 如果不是null（其实若是null就已经有问题了）
         list.forEach((element) {
-          print(element);
           vcList.add(VCItem.fromJson(element)); // 递归读取
         });
       }

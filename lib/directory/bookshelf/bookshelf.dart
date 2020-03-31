@@ -91,12 +91,12 @@ class _BookshelfState extends State<Bookshelf> {
                       child: Row(
                         children: <Widget>[
                           new Container(
+                            child: books[index].cover,
                             constraints: BoxConstraints(
                                 maxWidth: 100,
                                 minWidth: 100,
                                 minHeight: 150,
                                 maxHeight: 150),
-                            child: books[index].cover,
                           ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

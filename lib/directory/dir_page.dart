@@ -140,13 +140,39 @@ class _DirPageState extends State<DirPage> {
             child: Padding(
               padding: EdgeInsets.all(8),
               child: Container(
-                child: new Text(currentList[index].name),
+                child: getOneLine(currentList[index]),
               ),
             ));
       },
       separatorBuilder: (BuildContext context, int index) {
         return new Divider(height: 2);
       },
+    );
+  }
+
+  Widget getOneLine(VCItem item) {
+    String name = item.name; // item.getDisplayName();
+    Image image = Image.asset(item.isVolume()
+        ? 'assets/icons/volume.png'
+        : 'assets/icons/chapter.png');
+    return new Row(
+      children: <Widget>[
+        new Container(
+          child: image,
+          constraints: BoxConstraints(
+              maxWidth: 32, minWidth: 32, minHeight: 32, maxHeight: 32),
+        ),
+        new Padding(
+          padding: EdgeInsets.fromLTRB(16, 0, 0, 0),
+          child: new Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              new Text(name, style: TextStyle(fontSize: 16)), // 标题
+              new Text(item.wordCount.toString() + ' 字')
+            ],
+          ),
+        )
+      ],
     );
   }
 
@@ -170,7 +196,6 @@ class _DirPageState extends State<DirPage> {
     // 读取作品目录
     Global.currentBookName = name;
     String str = FileUtil.readText(Global.cBookCatalogPath());
-    print(str);
     try {
       // 解析JSON
       currentBook = BookObject.fromJson(json.decode(str));
@@ -207,6 +232,7 @@ class _DirPageState extends State<DirPage> {
 
     // 添加新章
 
+    // 保存修改
     saveCatalog();
   }
 
