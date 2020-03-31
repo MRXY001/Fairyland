@@ -19,7 +19,7 @@ class DirPage extends StatefulWidget {
 
 class _DirPageState extends State<DirPage> {
   BookObject currentBook;
-  List<String> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
+  List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
 
   @override
@@ -43,12 +43,6 @@ class _DirPageState extends State<DirPage> {
                   })).then((String result) {
                     if (result.isEmpty) {
                       // 按返回键返回是没有传回的参数的
-                      return;
-                    }
-
-                    // 判断有没有切换作品
-                    if (Global.currentBookName == result) {
-                      // 没有切换作品
                       return;
                     }
 
@@ -115,8 +109,9 @@ class _DirPageState extends State<DirPage> {
           ]),
       body: new Column(
         children: <Widget>[
+          _getRouteView(),
           new Expanded(
-            child: getVCListView(),
+            child: _getVCListView(),
           ),
         ],
       ),
@@ -124,25 +119,60 @@ class _DirPageState extends State<DirPage> {
     );
   }
 
-  /// 获取 ListView
-  Widget getVCListView() {
+  /// 获取路径分割线的view
+  Widget _getRouteView() {
+    if (currentRoute == null || currentRoute.length == 0) {
+      return new Divider(
+        height: 0,
+      );
+    }
+    return new ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: 20,
+        maxHeight: 20,
+      ),
+      child: new ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: currentRoute.length,
+        itemBuilder: (context, index) {
+          return InkWell(
+            onTap: () {
+              enterVolume(currentRoute[index]);
+            },
+            child: new Text(currentRoute[index].name),
+          );
+        },
+        separatorBuilder: (context, index) {
+          return new Divider();
+        },
+      ),
+    );
+  }
+
+  /// 获取 ListView 整体
+  /// 如果为空则显示一个添加按钮
+  Widget _getVCListView() {
     if (currentBook == null) {
       return new Center(
+          child: new InkWell(
+        onTap: () {
           // todo: 点击出现俏皮晃头晃脑动画
-          child: new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品',
-              style: TextStyle(fontSize: 20)));
+        },
+        child:
+            new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品', style: TextStyle(fontSize: 20)),
+      ));
+    }
+    if (currentBook.catalog.length == 0) {
+      return new Center(
+          child: new InkWell(
+        onTap: () => actionAppendChapter(),
+        child: new Text('添加分卷', style: TextStyle(fontSize: 20)),
+      ));
     }
     return ListView.separated(
       itemCount: currentList.length,
       itemBuilder: (BuildContext context, int index) {
-        return InkWell(
-            onTap: () {},
-            child: Padding(
-              padding: EdgeInsets.all(8),
-              child: Container(
-                child: getOneLine(currentList[index]),
-              ),
-            ));
+        return _getVolumeChapterLine(currentList[index]);
       },
       separatorBuilder: (BuildContext context, int index) {
         return new Divider(height: 2);
@@ -150,7 +180,8 @@ class _DirPageState extends State<DirPage> {
     );
   }
 
-  Widget getOneLine(VCItem item) {
+  /// 获取目录的每一行
+  Widget _getVolumeChapterLine(VCItem item) {
     String name = item.name; // item.getDisplayName();
     Image image = Image.asset(item.isVolume()
         ? 'assets/icons/volume.png'
@@ -192,7 +223,13 @@ class _DirPageState extends State<DirPage> {
               : (item.wordCount.toString() + ' 字'))
         ],
       ),
-      onTap: () {},
+      onTap: () {
+        if (item.isVolume()) {
+          enterVolume(item);
+        } else if (item.isChapter()) {
+          openChapter(item);
+        }
+      },
       onLongPress: () {},
     );
   }
@@ -265,4 +302,53 @@ class _DirPageState extends State<DirPage> {
     FileUtil.writeText(
         Global.cBookCatalogPath(), jsonEncode(currentBook.toJson()));
   }
+
+  /// 打开某一分卷，并且加载这一卷的列表
+  void enterVolume(VCItem volume) {
+    // 遍历路径，如果没有，则表示是点击列表的
+    bool inRoute = false;
+    currentRoute.forEach((element) {
+      if (element & volume) {
+        inRoute = true;
+      }
+    });
+
+    // 是否是当前列表
+    bool inList = false;
+    currentList.forEach((element) {
+      if (element & volume) {
+        inList = true;
+      }
+    });
+
+    // 根据所在位置，判断路径的变化
+    if (inRoute) {
+      // 路径中，取消route后半部分
+      while (currentRoute.length > 0) {
+        if (currentRoute.last & volume) {
+          break;
+        }
+        currentRoute.removeLast();
+      }
+      print('----------------在路径中');
+    } else if (inList) {
+      // 列表中，加到route末尾
+      currentRoute.add(volume);
+    } else {
+      // 不知道在哪里的，不操作
+      return;
+    }
+
+    _loadVolume(volume);
+
+    setState(() {});
+  }
+
+  /// 加载某一分卷
+  void _loadVolume(VCItem volume) {
+    currentList = volume.vcList;
+  }
+
+  /// 编辑器打开章节
+  void openChapter(VCItem chapter) {}
 }

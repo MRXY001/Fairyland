@@ -45,7 +45,7 @@ class BookObject {
       catalog: catalog,
       config: BookConfig.fromJson(json['config']),
       createTime: json['createTime'] ?? 0,
-      //      wordCount: json['wordCount'] ?? 0,
+      wordCount: json['wordCount'] ?? 0,
     );
   }
 }
@@ -71,6 +71,10 @@ class VCItem {
   List<VCItem> vcList; // 分卷的子章节
 
   VCItem({this.id, this.name, this.wordCount, this.type, this.vcList});
+  
+  bool operator&(VCItem item) {
+    return this.id == item.id;
+  }
 
   bool isVolume() => type == volumeType;
 
