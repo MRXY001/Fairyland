@@ -341,33 +341,65 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         )
       ]
     );*/
-    
+
     // 添加新章
-    /*showDialog(
+    String inputName = '';
+    showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('请输入新章节名字'),
+            title: Text('添加新章'),
             content: TextField(
               decoration: InputDecoration(
-                hintText: '章节名字',
                 hintMaxLines: 1,
+                border: OutlineInputBorder(),
+                labelText: '名字',
+                prefixIcon: Icon(Icons.create),
               ),
+              autofocus: true,
               onChanged: (String value) {
-                print(value);
+                inputName = value;
               },
             ),
             actions: <Widget>[
-              InkWell(
+              FlatButton(
                 child: Text('确定'),
-                onTap: (){},
-              )
+                onPressed: () {
+                  if (inputName != null && inputName.isNotEmpty) {
+                    _appendChapterInCurrentList(inputName);
+                  }
+                },
+              ),
+              FlatButton(
+                child: Text(
+                  '取消',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
             ],
           );
-        });*/
+        });
 
     // 保存修改
     saveCatalog();
+  }
+
+  /// 在当前的volume下添加一个章节
+  void _appendChapterInCurrentList(String name) {
+    currentList.add(new VCItem(name: name));
+    setState(() {});
+  }
+
+  /// 获取当前查看的分卷
+  /// 如果是根目录，返回 null
+  VCItem getCurrentVolume() {
+    if (currentRoute == null || currentRoute.length == 0) {
+      return null;
+    }
+    return currentRoute.last;
   }
 
   /// 保存目录结构
@@ -375,6 +407,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     if (currentBook == null) {
       return;
     }
+    print('----------------保存');
+    print(jsonEncode(currentBook.toJson()));
     FileUtil.writeText(
         Global.cBookCatalogPath(), jsonEncode(currentBook.toJson()));
   }
