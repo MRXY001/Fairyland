@@ -155,17 +155,20 @@ class _DirPageState extends State<DirPage> {
     Image image = Image.asset(item.isVolume()
         ? 'assets/icons/volume.png'
         : 'assets/icons/chapter.png');
-    
+
     // 显示修改时间
     String timeDisplayed = '';
     if (item.modifyTime ?? 0 > 0) {
       int timestamp = DateTime.now().millisecondsSinceEpoch;
       int delta = timestamp - item.modifyTime;
-      if (delta < 60 * 1000) { // 一分钟以内
+      if (delta < 60 * 1000) {
+        // 一分钟以内
         timeDisplayed = '刚刚';
-      } else if (delta < 60 * 60 * 1000) { // 一小时以内修改的
+      } else if (delta < 60 * 60 * 1000) {
+        // 一小时以内修改的
         timeDisplayed = (delta ~/ 60000).toString() + ' 分钟前';
-      } else if (delta < 24 * 60 * 60 * 1000) { // 一天以内
+      } else if (delta < 24 * 60 * 60 * 1000) {
+        // 一天以内
         timeDisplayed = (delta ~/ 3600000).toString() + ' 小时前';
       } else {
         DateTime time = DateTime.fromMillisecondsSinceEpoch(item.modifyTime);
@@ -183,9 +186,14 @@ class _DirPageState extends State<DirPage> {
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          new Text(item.wordCount.toString() + ' 字')
+          new Text(item.isVolume()
+              ? ((item.vcList != null ? item.vcList.length.toString() : '?') +
+                  ' 章')
+              : (item.wordCount.toString() + ' 字'))
         ],
       ),
+      onTap: () {},
+      onLongPress: () {},
     );
   }
 

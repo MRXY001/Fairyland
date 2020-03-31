@@ -36,7 +36,7 @@ class BookObject {
     list.forEach((element) {
       catalog.add(VCItem.fromJson(element));
     });
-    
+
     return new BookObject(
       name: json['name'],
       author: json['author'],
@@ -45,7 +45,7 @@ class BookObject {
       catalog: catalog,
       config: BookConfig.fromJson(json['config']),
       createTime: json['createTime'] ?? 0,
-//      wordCount: json['wordCount'] ?? 0,
+      //      wordCount: json['wordCount'] ?? 0,
     );
   }
 }
@@ -81,7 +81,7 @@ class VCItem {
     indexInBook = inBook;
     indexInVolume = inVolume;
   }
-  
+
   /// 获取显示的带序号的名字
   String getDisplayName() {}
 
@@ -102,12 +102,14 @@ class VCItem {
   }
 
   factory VCItem.fromJson(Map<String, dynamic> json) {
-    List vcList;
+    List<VCItem> vcList;
     int type = json['type'] ?? chapterType;
     if (type == volumeType) {
+      // 如果是分卷，遍历加载子分卷和子章节
       List list = json['list'];
       vcList = [];
-      if (list != null) { // 如果不是null（其实若是null就已经有问题了）
+      if (list != null) {
+        // 如果不是null（其实若是null就已经有问题了）
         list.forEach((element) {
           vcList.add(VCItem.fromJson(element)); // 递归读取
         });
@@ -118,7 +120,7 @@ class VCItem {
       name: json['name'],
       type: type,
       wordCount: json['wordCount'] ?? 0,
-//      vcList: vcList,
+      vcList: vcList,
     );
   }
 }
@@ -146,7 +148,7 @@ class BookConfig {
       };
 
   factory BookConfig.fromJson(Map<String, dynamic> json) {
-    if (json==null) {
+    if (json == null) {
       return new BookConfig();
     }
     return new BookConfig(
