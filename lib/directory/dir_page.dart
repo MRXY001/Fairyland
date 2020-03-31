@@ -125,7 +125,10 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         children: <Widget>[
           _getRouteView(),
           new Expanded(
-            child: _getVCListView(),
+            child: RefreshIndicator(
+              onRefresh: actionSync,
+              child: _getVCListView(),
+            ),
           ),
         ],
       ),
@@ -159,7 +162,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             );
           },
           separatorBuilder: (context, index) {
-            return new Divider();
+            return new Text('>', style: TextStyle(color: new Color(0x88888888)),);
           },
       )),
     );
@@ -390,4 +393,13 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 编辑器打开章节
   void openChapter(VCItem chapter) {}
+  
+  /// 下拉刷新，快捷云同步方式
+  Future<void> actionSync() async {
+    // 模拟延迟（现在还是什么都不做的）
+    await Future.delayed(Duration(seconds: 1), () {
+      print('refresh finished');
+      setState((){});
+    });
+  }
 }
