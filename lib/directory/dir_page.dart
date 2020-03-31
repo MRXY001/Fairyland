@@ -170,6 +170,7 @@ class _DirPageState extends State<DirPage> {
     // 读取作品目录
     Global.currentBookName = name;
     String str = FileUtil.readText(Global.cBookCatalogPath());
+    print(str);
     try {
       // 解析JSON
       currentBook = BookObject.fromJson(json.decode(str));

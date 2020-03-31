@@ -36,6 +36,7 @@ class BookObject {
     list.forEach((element) {
       catalog.add(VCItem.fromJson(element));
     });
+    
     return new BookObject(
       name: json['name'],
       author: json['author'],
@@ -43,8 +44,8 @@ class BookObject {
       description: json['description'],
       catalog: catalog,
       config: BookConfig.fromJson(json['config']),
-      createTime: int.parse(json['createTime']) ?? 0,
-      wordCount: int.parse(json['wordCount']) ?? 0,
+      createTime: json['createTime'] ?? 0,
+//      wordCount: json['wordCount'] ?? 0,
     );
   }
 }
@@ -102,19 +103,23 @@ class VCItem {
 
   factory VCItem.fromJson(Map<String, dynamic> json) {
     List vcList;
-    int type = int.parse(json['type']) ?? chapterType;
+    int type = json['type'] ?? chapterType;
     if (type == volumeType) {
       List list = json['list'];
-      list.forEach((element) {
-        vcList.add(VCItem.fromJson(element)); // 递归读取
-      });
+      vcList = [];
+      if (list != null) { // 如果不是null（其实若是null就已经有问题了）
+        list.forEach((element) {
+          print(element);
+          vcList.add(VCItem.fromJson(element)); // 递归读取
+        });
+      }
     }
     return new VCItem(
       id: json['id'],
       name: json['name'],
       type: type,
       wordCount: json['wordCount'] ?? 0,
-      vcList: vcList,
+//      vcList: vcList,
     );
   }
 }

@@ -216,21 +216,23 @@ class _BookFields extends State<BookFields> {
     {
       "id": "about",
       "name": "作品相关",
+      "type": 1,
       "list": [
         {
           "id": "world",
           "name": "世界观设定",
-          "type": "2"
+          "type": 2
         }
       ]
     },
     {
       "id": "body",
       "name": "正文",
+      "type": 1,
       "list": []
     }
   ],
-  "createTime": "$createTime"
+  "createTime": $createTime
 }
 ''';
     FileUtil.writeText(Global.bookCatalogPath(name), dirTree);
