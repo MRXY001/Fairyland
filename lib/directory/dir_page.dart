@@ -6,6 +6,7 @@ import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class DirPage extends StatefulWidget {
@@ -17,7 +18,7 @@ class DirPage extends StatefulWidget {
   }
 }
 
-class _DirPageState extends State<DirPage> {
+class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   BookObject currentBook;
   List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
@@ -26,22 +27,35 @@ class _DirPageState extends State<DirPage> {
   void initState() {
     super.initState();
   }
+  
+  @override
+  void dependOnInheritedWidgetOfExactType() {
+    didChangeDependencies();
+  }
+
+  @override
+  bool get wantKeepAlive => true;//要点2
 
   @override
   Widget build(BuildContext context) {
+    // 通过重载 AutomaticKeepAliveClientMixin 的
+    // wantKeepAlive 成员，使页面在切换 tab 时不重绘
+    super.build(context);
+    
     return new Scaffold(
       appBar: new AppBar(
           title: Builder(
             builder: (BuildContext context) {
               // 获取context后才能跳转页面
               return new GestureDetector(
-                child: new Text(Global.currentBookName ?? '创建或切换作品'),
+                child: new Text(
+                    currentBook == null ? '创建或切换作品' : currentBook.name),
                 onTap: () {
                   Navigator.push<String>(context,
                       new MaterialPageRoute(builder: (BuildContext context) {
                     return new Bookshelf();
                   })).then((String result) {
-                    if (result.isEmpty) {
+                    if (result == null || result.isEmpty) {
                       // 按返回键返回是没有传回的参数的
                       return;
                     }
@@ -131,8 +145,8 @@ class _DirPageState extends State<DirPage> {
         minHeight: 30,
         maxHeight: 30,
       ),
-      child: new Expanded(child: new Padding(
-        padding: EdgeInsets.all(4),
+      child: new Padding(
+        padding: EdgeInsets.only(left: 16, top: 4, bottom: 4),
         child: new ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: currentRoute.length,
@@ -147,7 +161,6 @@ class _DirPageState extends State<DirPage> {
           separatorBuilder: (context, index) {
             return new Divider();
           },
-        ),
       )),
     );
   }
@@ -172,7 +185,21 @@ class _DirPageState extends State<DirPage> {
         child: new Text('添加分卷', style: TextStyle(fontSize: 20)),
       ));
     }
-    return ListView.separated(
+    return AnimationLimiter( // 这个会报很多警告
+      child: ListView.builder(
+          itemCount: currentList.length,
+          itemBuilder: (context, index) {
+            return AnimationConfiguration.staggeredList(
+                position: index,
+                child: SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: _getVolumeChapterLine(currentList[index]),
+                  ),
+                ));
+          }),
+    );
+    /*return ListView.separated(
       itemCount: currentList.length,
       itemBuilder: (BuildContext context, int index) {
         return _getVolumeChapterLine(currentList[index]);
@@ -180,7 +207,7 @@ class _DirPageState extends State<DirPage> {
       separatorBuilder: (BuildContext context, int index) {
         return new Divider(height: 2);
       },
-    );
+    );*/
   }
 
   /// 获取目录的每一行
@@ -290,7 +317,6 @@ class _DirPageState extends State<DirPage> {
     }
 
     // 添加新章
-    
 
     // 保存修改
     saveCatalog();
@@ -329,7 +355,8 @@ class _DirPageState extends State<DirPage> {
       while (currentRoute.length > 0) {
         VCItem last = currentRoute.last;
         currentRoute.removeLast();
-        if (last & volume) { // 加载前一项
+        if (last & volume) {
+          // 加载前一项
           if (currentRoute.length > 0) {
             volume = currentRoute.last;
           } else {

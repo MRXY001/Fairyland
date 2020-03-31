@@ -27,11 +27,11 @@ class _MyHomePageState extends State<MyHomePage>
 	@override
 	void initState() {
 		super.initState();
-		
 		pageController = PageController();
+		
 		_pages = <PageBean>[
-			PageBean(title: '目录', icon: Icons.list, widget: DirPage()),
-			PageBean(title: '写作', icon: Icons.edit, widget: EditorPage()),
+			PageBean(title: '目录', icon: Icons.list, widget: new DirPage()),
+			PageBean(title: '写作', icon: Icons.edit, widget: new EditorPage()),
 //			PageBean(title: '助手', icon: Icons.school, widget: AssistPage()),
 		];
 		bottomBar = new TitledBottomNavigationBar(
