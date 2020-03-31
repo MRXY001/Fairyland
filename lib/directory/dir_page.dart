@@ -325,12 +325,17 @@ class _DirPageState extends State<DirPage> {
     if (inRoute) {
       // 路径中，取消route后半部分
       while (currentRoute.length > 0) {
-        if (currentRoute.last & volume) {
+        VCItem last = currentRoute.last;
+        currentRoute.removeLast();
+        if (last & volume) { // 加载前一项
+          if (currentRoute.length > 0) {
+            volume = currentRoute.last;
+          } else {
+            volume = null;
+          }
           break;
         }
-        currentRoute.removeLast();
       }
-      print('----------------在路径中');
     } else if (inList) {
       // 列表中，加到route末尾
       currentRoute.add(volume);
@@ -346,7 +351,12 @@ class _DirPageState extends State<DirPage> {
 
   /// 加载某一分卷
   void _loadVolume(VCItem volume) {
-    currentList = volume.vcList;
+    // 如果是空的，则表示加载根目录
+    if (volume == null) {
+      currentList = currentBook.catalog;
+    } else {
+      currentList = volume.vcList;
+    }
   }
 
   /// 编辑器打开章节
