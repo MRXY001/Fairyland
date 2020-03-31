@@ -134,17 +134,19 @@ class _DirPageState extends State<DirPage> {
               style: TextStyle(fontSize: 20)));
     }
     return ListView.separated(
-      padding: const EdgeInsets.all(8),
       itemCount: currentList.length,
       itemBuilder: (BuildContext context, int index) {
         return InkWell(
             onTap: () {},
-            child: Container(
-              child: new Text(currentList[index].name),
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Container(
+                child: new Text(currentList[index].name),
+              ),
             ));
       },
       separatorBuilder: (BuildContext context, int index) {
-        return new Divider();
+        return new Divider(height: 2);
       },
     );
   }
@@ -174,7 +176,7 @@ class _DirPageState extends State<DirPage> {
     try {
       // 解析JSON
       Map<String, dynamic> map = json.decode(catalog);
-      List list = map['list'];
+      List list = map['list'] ?? map;
       list.forEach((element) {
         catalogTree.add(VCItem.fromJson(element));
       });
@@ -209,8 +211,18 @@ class _DirPageState extends State<DirPage> {
     }
 
     // 添加新章
+
+    saveCatalog();
   }
 
   /// 保存目录结构
-  void saveCatalog() {}
+  void saveCatalog() {
+    Map<String, dynamic> map = {};
+    map['id'] = 'book';
+    map['name'] = currentBookName;
+    map['type'] = '0';
+    map['list'] = catalogTree;
+
+    FileUtil.writeText(Global.cBookCatalogPath(), jsonEncode(map));
+  }
 }
