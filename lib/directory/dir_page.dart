@@ -24,15 +24,11 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   BookObject currentBook;
   List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
+  Iterable<List<VCItem>> currentIterator; // 当前位置的分卷所在的指针
 
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void dependOnInheritedWidgetOfExactType() {
-    didChangeDependencies();
   }
 
   @override
@@ -367,6 +363,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
                 onPressed: () {
                   if (inputName != null && inputName.isNotEmpty) {
                     _appendChapterInCurrentList(inputName);
+                    Navigator.of(context).pop();
                   }
                 },
               ),
@@ -389,7 +386,18 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 在当前的volume下添加一个章节
   void _appendChapterInCurrentList(String name) {
-    currentList.add(new VCItem(name: name));
+    VCItem chapter = new VCItem(name: name);
+    VCItem volume = getCurrentVolume();
+    /*if (volume == null) { // 根目录
+      currentBook.catalog.add(chapter);
+      currentList = currentBook.catalog;
+    } else { // 分卷
+      volume.vcList.add(chapter);
+      currentList = volume.vcList;
+    }*/
+    currentList = currentBook.catalog;
+    currentList.add(chapter);
+    currentList = currentBook.catalog;
     setState(() {});
   }
 
@@ -408,6 +416,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       return;
     }
     print('----------------保存');
+    print(currentBook.catalog.length);
     print(jsonEncode(currentBook.toJson()));
     FileUtil.writeText(
         Global.cBookCatalogPath(), jsonEncode(currentBook.toJson()));
