@@ -128,24 +128,27 @@ class _DirPageState extends State<DirPage> {
     }
     return new ConstrainedBox(
       constraints: BoxConstraints(
-        minHeight: 20,
-        maxHeight: 20,
+        minHeight: 30,
+        maxHeight: 30,
       ),
-      child: new ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: currentRoute.length,
-        itemBuilder: (context, index) {
-          return InkWell(
-            onTap: () {
-              enterVolume(currentRoute[index]);
-            },
-            child: new Text(currentRoute[index].name),
-          );
-        },
-        separatorBuilder: (context, index) {
-          return new Divider();
-        },
-      ),
+      child: new Expanded(child: new Padding(
+        padding: EdgeInsets.all(4),
+        child: new ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: currentRoute.length,
+          itemBuilder: (context, index) {
+            return InkWell(
+              onTap: () {
+                enterVolume(currentRoute[index]);
+              },
+              child: new Text(currentRoute[index].name),
+            );
+          },
+          separatorBuilder: (context, index) {
+            return new Divider();
+          },
+        ),
+      )),
     );
   }
 
@@ -267,8 +270,6 @@ class _DirPageState extends State<DirPage> {
     setState(() {});
   }
 
-  /// 递归获取分卷/章节列表
-
   /// 关闭当前一打开的作品
   /// 并且保存一些状态变量，以便下次打开时恢复
   void closeCurrentBook() {
@@ -289,6 +290,7 @@ class _DirPageState extends State<DirPage> {
     }
 
     // 添加新章
+    
 
     // 保存修改
     saveCatalog();
