@@ -24,7 +24,7 @@ class _BookFields extends State<BookFields> {
   Image coverImage = Image.asset('assets/covers/default.png');
   String UBID = '';
   String name = '';
-  String type = '';
+  String style = '';
   String author = '';
   String description = '';
   bool isChanged = false;
@@ -89,7 +89,7 @@ class _BookFields extends State<BookFields> {
           TextFormField(
             decoration: const InputDecoration(labelText: '风格'),
             keyboardType: TextInputType.text,
-            onSaved: (value) => type = value,
+            onSaved: (value) => style = value,
           ),
           TextFormField(
             decoration: const InputDecoration(labelText: '作者'),
@@ -196,21 +196,23 @@ class _BookFields extends State<BookFields> {
     }
 
     // 保存小说配置
-    Config config = new Config();
+    /*Config config = new Config();
     config.addSection('info');
     config.set('info', 'name', name);
     config.set('info', 'author', author);
-    config.set('info', 'type', type);
+    config.set('info', 'style', style);
     config.set('info', 'description', description);
-    FileUtil.writeText(path + 'config.ini', config.toString());
+    FileUtil.writeText(path + 'config.ini', config.toString());*/
 
     // 创建默认小说目录
+    int createTime = DateTime.now().millisecondsSinceEpoch;
     var dirTree = '''
 {
-  "id": "book",
   "name": "$name",
-  "type": "0",
-  "list": [
+  "author": "$author",
+  "style": "$style",
+  "description": "$description",
+  "catalog": [
     {
       "id": "about",
       "name": "作品相关",
@@ -227,7 +229,8 @@ class _BookFields extends State<BookFields> {
       "name": "正文",
       "list": []
     }
-  ]
+  ],
+  "createTime": "$createTime"
 }
 ''';
     FileUtil.writeText(Global.bookCatalogPath(name), dirTree);

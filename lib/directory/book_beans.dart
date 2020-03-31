@@ -1,11 +1,12 @@
 class BookObject {
+  String id; // 云端分配的ID（未同步则没有）
   String name;
   String author;
   String style;
   String description;
   List<VCItem> catalog;
   BookConfig config;
-  DateTime createTime;
+  int createTime;
   int wordCount;
 
   BookObject(
@@ -30,22 +31,20 @@ class BookObject {
       };
 
   factory BookObject.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic> map = json['catalog'];
-    List list = map['list'] ?? map;
+    List list = json['catalog'];
     List<VCItem> catalog = [];
     list.forEach((element) {
       catalog.add(VCItem.fromJson(element));
     });
-
     return new BookObject(
       name: json['name'],
       author: json['author'],
       style: json['style'],
       description: json['description'],
       catalog: catalog,
-      config: json['config'] ?? new BookConfig(),
-      createTime: json['createTime'],
-      wordCount: json['wordCount'] ?? -1,
+      config: BookConfig.fromJson(json['config']),
+      createTime: int.parse(json['createTime']) ?? 0,
+      wordCount: int.parse(json['wordCount']) ?? 0,
     );
   }
 }
@@ -64,10 +63,10 @@ class VCItem {
   int type; // 0: Book, 1: Volume, 2: Chapter, ?; Other
   int wordCount; // 章节有效字数/该分卷章节总有效字数
   String content; // 章节内容/分卷内容
-  DateTime createTime; // 创建时间
-  DateTime modifyTime; // 修改时间
+  int createTime; // 创建时间
+  int modifyTime; // 修改时间
   bool published; // 是否已发布
-  DateTime publishTime; // 发布时间
+  int publishTime; // 发布时间
   List<VCItem> vcList; // 分卷的子章节
 
   VCItem({this.id, this.name, this.wordCount, this.type, this.vcList});
@@ -103,7 +102,7 @@ class VCItem {
 
   factory VCItem.fromJson(Map<String, dynamic> json) {
     List vcList;
-    int type = json['type'] ?? chapterType;
+    int type = int.parse(json['type']) ?? chapterType;
     if (type == volumeType) {
       List list = json['list'];
       list.forEach((element) {
@@ -143,6 +142,9 @@ class BookConfig {
       };
 
   factory BookConfig.fromJson(Map<String, dynamic> json) {
+    if (json==null) {
+      return new BookConfig();
+    }
     return new BookConfig(
       useRelevant: json['useRelevant'] ?? true,
       useArabSerialNumber: json['useArabSerialNumber'] ?? false,

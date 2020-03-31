@@ -18,8 +18,7 @@ class DirPage extends StatefulWidget {
 }
 
 class _DirPageState extends State<DirPage> {
-  String currentBookName;
-  List<VCItem> catalogTree; // 整个目录下的分卷/章节的list
+  BookObject currentBook;
   List<String> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
 
@@ -127,7 +126,7 @@ class _DirPageState extends State<DirPage> {
 
   /// 获取 ListView
   Widget getVCListView() {
-    if (currentBookName == null || currentBookName.isEmpty) {
+    if (currentBook == null) {
       return new Center(
           // todo: 点击出现俏皮晃头晃脑动画
           child: new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品',
@@ -169,21 +168,16 @@ class _DirPageState extends State<DirPage> {
     }
 
     // 读取作品目录
-    Global.currentBookName = currentBookName = name;
-    currentRoute = [];
-    catalogTree = [];
-    String catalog = FileUtil.readText(Global.cBookCatalogPath());
+    Global.currentBookName = name;
+    String str = FileUtil.readText(Global.cBookCatalogPath());
     try {
       // 解析JSON
-      Map<String, dynamic> map = json.decode(catalog);
-      List list = map['list'] ?? map;
-      list.forEach((element) {
-        catalogTree.add(VCItem.fromJson(element));
-      });
+      currentBook = BookObject.fromJson(json.decode(str));
     } catch (e) {
       Fluttertoast.showToast(msg: '解析目录树错误');
     } finally {
-      currentList = catalogTree;
+      currentRoute = [];
+      currentList = currentBook.catalog;
     }
 
     setState(() {});
@@ -194,7 +188,7 @@ class _DirPageState extends State<DirPage> {
   /// 关闭当前一打开的作品
   /// 并且保存一些状态变量，以便下次打开时恢复
   void closeCurrentBook() {
-    Global.currentBookName = currentBookName = null;
+    Global.currentBookName = currentBook = null;
     currentRoute = null;
     currentList = null;
   }
@@ -205,7 +199,7 @@ class _DirPageState extends State<DirPage> {
   /// 添加新的章节
   void actionAppendChapter() {
     print('> 添加新章');
-    if (currentBookName == null || currentBookName.isEmpty) {
+    if (currentBook == null) {
       Fluttertoast.showToast(msg: '请点击左上方标题创建一部作品');
       return;
     }
@@ -217,12 +211,10 @@ class _DirPageState extends State<DirPage> {
 
   /// 保存目录结构
   void saveCatalog() {
-    Map<String, dynamic> map = {};
-    map['id'] = 'book';
-    map['name'] = currentBookName;
-    map['type'] = '0';
-    map['list'] = catalogTree;
-
-    FileUtil.writeText(Global.cBookCatalogPath(), jsonEncode(map));
+    if (currentBook == null) {
+      return;
+    }
+    FileUtil.writeText(
+        Global.cBookCatalogPath(), jsonEncode(currentBook.toJson()));
   }
 }
