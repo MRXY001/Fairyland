@@ -24,7 +24,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   BookObject currentBook;
   List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
-  Iterable<List<VCItem>> currentIterator; // 当前位置的分卷所在的指针
+  Iterator<VCItem> currentIterator; // 当前位置的分卷所在的指针
 
   @override
   void initState() {
@@ -272,7 +272,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   /// 从头打开作品
   /// 如果已经有打开的了，需要先调用 closeCurrentBook()
   void openBook(String name) {
-    print('打开作品:' + name);
     // 如果目录不存在或者文件有错误，弹出警告
     String path = Global.bookPath(name);
     if (FileUtil.isDirNotExists(path) ||
@@ -297,6 +296,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     } finally {
       currentRoute = [];
       currentList = currentBook.catalog;
+      currentIterator = currentBook.catalog.iterator;
     }
 
     setState(() {});
@@ -308,6 +308,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     Global.currentBookName = currentBook = null;
     currentRoute = null;
     currentList = null;
+    currentIterator = null;
   }
 
   /// 添加新的分卷
@@ -315,7 +316,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 添加新的章节
   void actionAppendChapter() {
-    print('> 添加新章');
     if (currentBook == null) {
       Fluttertoast.showToast(msg: '请点击左上方标题创建一部作品');
       return;
@@ -362,7 +362,12 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
                 child: Text('确定'),
                 onPressed: () {
                   if (inputName != null && inputName.isNotEmpty) {
+                    // 添加章节到末尾
                     _appendChapterInCurrentList(inputName);
+
+                    // 保存修改
+                    saveCatalog();
+
                     Navigator.of(context).pop();
                   }
                 },
@@ -379,25 +384,12 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             ],
           );
         });
-
-    // 保存修改
-    saveCatalog();
   }
 
   /// 在当前的volume下添加一个章节
   void _appendChapterInCurrentList(String name) {
     VCItem chapter = new VCItem(name: name);
-    VCItem volume = getCurrentVolume();
-    /*if (volume == null) { // 根目录
-      currentBook.catalog.add(chapter);
-      currentList = currentBook.catalog;
-    } else { // 分卷
-      volume.vcList.add(chapter);
-      currentList = volume.vcList;
-    }*/
-    currentList = currentBook.catalog;
     currentList.add(chapter);
-    currentList = currentBook.catalog;
     setState(() {});
   }
 
@@ -415,9 +407,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     if (currentBook == null) {
       return;
     }
-    print('----------------保存');
-    print(currentBook.catalog.length);
-    print(jsonEncode(currentBook.toJson()));
     FileUtil.writeText(
         Global.cBookCatalogPath(), jsonEncode(currentBook.toJson()));
   }
@@ -486,7 +475,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   Future<void> actionSync() async {
     // 模拟延迟（现在还是什么都不做的）
     await Future.delayed(Duration(seconds: 1), () {
-      print('refresh finished');
       setState(() {});
     });
   }
