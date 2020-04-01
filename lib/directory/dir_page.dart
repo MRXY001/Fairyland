@@ -139,8 +139,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   /// 获取路径分割线的view
   Widget _getRouteView() {
     if (currentRoute == null || currentRoute.length == 0) {
-      return new Divider(
-        height: 0,
+      return new Padding(
+        padding: EdgeInsets.only(bottom: 30),
       );
     }
     return new ConstrainedBox(
@@ -149,14 +149,17 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         maxHeight: 30,
       ),
       child: new Padding(
-          padding: EdgeInsets.only(left: 16, top: 4, bottom: 4),
+          padding: EdgeInsets.only(left: 16, top: 4),
           child: new ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: currentRoute.length,
+            itemCount: currentRoute.length+1,
             itemBuilder: (context, index) {
-              return FlatButton(
-                child: new Text(currentRoute[index].name),
-                onPressed: () => enterVolume(currentRoute[index]),
+              return InkWell(
+                child: Padding(
+                  padding: EdgeInsets.only(left: 8, right: 8),
+                  child: index == 0 ? new Text(' / ') : new Text(currentRoute[index-1].name),
+                ),
+                onTap: () => actionEnterParentVolume(index == 0 ? null : currentRoute[index-1]),
               );
             },
             separatorBuilder: (context, index) {
@@ -165,7 +168,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
                 style: TextStyle(color: new Color(0x88888888)),
               );
             },
-          )),
+          ),)
     );
   }
 
@@ -260,7 +263,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       ),
       onTap: () {
         if (item.isVolume()) {
-          enterVolume(item);
+          actionEnterChildVolume(item);
         } else if (item.isChapter()) {
           openChapter(item);
         }
@@ -471,62 +474,45 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     FileUtil.writeText(
         Global.cBookCatalogPath(), jsonEncode(currentBook.toJson()));
   }
-
-  /// 打开某一分卷，并且加载这一卷的列表
-  void enterVolume(VCItem volume) {
-    // 遍历路径，如果没有，则表示是点击列表的
-    bool inRoute = false;
-    currentRoute.forEach((element) {
-      if (element & volume) {
-        inRoute = true;
-      }
-    });
-
-    // 是否是当前列表
-    bool inList = false;
-    currentList.forEach((element) {
-      if (element & volume) {
-        inList = true;
-      }
-    });
-
-    // 根据所在位置，判断路径的变化
-    if (inRoute) {
+  
+  /// 打开当前分卷下的子分卷
+  void actionEnterChildVolume(VCItem volume) {
+    // 加到route末尾
+    currentRoute.add(volume);
+    _loadVolume(volume);
+  }
+  
+  /// 打开上一层或者某一层的分卷
+  void actionEnterParentVolume(VCItem volume) {
+    if (volume == null) {
+      currentRoute = [];
+      _loadVolume(null);
+    }
+    else if (currentRoute.length > 0 && currentRoute.last == volume) {
+      // 如果打开的当前分卷，则相当于刷新
+      _loadVolume(volume);
+    } else {
       // 路径中，取消route后半部分
       while (currentRoute.length > 0) {
-        VCItem last = currentRoute.last;
-        currentRoute.removeLast();
-        if (last & volume) {
-          // 加载前一项
-          if (currentRoute.length > 0) {
-            volume = currentRoute.last;
-          } else {
-            volume = null;
-          }
+        if (currentRoute.last == volume) {
           break;
         }
+        currentRoute.removeLast();
       }
-    } else if (inList) {
-      // 列表中，加到route末尾
-      currentRoute.add(volume);
-    } else {
-      // 不知道在哪里的，不操作
-      return;
+      _loadVolume(volume);
     }
-
-    _loadVolume(volume);
-
-    setState(() {});
   }
 
   /// 加载某一分卷
   void _loadVolume(VCItem volume) {
-    // 如果是空的，则表示加载根目录
-    if (volume == null) {
-      currentList = currentBook.catalog;
-    } else {
-      currentList = volume.vcList;
-    }
+    setState(() {
+      // 如果是空的，则表示加载根目录
+      if (volume == null) {
+        currentList = currentBook.catalog;
+      } else {
+        currentList = volume.vcList;
+      }
+    });
   }
 
   /// 编辑器打开章节
