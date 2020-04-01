@@ -32,7 +32,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   }
 
   @override
-  bool get wantKeepAlive => true; //要点2
+  bool get wantKeepAlive => true; // 保持滑动Tab的时候不重绘
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +75,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             PopupMenuButton<String>(
               itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
                 PopupMenuItem<String>(
-                  value: "book_new_roll",
+                  value: "append_volume",
                   child: Text('添加新卷'),
                 ),
                 PopupMenuItem<String>(
@@ -109,8 +109,10 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
               ],
               onSelected: (String value) {
                 switch (value) {
-                  case 'book_new_roll':
-                    {}
+                  case 'append_volume':
+                    {
+                      actionAppendVolume();
+                    }
                     break;
                   default:
                     {}
@@ -152,11 +154,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             scrollDirection: Axis.horizontal,
             itemCount: currentRoute.length,
             itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  enterVolume(currentRoute[index]);
-                },
+              return FlatButton(
                 child: new Text(currentRoute[index].name),
+                onPressed: () => enterVolume(currentRoute[index]),
               );
             },
             separatorBuilder: (context, index) {
@@ -311,9 +311,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     currentIterator = null;
   }
 
-  /// 添加新的分卷
-  void actionAppendVolume() {}
-
   /// 添加新的章节
   void actionAppendChapter() {
     if (currentBook == null) {
@@ -349,7 +346,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
               decoration: InputDecoration(
                 hintMaxLines: 1,
                 border: OutlineInputBorder(),
-                labelText: '名字',
+                labelText: '章名',
                 prefixIcon: Icon(Icons.create),
               ),
               autofocus: true,
@@ -388,9 +385,73 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 在当前的volume下添加一个章节
   void _appendChapterInCurrentList(String name) {
-    VCItem chapter = new VCItem(name: name);
-    currentList.add(chapter);
-    setState(() {});
+    setState(() {
+      VCItem chapter = new VCItem(name: name);
+      currentList.add(chapter);
+    });
+  }
+
+  /// 添加新的分卷
+  void actionAppendVolume() {
+    if (currentBook == null) {
+      Fluttertoast.showToast(msg: '请点击左上方标题创建一部作品');
+      return;
+    }
+
+    // 添加新卷
+    String inputName = '';
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('添加分卷'),
+            content: TextField(
+              decoration: InputDecoration(
+                hintMaxLines: 1,
+                border: OutlineInputBorder(),
+                labelText: '卷名',
+                prefixIcon: Icon(Icons.create),
+              ),
+              autofocus: true,
+              onChanged: (String value) {
+                inputName = value;
+              },
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('确定'),
+                onPressed: () {
+                  if (inputName != null && inputName.isNotEmpty) {
+                    // 添加章节到末尾
+                    _appendVolumeInCurrentList(inputName);
+
+                    // 保存修改
+                    saveCatalog();
+
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+              FlatButton(
+                child: Text(
+                  '取消',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  void _appendVolumeInCurrentList(String name) {
+    setState(() {
+      VCItem volume =
+          new VCItem(name: name, type: VCItem.volumeType, vcList: []);
+      currentList.add(volume);
+    });
   }
 
   /// 获取当前查看的分卷
