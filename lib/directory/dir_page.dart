@@ -20,6 +20,16 @@ class DirPage extends StatefulWidget {
   }
 }
 
+enum ChapterActions {
+  rename,
+  insert,
+  delete,
+  moveUp,
+  moveDown,
+  moveTop,
+  moveBottom
+}
+
 class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   BookObject currentBook;
   List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
@@ -138,38 +148,45 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 获取路径分割线的view
   Widget _getRouteView() {
-    if (currentRoute == null || currentRoute.length == 0) {
+    /*if (currentRoute == null || currentRoute.length == 0) {
       return new Padding(
         padding: EdgeInsets.only(bottom: 30),
       );
-    }
+    }*/
     return new ConstrainedBox(
-      constraints: BoxConstraints(
-        minHeight: 30,
-        maxHeight: 30,
-      ),
-      child: new Padding(
+        constraints: BoxConstraints(
+          minHeight: 24,
+          maxHeight: 24,
+        ),
+        child: new Padding(
           padding: EdgeInsets.only(left: 16, top: 4),
-          child: new ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: currentRoute.length+1,
-            itemBuilder: (context, index) {
-              return InkWell(
-                child: Padding(
-                  padding: EdgeInsets.only(left: 8, right: 8),
-                  child: index == 0 ? new Text(' / ') : new Text(currentRoute[index-1].name),
+          child: (currentRoute == null || currentRoute.length == 0)
+              ? new Text(
+                  '总字数：待统计',
+                )
+              : new ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: currentRoute.length + 1,
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 8, right: 8),
+                        child: index == 0
+                            ? new Text(' / ')
+                            : new Text(currentRoute[index - 1].name),
+                      ),
+                      onTap: () => actionEnterParentVolume(
+                          index == 0 ? null : currentRoute[index - 1]),
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    return new Text(
+                      '>',
+                      style: TextStyle(color: new Color(0x88888888)),
+                    );
+                  },
                 ),
-                onTap: () => actionEnterParentVolume(index == 0 ? null : currentRoute[index-1]),
-              );
-            },
-            separatorBuilder: (context, index) {
-              return new Text(
-                '>',
-                style: TextStyle(color: new Color(0x88888888)),
-              );
-            },
-          ),)
-    );
+        ));
   }
 
   /// 获取 ListView 整体
@@ -250,15 +267,38 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         constraints: BoxConstraints(
             maxWidth: 32, minWidth: 32, minHeight: 32, maxHeight: 32),
       ),
-      title: new Text(name, style: TextStyle(fontSize: 16)),
+      title: Row(
+        children: <Widget>[
+          new Text(name, style: TextStyle(fontSize: 16)),
+          new Spacer(flex: 1,),
+          new Text(item.isVolume()
+              ? ((item.vcList != null ? item.vcList.length.toString() : '?') +
+              ' 章')
+              : (item.wordCount.toString() + ' 字'), style: TextStyle(color: Colors.grey),),
+        ],
+      ),
       subtitle: timeDisplayed.isNotEmpty ? new Text(timeDisplayed) : null,
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          new Text(item.isVolume()
-              ? ((item.vcList != null ? item.vcList.length.toString() : '?') +
-                  ' 章')
-              : (item.wordCount.toString() + ' 字'))
+          PopupMenuButton<ChapterActions>(
+            icon: Icon(Icons.more_vert),
+            onSelected: (ChapterActions result) {},
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<ChapterActions>>[
+              const PopupMenuItem<ChapterActions>(
+                child: Text('重命名'),
+                value: ChapterActions.rename,
+              ),
+              const PopupMenuItem<ChapterActions>(
+                child: Text('插入章节'),
+                value: ChapterActions.insert,
+              ),
+              const PopupMenuItem<ChapterActions>(
+                child: Text('删除'),
+                value: ChapterActions.delete,
+              ),
+            ],
+          )
         ],
       ),
       onTap: () {
@@ -268,7 +308,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           openChapter(item);
         }
       },
-      onLongPress: () {},
+      onLongPress: () => {},
     );
   }
 
@@ -474,21 +514,20 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     FileUtil.writeText(
         Global.cBookCatalogPath(), jsonEncode(currentBook.toJson()));
   }
-  
+
   /// 打开当前分卷下的子分卷
   void actionEnterChildVolume(VCItem volume) {
     // 加到route末尾
     currentRoute.add(volume);
     _loadVolume(volume);
   }
-  
+
   /// 打开上一层或者某一层的分卷
   void actionEnterParentVolume(VCItem volume) {
     if (volume == null) {
       currentRoute = [];
       _loadVolume(null);
-    }
-    else if (currentRoute.length > 0 && currentRoute.last == volume) {
+    } else if (currentRoute.length > 0 && currentRoute.last == volume) {
       // 如果打开的当前分卷，则相当于刷新
       _loadVolume(volume);
     } else {
