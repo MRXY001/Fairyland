@@ -38,6 +38,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
   Iterator<VCItem> currentIterator; // 当前位置的分卷所在的指针
+  
+  bool showDeletedItems = false;
 
   @override
   void initState() {
@@ -123,9 +125,12 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
               onSelected: (String value) {
                 switch (value) {
                   case 'append_volume':
-                    {
                       actionAppendVolume();
-                    }
+                    break;
+                  case 'book_recycles':
+                    setState(() {
+                      showDeletedItems = !showDeletedItems;
+                    });
                     break;
                   default:
                     {}
@@ -218,7 +223,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           itemCount: currentList.length,
           itemBuilder: (context, index) {
             return Offstage(
-              offstage: currentList[index].deleted,
+              offstage: !showDeletedItems && currentList[index].deleted ?? false,
               child: AnimationConfiguration.staggeredList(
                   position: index,
                   child: SlideAnimation(
