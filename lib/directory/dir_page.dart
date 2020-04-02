@@ -426,6 +426,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             return ;
           currentList.removeAt(index);
           currentList.insert(index-1, item);
+          saveCatalog();
         });
         break;
       case ChapterActions.moveDown:
@@ -438,13 +439,28 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             currentList.add(item);
           else
             currentList.insert(index+1, item);
+          saveCatalog();
         });
         break;
       case ChapterActions.moveTop:
-        // TODO: Handle this case.
+        setState((){
+          int index = currentList.indexOf(item);
+          if (index < 0 || index >= currentList.length)
+            return ;
+          currentList.removeAt(index);
+          currentList.insert(0, item);
+          saveCatalog();
+        });
         break;
       case ChapterActions.moveBottom:
-        // TODO: Handle this case.
+        setState(() {
+          int index = currentList.indexOf(item);
+          if (index < 0 || index >= currentList.length)
+            return ;
+          currentList.removeAt(index);
+          currentList.add(item);
+          saveCatalog();
+        });
         break;
     }
   }
