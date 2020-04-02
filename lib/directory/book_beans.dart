@@ -106,6 +106,11 @@ class VCItem {
       'id': id,
       'name': name,
       'type': type,
+      'deleted': deleted,
+      'deleteTime': deleteTime,
+      'published': published,
+      'publishTime': publishTime,
+      'createTime': createTime
     };
     if (isChapter()) {
       map.addAll({
@@ -131,13 +136,19 @@ class VCItem {
         });
       }
     }
-    return new VCItem(
+    VCItem item = new VCItem(
       id: json['id'],
       name: json['name'],
       type: type,
       wordCount: json['wordCount'] ?? 0,
-      vcList: vcList,
+      vcList: vcList
     );
+    item.deleted = json['deleted'] ?? false;
+    item.deleteTime = json['deleteTime'] ?? 0;
+    item.published = json['published'] ?? false;
+    item.publishTime = json['publishTime'] ?? 0;
+    item.createTime = json['createTime'];
+    return item;
   }
 }
 

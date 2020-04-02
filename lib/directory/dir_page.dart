@@ -367,11 +367,11 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       ),
       const PopupMenuItem<ChapterActions>(
         child: Text('上移'),
-        value: ChapterActions.delete,
+        value: ChapterActions.moveUp,
       ),
       const PopupMenuItem<ChapterActions>(
         child: Text('下移'),
-        value: ChapterActions.delete,
+        value: ChapterActions.moveDown,
       ),
       const PopupMenuItem<ChapterActions>(
         child: Text('发布'),
@@ -391,20 +391,27 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         });
         break;
       case ChapterActions.insert:
-        {
           inputName('插入章节', '章名', '', (String result) {
             int index = currentList.indexOf(item);
             if (index < 0) // 出错了，没找到
               return ;
             _insertVCItemInCurrentList(index, new VCItem(name: result, type: VCItem.chapterType));
+            saveCatalog();
           });
-        }
         break;
       case ChapterActions.delete:
-        // TODO: Handle this case.
+        setState(() {
+          {
+            item.deleted = true;
+            item.deleteTime = DateTime.now().millisecondsSinceEpoch;
+            saveCatalog();
+          }
+        });
         break;
       case ChapterActions.restore:
-        // TODO: Handle this case.
+        setState(() {
+          item.deleted = false;
+        });
         break;
       case ChapterActions.publish:
         // TODO: Handle this case.
@@ -413,10 +420,25 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         // TODO: Handle this case.
         break;
       case ChapterActions.moveUp:
-        // TODO: Handle this case.
+        setState(() {
+          int index = currentList.indexOf(item);
+          if (index <= 0)
+            return ;
+          currentList.removeAt(index);
+          currentList.insert(index-1, item);
+        });
         break;
       case ChapterActions.moveDown:
-        // TODO: Handle this case.
+        setState(() {
+          int index = currentList.indexOf(item);
+          if (index < 0 || index >= currentList.length)
+            return ;
+          currentList.removeAt(index);
+          if (index >= currentList.length-1)
+            currentList.add(item);
+          else
+            currentList.insert(index+1, item);
+        });
         break;
       case ChapterActions.moveTop:
         // TODO: Handle this case.
@@ -425,7 +447,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         // TODO: Handle this case.
         break;
     }
-    ;
   }
 
   /// 从头打开作品
