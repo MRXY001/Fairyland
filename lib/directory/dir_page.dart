@@ -24,6 +24,9 @@ enum ChapterActions {
   rename,
   insert,
   delete,
+  restore,
+  publish,
+  information,
   moveUp,
   moveDown,
   moveTop,
@@ -214,14 +217,17 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       child: ListView.builder(
           itemCount: currentList.length,
           itemBuilder: (context, index) {
-            return AnimationConfiguration.staggeredList(
-                position: index,
-                child: SlideAnimation(
-                  verticalOffset: 50.0,
-                  child: FadeInAnimation(
-                    child: _getVolumeChapterLine(currentList[index]),
-                  ),
-                ));
+            return Offstage(
+              offstage: currentList[index].deleted,
+              child: AnimationConfiguration.staggeredList(
+                  position: index,
+                  child: SlideAnimation(
+                    verticalOffset: 50.0,
+                    child: FadeInAnimation(
+                      child: _getVolumeChapterLine(currentList[index]),
+                    ),
+                  )),
+            );
           }),
     );
     /*return ListView.separated(
@@ -270,36 +276,22 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       title: Row(
         children: <Widget>[
           new Text(name, style: TextStyle(fontSize: 16)),
-          new Spacer(flex: 1,),
-          new Text(item.isVolume()
-              ? ((item.vcList != null ? item.vcList.length.toString() : '?') +
-              ' 章')
-              : (item.wordCount.toString() + ' 字'), style: TextStyle(color: Colors.grey),),
+          new Spacer(
+            flex: 1,
+          ),
+          new Text(
+            item.isVolume()
+                ? ((item.vcList != null ? item.vcList.length.toString() : '?') +
+                    ' 章')
+                : (item.wordCount.toString() + ' 字'),
+            style: TextStyle(color: Colors.grey),
+          ),
         ],
       ),
       subtitle: timeDisplayed.isNotEmpty ? new Text(timeDisplayed) : null,
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          PopupMenuButton<ChapterActions>(
-            icon: Icon(Icons.more_vert),
-            onSelected: (ChapterActions result) {},
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<ChapterActions>>[
-              const PopupMenuItem<ChapterActions>(
-                child: Text('重命名'),
-                value: ChapterActions.rename,
-              ),
-              const PopupMenuItem<ChapterActions>(
-                child: Text('插入章节'),
-                value: ChapterActions.insert,
-              ),
-              const PopupMenuItem<ChapterActions>(
-                child: Text('删除'),
-                value: ChapterActions.delete,
-              ),
-            ],
-          )
-        ],
+        children: <Widget>[getVCitemPopupMenuButton(item)],
       ),
       onTap: () {
         if (item.isVolume()) {
@@ -310,6 +302,121 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       },
       onLongPress: () => {},
     );
+  }
+
+  PopupMenuButton getVCitemPopupMenuButton(VCItem item) {
+    return PopupMenuButton<ChapterActions>(
+        icon: Icon(Icons.more_vert),
+        itemBuilder: (BuildContext context) => item.isVolume()
+            ? getVolumeActions(context, item)
+            : getChapterActions(context, item),
+        onSelected: (ChapterActions result) =>
+            handleVCItemAction(item, result));
+  }
+
+  List<PopupMenuEntry<ChapterActions>> getVolumeActions(
+      BuildContext context, VCItem item) {
+    return <PopupMenuEntry<ChapterActions>>[
+      const PopupMenuItem<ChapterActions>(
+        child: Text('重命名'),
+        value: ChapterActions.rename,
+      ),
+      const PopupMenuItem<ChapterActions>(
+        child: Text('插入章节'),
+        value: ChapterActions.insert,
+      ),
+      item.deleted
+          ? const PopupMenuItem<ChapterActions>(
+              child: Text('从回收站恢复'),
+              value: ChapterActions.restore,
+            )
+          : const PopupMenuItem<ChapterActions>(
+              child: Text('移到回收站'),
+              value: ChapterActions.delete,
+            ),
+      const PopupMenuItem<ChapterActions>(
+        child: Text('上移'),
+        value: ChapterActions.delete,
+      ),
+      const PopupMenuItem<ChapterActions>(
+        child: Text('下移'),
+        value: ChapterActions.delete,
+      ),
+      const PopupMenuItem<ChapterActions>(
+        child: Text('发布'),
+        value: ChapterActions.publish,
+      ),
+    ];
+  }
+
+  List<PopupMenuEntry<ChapterActions>> getChapterActions(
+      BuildContext context, VCItem item) {
+    return <PopupMenuEntry<ChapterActions>>[
+      const PopupMenuItem<ChapterActions>(
+        child: Text('重命名'),
+        value: ChapterActions.rename,
+      ),
+      const PopupMenuItem<ChapterActions>(
+        child: Text('插入章节'),
+        value: ChapterActions.insert,
+      ),
+      item.deleted
+          ? const PopupMenuItem<ChapterActions>(
+        child: Text('从回收站恢复'),
+        value: ChapterActions.restore,
+      )
+          : const PopupMenuItem<ChapterActions>(
+        child: Text('移到回收站'),
+        value: ChapterActions.delete,
+      ),
+      const PopupMenuItem<ChapterActions>(
+        child: Text('上移'),
+        value: ChapterActions.delete,
+      ),
+      const PopupMenuItem<ChapterActions>(
+        child: Text('下移'),
+        value: ChapterActions.delete,
+      ),
+      const PopupMenuItem<ChapterActions>(
+        child: Text('发布'),
+        value: ChapterActions.publish,
+      ),
+    ];
+  }
+
+  void handleVCItemAction(VCItem item, ChapterActions result) {
+    switch (result) {
+      case ChapterActions.rename:
+        break;
+      case ChapterActions.insert:
+        // TODO: Handle this case.
+        break;
+      case ChapterActions.delete:
+        // TODO: Handle this case.
+        break;
+      case ChapterActions.restore:
+        // TODO: Handle this case.
+        break;
+      case ChapterActions.publish:
+        // TODO: Handle this case.
+        break;
+      case ChapterActions.information:
+        // TODO: Handle this case.
+        break;
+      case ChapterActions.moveUp:
+        // TODO: Handle this case.
+        break;
+      case ChapterActions.moveDown:
+        // TODO: Handle this case.
+        break;
+      case ChapterActions.moveTop:
+        // TODO: Handle this case.
+        break;
+      case ChapterActions.moveBottom:
+        // TODO: Handle this case.
+        break;
+    }
+    ;
   }
 
   /// 从头打开作品

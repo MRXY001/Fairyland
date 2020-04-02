@@ -48,6 +48,16 @@ class BookObject {
       wordCount: json['wordCount'] ?? 0,
     );
   }
+  
+  /// 设置每一项的 index（忽视删除的）displayedName
+  void setVCItemsContext() {
+  
+  }
+  
+  /// 递归 volume 的 displayedName
+  void setVolumeItemsContext() {
+  
+  }
 }
 
 /// Volume or Chapter Item Base
@@ -66,6 +76,8 @@ class VCItem {
   String content; // 章节内容/分卷内容
   int createTime; // 创建时间
   int modifyTime; // 修改时间
+  bool deleted = false; // 是否已删除
+  int deleteTime; // 删除时间
   bool published; // 是否已发布
   int publishTime; // 发布时间
   List<VCItem> vcList; // 分卷的子章节
