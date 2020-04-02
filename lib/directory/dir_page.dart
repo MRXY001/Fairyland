@@ -383,7 +383,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   void handleVCItemAction(VCItem item, ChapterActions result) {
     switch (result) {
       case ChapterActions.rename:
-        inputName('修改名字', '章名', (String result) {
+        inputName('修改名字', item.isVolume() ? '卷名' : '章名', item.name, (String result) {
           setState(() {
             item.name = result;
             saveCatalog();
@@ -675,24 +675,25 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   }
   
   /// 输入一行名字的操作（非空）
-  void inputName(String title, String label, var resultFunc) {
-    String inputName = '';
+  void inputName(String title, String label, String def, var resultFunc) {
+    var inputString = new TextEditingController();
+    inputString.text = def;
+    inputString.selection = new TextSelection(baseOffset: 0, extentOffset: def.length);
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: Text(title),
             content: TextField(
+              controller: inputString,
               decoration: InputDecoration(
+                hintText: def,
                 hintMaxLines: 1,
                 border: OutlineInputBorder(),
                 labelText: label,
                 prefixIcon: Icon(Icons.create),
               ),
               autofocus: true,
-              onChanged: (String value) {
-                inputName = value;
-              },
               onSubmitted: (value) {
                 if (value != null && value.isNotEmpty) {
                   resultFunc(value);
@@ -704,8 +705,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
               FlatButton(
                 child: Text('确定'),
                 onPressed: () {
-                  if (inputName != null && inputName.isNotEmpty) {
-                    resultFunc(inputName);
+                  if (inputString.text != null && inputString.text.isNotEmpty) {
+                    resultFunc(inputString.text);
                     Navigator.of(context).pop();
                   }
                 },
