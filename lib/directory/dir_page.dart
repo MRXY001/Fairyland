@@ -105,7 +105,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
                 ),
                 PopupMenuItem<String>(
                   value: "book_duplicate",
-                  child: Text('暂存作品'),
+                  child: Text('复制作品'),
                 ),
                 PopupMenuItem<String>(
                   value: "book_delete",
@@ -391,7 +391,14 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         });
         break;
       case ChapterActions.insert:
-        // TODO: Handle this case.
+        {
+          inputName('插入章节', '章名', '', (String result) {
+            int index = currentList.indexOf(item);
+            if (index < 0) // 出错了，没找到
+              return ;
+            _insertVCItemInCurrentList(index, new VCItem(name: result, type: VCItem.chapterType));
+          });
+        }
         break;
       case ChapterActions.delete:
         // TODO: Handle this case.
@@ -488,58 +495,10 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     );*/
 
     // 添加新章
-    String inputName = '';
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('添加新章'),
-            content: TextField(
-              decoration: InputDecoration(
-                hintMaxLines: 1,
-                border: OutlineInputBorder(),
-                labelText: '章名',
-                prefixIcon: Icon(Icons.create),
-              ),
-              autofocus: true,
-              onChanged: (String value) {
-                inputName = value;
-              },
-            ),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('确定'),
-                onPressed: () {
-                  if (inputName != null && inputName.isNotEmpty) {
-                    // 添加章节到末尾
-                    _appendChapterInCurrentList(inputName);
-
-                    // 保存修改
-                    saveCatalog();
-
-                    Navigator.of(context).pop();
-                  }
-                },
-              ),
-              FlatButton(
-                child: Text(
-                  '取消',
-                  style: TextStyle(color: Colors.grey),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        });
-  }
-
-  /// 在当前的volume下添加一个章节
-  void _appendChapterInCurrentList(String name) {
-    setState(() {
-      VCItem chapter = new VCItem(name: name);
-      currentList.add(chapter);
+    inputName('添加新章', '章名', '', (String result) {
+      // 添加章节到末尾
+      _insertVCItemInCurrentList(-1, new VCItem(name: result, type: VCItem.chapterType));
+      saveCatalog();
     });
   }
 
@@ -551,59 +510,26 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     }
 
     // 添加新卷
-    String inputName = '';
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('添加分卷'),
-            content: TextField(
-              decoration: InputDecoration(
-                hintMaxLines: 1,
-                border: OutlineInputBorder(),
-                labelText: '卷名',
-                prefixIcon: Icon(Icons.create),
-              ),
-              autofocus: true,
-              onChanged: (String value) {
-                inputName = value;
-              },
-            ),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('确定'),
-                onPressed: () {
-                  if (inputName != null && inputName.isNotEmpty) {
-                    // 添加章节到末尾
-                    _appendVolumeInCurrentList(inputName);
-
-                    // 保存修改
-                    saveCatalog();
-
-                    Navigator.of(context).pop();
-                  }
-                },
-              ),
-              FlatButton(
-                child: Text(
-                  '取消',
-                  style: TextStyle(color: Colors.grey),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        });
-  }
-
-  void _appendVolumeInCurrentList(String name) {
-    setState(() {
-      VCItem volume =
-          new VCItem(name: name, type: VCItem.volumeType, vcList: []);
-      currentList.add(volume);
+    inputName('添加新卷', '卷名', '', (String result) {
+      // 添加分卷到末尾
+      _insertVCItemInCurrentList(-1, new VCItem(name: result, type: VCItem.volumeType, vcList: []));
+      saveCatalog();
     });
+  }
+  
+  void _insertVCItemInCurrentList(int index, VCItem item) {
+    if (item.id == null) {
+      // 获取唯一ID
+    }
+    if (item.isVolume() && item.vcList == null) {
+      item.vcList = [];
+    }
+    if (index > 0 && index < currentList.length) {
+      currentList.insert(index, item);
+    } else {
+      currentList.add(item);
+    }
+    setState((){});
   }
 
   /// 获取当前查看的分卷
@@ -696,7 +622,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
               autofocus: true,
               onSubmitted: (value) {
                 if (value != null && value.isNotEmpty) {
-                  resultFunc(value);
+                  resultFunc(value.trim());
                   Navigator.of(context).pop();
                 }
               },
@@ -705,7 +631,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
               FlatButton(
                 child: Text('确定'),
                 onPressed: () {
-                  if (inputString.text != null && inputString.text.isNotEmpty) {
+                  if (inputString.text != null && inputString.text.trim().isNotEmpty) {
                     resultFunc(inputString.text);
                     Navigator.of(context).pop();
                   }
