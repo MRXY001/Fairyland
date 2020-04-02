@@ -342,10 +342,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         child: Text('下移'),
         value: ChapterActions.delete,
       ),
-      const PopupMenuItem<ChapterActions>(
-        child: Text('发布'),
-        value: ChapterActions.publish,
-      ),
     ];
   }
 
@@ -387,6 +383,12 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   void handleVCItemAction(VCItem item, ChapterActions result) {
     switch (result) {
       case ChapterActions.rename:
+        inputName('修改名字', '章名', (String result) {
+          setState(() {
+            item.name = result;
+            saveCatalog();
+          });
+        });
         break;
       case ChapterActions.insert:
         // TODO: Handle this case.
@@ -670,5 +672,55 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     await Future.delayed(Duration(seconds: 1), () {
       setState(() {});
     });
+  }
+  
+  /// 输入一行名字的操作（非空）
+  void inputName(String title, String label, var resultFunc) {
+    String inputName = '';
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(title),
+            content: TextField(
+              decoration: InputDecoration(
+                hintMaxLines: 1,
+                border: OutlineInputBorder(),
+                labelText: label,
+                prefixIcon: Icon(Icons.create),
+              ),
+              autofocus: true,
+              onChanged: (String value) {
+                inputName = value;
+              },
+              onSubmitted: (value) {
+                if (value != null && value.isNotEmpty) {
+                  resultFunc(value);
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('确定'),
+                onPressed: () {
+                  if (inputName != null && inputName.isNotEmpty) {
+                    resultFunc(inputName);
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+              FlatButton(
+                child: Text(
+                  '取消',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
   }
 }
