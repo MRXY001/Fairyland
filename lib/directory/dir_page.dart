@@ -382,7 +382,13 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           int index = currentList.indexOf(item);
           if (index <= 0) return;
           currentList.removeAt(index);
-          currentList.insert(index - 1, item);
+          int target = index - 1;
+          if (!_showDeletedItems) {
+            while (target > 0 && currentList[target].deleted) {
+              target--;
+            }
+          }
+          currentList.insert(target, item);
           saveCatalog();
         });
         break;
@@ -391,10 +397,16 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           int index = currentList.indexOf(item);
           if (index < 0 || index >= currentList.length) return;
           currentList.removeAt(index);
-          if (index >= currentList.length - 1)
+          int target = index;
+          if (!_showDeletedItems) {
+            while (target < currentList.length && currentList[target].deleted) {
+              target++;
+            }
+          }
+          if (target >= currentList.length - 1)
             currentList.add(item);
           else
-            currentList.insert(index + 1, item);
+            currentList.insert(target + 1, item);
           saveCatalog();
         });
         break;

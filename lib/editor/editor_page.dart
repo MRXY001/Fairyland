@@ -13,6 +13,20 @@ class EditorPage extends StatefulWidget {
 }
 
 class _EditPageState extends State<EditorPage> {
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: new AppBar(
+        title: Text('编辑'),
+      ),
+      body: null,
+    );
+  }
+  
+}
+
+class _ZefyrState extends State<EditorPage> {
   ZefyrController _controller;
   FocusNode _focusNode;
   
@@ -44,6 +58,10 @@ class _EditPageState extends State<EditorPage> {
   NotusDocument _loadDocument() {
     final Delta delta = Delta()..insert('Zefyr Quick Start\n');
     return NotusDocument.fromDelta(delta);
+  }
+  
+  void save() {
+  
   }
 
 }
