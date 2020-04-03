@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:fairyland/common/global.dart';
 import 'package:fairyland/dialogs/my_template.dart';
@@ -119,7 +120,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
                 ),
                 PopupMenuItem<String>(
                   value: "book_recycles",
-                  child: Text('回收站'),
+                  child: Text(showDeletedItems ? '隐藏回收站' : '显示回收站'),
                 ),
               ],
               onSelected: (String value) {
@@ -131,6 +132,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
                     setState(() {
                       showDeletedItems = !showDeletedItems;
                     });
+                    break;
+                  case 'book_delete' :
+                    actionDeleteBook();
                     break;
                   default:
                     {}
@@ -506,10 +510,12 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   /// 关闭当前一打开的作品
   /// 并且保存一些状态变量，以便下次打开时恢复
   void closeCurrentBook() {
-    Global.currentBookName = currentBook = null;
-    currentRoute = null;
-    currentList = null;
-    currentIterator = null;
+    setState(() {
+      Global.currentBookName = currentBook = null;
+      currentRoute = null;
+      currentList = null;
+      currentIterator = null;
+    });
   }
 
   /// 添加新的章节
@@ -518,23 +524,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       Fluttertoast.showToast(msg: '请点击左上方标题创建一部作品');
       return;
     }
-
-    /*final popup = BeautifulPopup(
-      context: context,
-      template: TemplateSuccess,
-    );
-    final newColor = Colors.red.withOpacity(0.5);
-    popup.recolor(newColor);
-    popup.show(
-      title: 'String',
-      content: 'String',
-      actions: [
-        popup.button(
-          label: 'Close',
-          onPressed: Navigator.of(context).pop
-        )
-      ]
-    );*/
 
     // 添加新章
     inputName('添加新章', '章名', '', (String result) {
@@ -691,5 +680,49 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             ],
           );
         });
+  }
+  
+  /// 删除作品操作
+  void actionDeleteBook() {
+    final popup = BeautifulPopup(
+      context: context,
+      template: TemplateFail,
+    );
+    final newColor = Colors.red.withOpacity(0.5);
+    popup.recolor(newColor);
+    popup.show(
+        title: '警告',
+        content: '是否删除该作品？\n\n将删除所有内容，不可恢复',
+        actions: [
+          popup.button(
+              label: '我已想好，确定删除',
+              onPressed: () {
+                _deleteCurrentBook();
+                Navigator.of(context).pop();
+              }
+          )
+        ]
+    );
+  }
+  
+  /// 删除作品
+  _deleteCurrentBook() {
+    if (currentBook == null) {
+      return ;
+    }
+    String name = currentBook.name.toString();
+    closeCurrentBook();
+
+    FileUtil.createDir(Global.recyclesBooksPath);
+    String bookPath = Global.booksPath + name;
+    String recyclePath = Global.rBookPath(name);
+    int index = 0;
+    String tempPath = recyclePath;
+    while (FileUtil.isDirExists(tempPath)) {
+      tempPath = recyclePath + '(' + (++index).toString() + ')';
+    }
+    if (index > 0)
+      recyclePath = tempPath;
+    FileUtil.moveDir(bookPath, recyclePath);
   }
 }

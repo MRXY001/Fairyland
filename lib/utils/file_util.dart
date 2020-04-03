@@ -62,6 +62,7 @@ class FileUtil {
 		}
 		
 		var directory = new Directory(oldPath);
+		// TODO: 递归复制文件
 	}
 	
 	static bool isDirExists(String path) {

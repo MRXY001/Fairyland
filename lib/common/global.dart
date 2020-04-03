@@ -17,6 +17,8 @@ class Global {
   static String storagePath; // 外部存储目录
   static String dataPath; // 应用数据路径
   static String booksPath; // 小说路径
+  static String recyclesPath;
+  static String recyclesBooksPath; // 回收站路径
 
   static String currentBookName;
 
@@ -30,6 +32,8 @@ class Global {
   static String cBookCatalogPath() => cBookPath() + '/catalog.json';
 
   static String cBookChaptersPath() => cBookPath() + '/chapters/';
+  
+  static String rBookPath(String name) => recyclesBooksPath + name + '/';
 
   // 可选的主题列表
   static List<MaterialColor> get themes => _themes;
@@ -51,5 +55,7 @@ class Global {
     storagePath = (await getExternalStorageDirectory()).path;
     dataPath = (await getApplicationDocumentsDirectory()).path + '/data/';
     booksPath = dataPath + 'books/';
+    recyclesPath = dataPath + 'recycles/';
+    recyclesBooksPath = recyclesPath + 'books/';
   }
 }
