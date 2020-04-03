@@ -61,7 +61,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           title: Builder(
             builder: (BuildContext context) {
               // 获取context后才能跳转页面
-              return new GestureDetector(
+              return new InkWell(
                 child: new Text(
                     currentBook == null ? '创建或切换作品' : currentBook.name),
                 onTap: () {
@@ -169,7 +169,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
                   child: SlideAnimation(
                     verticalOffset: 50.0,
                     child: FadeInAnimation(
-                      child: _getVolumeChapterTile(currentList[index]),
+                      child: _getVolumeChapterTile(currentList[index], index),
                     ),
                   )),
             );
@@ -187,7 +187,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   }
 
   /// 获取目录的每一行
-  Widget _getVolumeChapterTile(VCItem item) {
+  Widget _getVolumeChapterTile(VCItem item, int index) {
     String name = item.name; // item.getDisplayName();
     Image image = Image.asset(item.isVolume()
         ? 'assets/icons/volume.png'
@@ -239,7 +239,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       subtitle: timeDisplayed.isNotEmpty ? new Text(timeDisplayed) : null,
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[getVCitemPopupMenuButton(item)],
+        children: <Widget>[getVCItemPopupMenuButton(item, index)],
       ),
       onTap: () {
         if (item.isVolume()) {
@@ -252,18 +252,18 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     );
   }
 
-  PopupMenuButton getVCitemPopupMenuButton(VCItem item) {
+  PopupMenuButton getVCItemPopupMenuButton(VCItem item, int index) {
     return PopupMenuButton<ChapterActions>(
         icon: Icon(Icons.more_vert),
         itemBuilder: (BuildContext context) => item.isVolume()
-            ? getVolumeActions(context, item)
-            : getChapterActions(context, item),
+            ? getVolumeActions(context, item, index)
+            : getChapterActions(context, item, index),
         onSelected: (ChapterActions result) =>
             handleVCItemAction(item, result));
   }
 
   List<PopupMenuEntry<ChapterActions>> getVolumeActions(
-      BuildContext context, VCItem item) {
+      BuildContext context, VCItem item, int index) {
     return <PopupMenuEntry<ChapterActions>>[
       const PopupMenuItem<ChapterActions>(
         child: Text('重命名'),
@@ -282,19 +282,20 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
               child: Text('移到回收站'),
               value: ChapterActions.delete,
             ),
-      const PopupMenuItem<ChapterActions>(
+      PopupMenuItem<ChapterActions>(
         child: Text('上移'),
-        value: ChapterActions.delete,
+        value: ChapterActions.moveUp,
+        enabled: index > 0,
       ),
-      const PopupMenuItem<ChapterActions>(
-        child: Text('下移'),
-        value: ChapterActions.delete,
-      ),
+      PopupMenuItem<ChapterActions>(
+          child: Text('下移'),
+          value: ChapterActions.moveDown,
+          enabled: index < currentList.length-1),
     ];
   }
 
   List<PopupMenuEntry<ChapterActions>> getChapterActions(
-      BuildContext context, VCItem item) {
+      BuildContext context, VCItem item, int index) {
     return <PopupMenuEntry<ChapterActions>>[
       const PopupMenuItem<ChapterActions>(
         child: Text('重命名'),
@@ -323,14 +324,15 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
               child: Text('移到回收站'),
               value: ChapterActions.delete,
             ),
-      const PopupMenuItem<ChapterActions>(
+      PopupMenuItem<ChapterActions>(
         child: Text('上移'),
         value: ChapterActions.moveUp,
+        enabled: index > 0,
       ),
-      const PopupMenuItem<ChapterActions>(
-        child: Text('下移'),
-        value: ChapterActions.moveDown,
-      ),
+      PopupMenuItem<ChapterActions>(
+          child: Text('下移'),
+          value: ChapterActions.moveDown,
+          enabled: index < currentList.length-1),
     ];
   }
 
