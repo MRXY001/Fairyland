@@ -177,12 +177,12 @@ class _BookFields extends State<BookFields> {
 
   /// 创建新的小说
   bool create() {
-    if (name.isEmpty || FileUtil.isDirExists(Global.bookPath(name))) {
+    if (name.isEmpty || FileUtil.isDirExists(Global.bookPathD(name))) {
       return false;
     }
 
     // 创建默认的小说内容
-    String path = Global.bookPath(name);
+    String path = Global.bookPathD(name);
     FileUtil.createDir(Global.booksPath);
     FileUtil.createDir(path);
     FileUtil.createDir(path + "chapters");
@@ -235,7 +235,7 @@ class _BookFields extends State<BookFields> {
   "createTime": $createTime
 }
 ''';
-    FileUtil.writeText(Global.bookCatalogPath(name), dirTree);
+    FileUtil.writeText(Global.bookCatalogPathD(name), dirTree);
 
     return true;
   }

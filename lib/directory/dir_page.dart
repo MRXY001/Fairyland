@@ -478,9 +478,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   /// 如果已经有打开的了，需要先调用 closeCurrentBook()
   void openBook(String name) {
     // 如果目录不存在或者文件有错误，弹出警告
-    String path = Global.bookPath(name);
+    String path = Global.bookPathD(name);
     if (FileUtil.isDirNotExists(path) ||
-        FileUtil.isFileNotExist(Global.bookCatalogPath(name))) {
+        FileUtil.isFileNotExist(Global.bookCatalogPathD(name))) {
       Fluttertoast.showToast(
         msg: '无法读取作品：《' + name + '》所在数据',
         toastLength: Toast.LENGTH_LONG,
@@ -492,7 +492,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
     // 读取作品目录
     Global.currentBookName = name;
-    String str = FileUtil.readText(Global.cBookCatalogPath());
+    String str = FileUtil.readText(Global.cBookCatalogPathD());
     try {
       // 解析JSON
       currentBook = BookObject.fromJson(json.decode(str));
@@ -578,7 +578,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       return;
     }
     FileUtil.writeText(
-        Global.cBookCatalogPath(), jsonEncode(currentBook.toJson()));
+        Global.cBookCatalogPathD(), jsonEncode(currentBook.toJson()));
   }
 
   /// 打开当前分卷下的子分卷

@@ -22,18 +22,21 @@ class Global {
 
   static String currentBookName;
 
-  static String bookPath(String name) => booksPath + name + '/';
+  // 路径方法命名规则：PathD 结尾的带分割线（可以理解为 Dir，或 Divider）
+  static String bookPathD(String name) => booksPath + name + '/';
 
-  static String bookCatalogPath(String name) =>
+  static String bookCatalogPathD(String name) =>
       booksPath + name + '/catalog.json';
 
-  static String cBookPath() => dataPath + 'books/' + currentBookName + '/';
+  static String cBookPathD() => dataPath + 'books/' + currentBookName + '/';
 
-  static String cBookCatalogPath() => cBookPath() + '/catalog.json';
+  static String cBookCatalogPathD() => cBookPathD() + '/catalog.json';
 
-  static String cBookChaptersPath() => cBookPath() + '/chapters/';
-  
-  static String rBookPath(String name) => recyclesBooksPath + name + '/';
+  static String cBookChaptersPathD() => cBookPathD() + '/chapters/';
+
+  static String rBookPathD(String name) => recyclesBooksPath + name + '/';
+
+  static String rBookPath(String name) => recyclesBooksPath + name;
 
   // 可选的主题列表
   static List<MaterialColor> get themes => _themes;
