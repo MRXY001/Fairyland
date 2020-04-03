@@ -39,8 +39,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
   Iterator<VCItem> currentIterator; // 当前位置的分卷所在的指针
-  
-  bool showDeletedItems = false;
+
+  bool _showDeletedItems = false;
 
   @override
   void initState() {
@@ -162,13 +162,14 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           itemCount: currentList.length,
           itemBuilder: (context, index) {
             return Offstage(
-              offstage: !showDeletedItems && currentList[index].deleted ?? false,
+              offstage:
+                  !_showDeletedItems && currentList[index].deleted ?? false,
               child: AnimationConfiguration.staggeredList(
                   position: index,
                   child: SlideAnimation(
                     verticalOffset: 50.0,
                     child: FadeInAnimation(
-                      child: _getVolumeChapterLine(currentList[index]),
+                      child: _getVolumeChapterTile(currentList[index]),
                     ),
                   )),
             );
@@ -186,7 +187,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   }
 
   /// 获取目录的每一行
-  Widget _getVolumeChapterLine(VCItem item) {
+  Widget _getVolumeChapterTile(VCItem item) {
     String name = item.name; // item.getDisplayName();
     Image image = Image.asset(item.isVolume()
         ? 'assets/icons/volume.png'
@@ -213,13 +214,16 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     }
     return new ListTile(
       leading: new Container(
-        child: image,
+        child: !item.deleted ? image : null,
         constraints: BoxConstraints(
             maxWidth: 32, minWidth: 32, minHeight: 32, maxHeight: 32),
       ),
       title: Row(
         children: <Widget>[
-          new Text(name, style: TextStyle(fontSize: 16)),
+          !item.deleted
+              ? new Text(name, style: TextStyle(fontSize: 16))
+              : new Text(name,
+                  style: TextStyle(fontSize: 16, color: Colors.grey)),
           new Spacer(
             flex: 1,
           ),
@@ -312,13 +316,13 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       ),
       item.deleted
           ? const PopupMenuItem<ChapterActions>(
-        child: Text('从回收站恢复'),
-        value: ChapterActions.restore,
-      )
+              child: Text('从回收站恢复'),
+              value: ChapterActions.restore,
+            )
           : const PopupMenuItem<ChapterActions>(
-        child: Text('移到回收站'),
-        value: ChapterActions.delete,
-      ),
+              child: Text('移到回收站'),
+              value: ChapterActions.delete,
+            ),
       const PopupMenuItem<ChapterActions>(
         child: Text('上移'),
         value: ChapterActions.moveUp,
@@ -333,7 +337,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   void handleVCItemAction(VCItem item, ChapterActions result) {
     switch (result) {
       case ChapterActions.rename:
-        inputName('修改名字', item.isVolume() ? '卷名' : '章名', item.name, (String result) {
+        inputName('修改名字', item.isVolume() ? '卷名' : '章名', item.name,
+            (String result) {
           setState(() {
             item.name = result;
             saveCatalog();
@@ -341,13 +346,14 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         });
         break;
       case ChapterActions.insert:
-          inputName('插入章节', '章名', '', (String result) {
-            int index = currentList.indexOf(item);
-            if (index < 0) // 出错了，没找到
-              return ;
-            _insertVCItemInCurrentList(index, new VCItem(name: result, type: VCItem.chapterType));
-            saveCatalog();
-          });
+        inputName('插入章节', '章名', '', (String result) {
+          int index = currentList.indexOf(item);
+          if (index < 0) // 出错了，没找到
+            return;
+          _insertVCItemInCurrentList(
+              index, new VCItem(name: result, type: VCItem.chapterType));
+          saveCatalog();
+        });
         break;
       case ChapterActions.delete:
         setState(() {
@@ -372,31 +378,28 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       case ChapterActions.moveUp:
         setState(() {
           int index = currentList.indexOf(item);
-          if (index <= 0)
-            return ;
+          if (index <= 0) return;
           currentList.removeAt(index);
-          currentList.insert(index-1, item);
+          currentList.insert(index - 1, item);
           saveCatalog();
         });
         break;
       case ChapterActions.moveDown:
         setState(() {
           int index = currentList.indexOf(item);
-          if (index < 0 || index >= currentList.length)
-            return ;
+          if (index < 0 || index >= currentList.length) return;
           currentList.removeAt(index);
-          if (index >= currentList.length-1)
+          if (index >= currentList.length - 1)
             currentList.add(item);
           else
-            currentList.insert(index+1, item);
+            currentList.insert(index + 1, item);
           saveCatalog();
         });
         break;
       case ChapterActions.moveTop:
-        setState((){
+        setState(() {
           int index = currentList.indexOf(item);
-          if (index < 0 || index >= currentList.length)
-            return ;
+          if (index < 0 || index >= currentList.length) return;
           currentList.removeAt(index);
           currentList.insert(0, item);
           saveCatalog();
@@ -405,8 +408,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       case ChapterActions.moveBottom:
         setState(() {
           int index = currentList.indexOf(item);
-          if (index < 0 || index >= currentList.length)
-            return ;
+          if (index < 0 || index >= currentList.length) return;
           currentList.removeAt(index);
           currentList.add(item);
           saveCatalog();
@@ -414,16 +416,16 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         break;
     }
   }
-  
+
   PopupMenuButton getBookMenu() {
     if (currentBook == null) {
       return PopupMenuButton<String>(
-          itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
-            PopupMenuItem<String>(
-              value: "book_shelf",
-              child: Text('查看书架'),
-            ),
-          ],
+        itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
+          PopupMenuItem<String>(
+            value: "book_shelf",
+            child: Text('查看书架'),
+          ),
+        ],
         onSelected: (String value) {
           switch (value) {
             case 'book_shelf':
@@ -469,7 +471,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         ),
         PopupMenuItem<String>(
           value: "book_recycles",
-          child: Text(showDeletedItems ? '隐藏回收站' : '显示回收站'),
+          child: Text(_showDeletedItems ? '隐藏回收站' : '显示回收站'),
         ),
       ],
       onSelected: (String value) {
@@ -479,10 +481,10 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             break;
           case 'book_recycles':
             setState(() {
-              showDeletedItems = !showDeletedItems;
+              _showDeletedItems = !_showDeletedItems;
             });
             break;
-          case 'book_delete' :
+          case 'book_delete':
             actionDeleteBook();
             break;
           default:
@@ -492,17 +494,17 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       },
     );
   }
-  
+
   void actionOpenBookShelf() {
     Navigator.push<String>(context,
         new MaterialPageRoute(builder: (BuildContext context) {
-          return new Bookshelf();
-        })).then((String result) {
+      return new Bookshelf();
+    })).then((String result) {
       if (result == null || result.isEmpty) {
         // 按返回键返回是没有传回的参数的
         return;
       }
-    
+
       // 读取作品
       closeCurrentBook();
       openBook(result);
@@ -563,7 +565,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     // 添加新章
     inputName('添加新章', '章名', '', (String result) {
       // 添加章节到末尾
-      _insertVCItemInCurrentList(-1, new VCItem(name: result, type: VCItem.chapterType));
+      _insertVCItemInCurrentList(
+          -1, new VCItem(name: result, type: VCItem.chapterType));
       saveCatalog();
     });
   }
@@ -578,11 +581,12 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     // 添加新卷
     inputName('添加新卷', '卷名', '', (String result) {
       // 添加分卷到末尾
-      _insertVCItemInCurrentList(-1, new VCItem(name: result, type: VCItem.volumeType, vcList: []));
+      _insertVCItemInCurrentList(
+          -1, new VCItem(name: result, type: VCItem.volumeType, vcList: []));
       saveCatalog();
     });
   }
-  
+
   void _insertVCItemInCurrentList(int index, VCItem item) {
     if (item.id == null) {
       // 获取唯一ID
@@ -595,7 +599,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     } else {
       currentList.add(item);
     }
-    setState((){});
+    setState(() {});
   }
 
   /// 获取当前查看的分卷
@@ -619,7 +623,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   /// 打开当前分卷下的子分卷
   void actionEnterChildVolume(VCItem volume) {
     if (currentBook == null) {
-      return ;
+      return;
     }
     // 加到route末尾
     currentRoute.add(volume);
@@ -629,7 +633,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   /// 打开上一层或者某一层的分卷
   void actionEnterParentVolume(VCItem volume) {
     if (currentBook == null) {
-      return ;
+      return;
     }
     if (volume == null) {
       currentRoute = [];
@@ -671,12 +675,13 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       setState(() {});
     });
   }
-  
+
   /// 输入一行名字的操作（非空）
   void inputName(String title, String label, String def, var resultFunc) {
     var inputString = new TextEditingController();
     inputString.text = def;
-    inputString.selection = new TextSelection(baseOffset: 0, extentOffset: def.length);
+    inputString.selection =
+        new TextSelection(baseOffset: 0, extentOffset: def.length);
     showDialog(
         context: context,
         builder: (context) {
@@ -703,7 +708,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
               FlatButton(
                 child: Text('确定'),
                 onPressed: () {
-                  if (inputString.text != null && inputString.text.trim().isNotEmpty) {
+                  if (inputString.text != null &&
+                      inputString.text.trim().isNotEmpty) {
                     resultFunc(inputString.text);
                     Navigator.of(context).pop();
                   }
@@ -722,20 +728,18 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           );
         });
   }
-  
+
   void actionRenameBook() {
     if (currentBook == null) {
-      return ;
+      return;
     }
-    inputName('修改书名', '书名', currentBook.name, () {
-    
-    });
+    inputName('修改书名', '书名', currentBook.name, () {});
   }
-  
+
   /// 删除作品操作
   void actionDeleteBook() {
     if (currentBook == null) {
-      return ;
+      return;
     }
     final popup = BeautifulPopup(
       context: context,
@@ -743,21 +747,16 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     );
     final newColor = Colors.red.withOpacity(0.5);
     popup.recolor(newColor);
-    popup.show(
-        title: '警告',
-        content: '是否删除该作品？\n\n将删除所有内容，不可恢复',
-        actions: [
-          popup.button(
-              label: '我已想好，确定删除',
-              onPressed: () {
-                _deleteCurrentBook();
-                Navigator.of(context).pop();
-              }
-          )
-        ]
-    );
+    popup.show(title: '警告', content: '是否删除该作品？\n\n将删除所有内容，不可恢复', actions: [
+      popup.button(
+          label: '我已想好，确定删除',
+          onPressed: () {
+            _deleteCurrentBook();
+            Navigator.of(context).pop();
+          })
+    ]);
   }
-  
+
   /// 删除作品
   _deleteCurrentBook() {
     String name = currentBook.name.toString();
@@ -771,8 +770,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     while (FileUtil.isDirExists(tempPath)) {
       tempPath = recyclePath + '(' + (++index).toString() + ')';
     }
-    if (index > 0)
-      recyclePath = tempPath;
+    if (index > 0) recyclePath = tempPath;
     FileUtil.moveDir(bookPath, recyclePath);
   }
 }
