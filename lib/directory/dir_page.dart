@@ -65,19 +65,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
                 child: new Text(
                     currentBook == null ? '创建或切换作品' : currentBook.name),
                 onTap: () {
-                  Navigator.push<String>(context,
-                      new MaterialPageRoute(builder: (BuildContext context) {
-                    return new Bookshelf();
-                  })).then((String result) {
-                    if (result == null || result.isEmpty) {
-                      // 按返回键返回是没有传回的参数的
-                      return;
-                    }
-
-                    // 读取作品
-                    closeCurrentBook();
-                    openBook(result);
-                  });
+                  actionOpenBookShelf();
                 },
               );
             },
@@ -88,60 +76,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
               tooltip: '添加新章',
               onPressed: () => actionAppendChapter(),
             ),
-            PopupMenuButton<String>(
-              itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
-                PopupMenuItem<String>(
-                  value: "append_volume",
-                  child: Text('添加新卷'),
-                ),
-                PopupMenuItem<String>(
-                  value: "book_info",
-                  child: Text('全书统计'),
-                ),
-                PopupMenuItem<String>(
-                  value: "book_rename",
-                  child: Text('修改书名'),
-                ),
-                PopupMenuItem<String>(
-                  value: "book_export",
-                  child: Text('导出作品'),
-                ),
-                PopupMenuItem<String>(
-                  value: "book_duplicate",
-                  child: Text('复制作品'),
-                ),
-                PopupMenuItem<String>(
-                  value: "book_delete",
-                  child: Text('删除作品'),
-                ),
-                PopupMenuItem<String>(
-                  value: "book_settings",
-                  child: Text('目录设置'),
-                ),
-                PopupMenuItem<String>(
-                  value: "book_recycles",
-                  child: Text(showDeletedItems ? '隐藏回收站' : '显示回收站'),
-                ),
-              ],
-              onSelected: (String value) {
-                switch (value) {
-                  case 'append_volume':
-                      actionAppendVolume();
-                    break;
-                  case 'book_recycles':
-                    setState(() {
-                      showDeletedItems = !showDeletedItems;
-                    });
-                    break;
-                  case 'book_delete' :
-                    actionDeleteBook();
-                    break;
-                  default:
-                    {}
-                    break;
-                }
-              },
-            )
+            getBookMenu()
           ]),
       body: new Column(
         children: <Widget>[
@@ -365,6 +300,16 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         child: Text('插入章节'),
         value: ChapterActions.insert,
       ),
+      const PopupMenuItem<ChapterActions>(
+        child: Text('发布'),
+        value: ChapterActions.publish,
+        enabled: false,
+      ),
+      const PopupMenuItem<ChapterActions>(
+        child: Text('字数详情'),
+        value: ChapterActions.publish,
+        enabled: false,
+      ),
       item.deleted
           ? const PopupMenuItem<ChapterActions>(
         child: Text('从回收站恢复'),
@@ -381,10 +326,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       const PopupMenuItem<ChapterActions>(
         child: Text('下移'),
         value: ChapterActions.moveDown,
-      ),
-      const PopupMenuItem<ChapterActions>(
-        child: Text('发布'),
-        value: ChapterActions.publish,
       ),
     ];
   }
@@ -472,6 +413,100 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         });
         break;
     }
+  }
+  
+  PopupMenuButton getBookMenu() {
+    if (currentBook == null) {
+      return PopupMenuButton<String>(
+          itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
+            PopupMenuItem<String>(
+              value: "book_shelf",
+              child: Text('查看书架'),
+            ),
+          ],
+        onSelected: (String value) {
+          switch (value) {
+            case 'book_shelf':
+              actionOpenBookShelf();
+              break;
+          }
+        },
+      );
+    }
+    return PopupMenuButton<String>(
+      itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
+        PopupMenuItem<String>(
+          value: "append_volume",
+          child: Text('添加新卷'),
+        ),
+        PopupMenuItem<String>(
+          value: "book_info",
+          child: Text('全书统计'),
+          enabled: false,
+        ),
+        PopupMenuItem<String>(
+          value: "book_rename",
+          child: Text('修改书名'),
+        ),
+        PopupMenuItem<String>(
+          value: "book_export",
+          child: Text('导出作品'),
+          enabled: false,
+        ),
+        PopupMenuItem<String>(
+          value: "book_duplicate",
+          child: Text('复制作品'),
+          enabled: false,
+        ),
+        PopupMenuItem<String>(
+          value: "book_delete",
+          child: Text('删除作品'),
+        ),
+        PopupMenuItem<String>(
+          value: "book_settings",
+          child: Text('目录设置'),
+          enabled: false,
+        ),
+        PopupMenuItem<String>(
+          value: "book_recycles",
+          child: Text(showDeletedItems ? '隐藏回收站' : '显示回收站'),
+        ),
+      ],
+      onSelected: (String value) {
+        switch (value) {
+          case 'append_volume':
+            actionAppendVolume();
+            break;
+          case 'book_recycles':
+            setState(() {
+              showDeletedItems = !showDeletedItems;
+            });
+            break;
+          case 'book_delete' :
+            actionDeleteBook();
+            break;
+          default:
+            {}
+            break;
+        }
+      },
+    );
+  }
+  
+  void actionOpenBookShelf() {
+    Navigator.push<String>(context,
+        new MaterialPageRoute(builder: (BuildContext context) {
+          return new Bookshelf();
+        })).then((String result) {
+      if (result == null || result.isEmpty) {
+        // 按返回键返回是没有传回的参数的
+        return;
+      }
+    
+      // 读取作品
+      closeCurrentBook();
+      openBook(result);
+    });
   }
 
   /// 从头打开作品
@@ -583,6 +618,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 打开当前分卷下的子分卷
   void actionEnterChildVolume(VCItem volume) {
+    if (currentBook == null) {
+      return ;
+    }
     // 加到route末尾
     currentRoute.add(volume);
     _loadVolume(volume);
@@ -590,6 +628,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 打开上一层或者某一层的分卷
   void actionEnterParentVolume(VCItem volume) {
+    if (currentBook == null) {
+      return ;
+    }
     if (volume == null) {
       currentRoute = [];
       _loadVolume(null);
@@ -682,8 +723,20 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         });
   }
   
+  void actionRenameBook() {
+    if (currentBook == null) {
+      return ;
+    }
+    inputName('修改书名', '书名', currentBook.name, () {
+    
+    });
+  }
+  
   /// 删除作品操作
   void actionDeleteBook() {
+    if (currentBook == null) {
+      return ;
+    }
     final popup = BeautifulPopup(
       context: context,
       template: TemplateFail,
@@ -707,9 +760,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   
   /// 删除作品
   _deleteCurrentBook() {
-    if (currentBook == null) {
-      return ;
-    }
     String name = currentBook.name.toString();
     closeCurrentBook();
 
