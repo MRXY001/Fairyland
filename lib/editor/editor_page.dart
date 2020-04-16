@@ -14,15 +14,19 @@ class EditorPage extends StatefulWidget {
 }
 
 class _EditPageState extends State<EditorPage> {
-  TextEditingController _textController;
+  TextEditingController _editController;
 
   VCItem currentChapter; // 当前打开的章节
 
   @override
   void initState() {
     super.initState();
-
-    _textController = new TextEditingController();
+    
+    _editController = new TextEditingController();
+    _editController.addListener(() {
+      // 当 TextField 内容变化、光标变动，都会触发
+      print('Listener Changed');
+    });
   }
 
   @override
@@ -70,36 +74,8 @@ class _EditPageState extends State<EditorPage> {
     return PopupMenuButton<String>(
       itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
         PopupMenuItem<String>(
-          value: "append_volume",
-          child: Text('添加新卷'),
-        ),
-        PopupMenuItem<String>(
-          value: "book_info",
-          child: Text('全书统计'),
-          enabled: false,
-        ),
-        PopupMenuItem<String>(
-          value: "book_rename",
-          child: Text('修改书名'),
-        ),
-        PopupMenuItem<String>(
-          value: "book_export",
-          child: Text('导出作品'),
-          enabled: false,
-        ),
-        PopupMenuItem<String>(
-          value: "book_duplicate",
-          child: Text('复制作品'),
-          enabled: false,
-        ),
-        PopupMenuItem<String>(
-          value: "book_delete",
-          child: Text('删除作品'),
-        ),
-        PopupMenuItem<String>(
-          value: "book_settings",
-          child: Text('目录设置'),
-          enabled: false,
+          value: "word_count",
+          child: Text('字数统计'),
         ),
       ],
       onSelected: (String value) {
@@ -113,33 +89,37 @@ class _EditPageState extends State<EditorPage> {
   }
 
   Widget getChapterEditor() {
+    // 输入框教程：https://flutterchina.club/text-input/
     return TextField(
-      controller: _textController,
+      controller: _editController,
       decoration: new InputDecoration.collapsed(hintText: "正文君"),
       keyboardType: TextInputType.multiline,
       maxLines: null,
-      onTap: () => (e) {},
-      autofocus: true, // 自动获取焦点
-      //      onChanged: ,
+      autofocus: true,
+      // 自动获取焦点
+      onTap: () => (val) {
+        print('----onTap----');
+      },
+      onChanged: (text) { // 变化后的内容
+      
+      },
     );
   }
 
   Widget getQuickInputBar() {
     return Row(
       children: <Widget>[
+        // TODO: 快捷输入栏的ListView
         MaterialButton(
-          onPressed: () {},
+          onPressed: () {
+            setState(() {
+              print(_editController.selection.start);
+              print(_editController.selection.end);
+              
+            });
+          },
           child: Text('输入1'),
         ),
-        MaterialButton(
-          onPressed: () {},
-          child: Text('输入2'),
-        ),
-        MaterialButton(
-          onPressed: () {},
-          child: Text('输入3'),
-        ),
-        // TODO: 一排按钮
       ],
     );
   }
