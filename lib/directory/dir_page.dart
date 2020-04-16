@@ -38,7 +38,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   BookObject currentBook;
   List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
-  Iterator<VCItem> currentIterator; // 当前位置的分卷所在的指针
 
   bool _showDeletedItems = false;
 
@@ -57,6 +56,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     super.build(context);
 
     return new Scaffold(
+      drawer: MyDrawer.globalDrawer,
       appBar: new AppBar(
           title: Builder(
             builder: (BuildContext context) {
@@ -89,7 +89,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           ),
         ],
       ),
-      drawer: MyDrawer.globalDrawer,
     );
   }
 
@@ -552,7 +551,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     } finally {
       currentRoute = [];
       currentList = currentBook.catalog;
-      currentIterator = currentBook.catalog.iterator;
     }
 
     setState(() {});
@@ -565,7 +563,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       Global.currentBookName = currentBook = null;
       currentRoute = null;
       currentList = null;
-      currentIterator = null;
     });
   }
 
