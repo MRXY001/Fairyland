@@ -1,4 +1,5 @@
 import 'package:fairyland/directory/book_beans.dart';
+import 'package:fairyland/editor/chatper_editor.dart';
 import 'package:fairyland/main/my_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:quill_delta/quill_delta.dart';
@@ -23,10 +24,6 @@ class _EditPageState extends State<EditorPage> {
     super.initState();
     
     _editController = new TextEditingController();
-    _editController.addListener(() {
-      // 当 TextField 内容变化、光标变动，都会触发
-      print('Listener Changed');
-    });
   }
 
   @override
@@ -90,20 +87,7 @@ class _EditPageState extends State<EditorPage> {
 
   Widget getChapterEditor() {
     // 输入框教程：https://flutterchina.club/text-input/
-    return TextField(
-      controller: _editController,
-      decoration: new InputDecoration.collapsed(hintText: "正文君"),
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      autofocus: true,
-      // 自动获取焦点
-      onTap: () => (val) {
-        print('----onTap----');
-      },
-      onChanged: (text) { // 变化后的内容
-      
-      },
-    );
+    return ChapterEditor(controller: _editController);
   }
 
   Widget getQuickInputBar() {
