@@ -599,8 +599,17 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   }
 
   void _insertVCItemInCurrentList(int index, VCItem item) {
+    if (currentBook == null) {
+      Fluttertoast.showToast(msg: '请点击左上方标题创建一部作品');
+      return;
+    }
     if (item.id == null) {
       // 获取唯一ID
+      item.id = currentBook.createRandomID();
+      if (item.id.isEmpty) {
+        
+        return ;
+      }
     }
     if (item.isVolume() && item.vcList == null) {
       item.vcList = [];

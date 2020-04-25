@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class BookObject {
   String id; // 云端分配的ID（未同步则没有）
   String name;
@@ -57,6 +59,33 @@ class BookObject {
   /// 递归 volume 的 displayedName
   void setVolumeItemsContext() {
   
+  }
+  
+  /// 随机创建一个分卷/章节ID
+  String createRandomID() {
+    const chi = "abcdefghijklmnopqrstuvwxyz1234567890";
+    const len = 6;
+    String result = '';
+    Random random;
+    int repeat = 0;
+    do {
+      result = '';
+      int r = random.nextInt(chi.length);
+      for (int i = 0; i < len; i++)
+        result += chi.substring(r-1, r);
+      if (++repeat > 10000) // 次数太频繁，有问题
+        return '000000';
+    } while (_isIdExist(result, catalog));
+    return result;
+  }
+  
+  /// 判断随机创建的ID是不是已经存在了
+  bool _isIdExist(String id, List<VCItem> vcList) {
+    for (int i = 0; i < vcList.length; i++) {
+      if (vcList[i].id == id)
+        return true;
+    }
+    return false;
   }
 }
 
