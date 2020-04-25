@@ -44,6 +44,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
+    
+    _initRecent();
   }
 
   @override
@@ -507,6 +509,14 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       },
     );
   }
+  
+  void _initRecent() {
+    // 恢复上次打开的作品
+    String bookName = Global.getConfig('recent/book_name', '');
+    if (bookName.isNotEmpty && FileUtil.isDirExists(Global.bookPathD(bookName))) {
+      openBook(bookName);
+    }
+  }
 
   void actionOpenBookShelf() {
     Navigator.push<String>(context,
@@ -552,6 +562,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       currentRoute = [];
       currentList = currentBook.catalog;
     }
+    Global.setConfig('recent/book_name', name);
 
     setState(() {});
   }
@@ -563,6 +574,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       Global.currentBookName = currentBook = null;
       currentRoute = null;
       currentList = null;
+      Global.setConfig('recent/book_name', '');
     });
   }
 
@@ -607,7 +619,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       // 获取唯一ID
       item.id = currentBook.createRandomID();
       if (item.id.isEmpty) {
-        
+        Fluttertoast.showToast(msg: '章节过多，请将该需求反馈给开发者');
         return ;
       }
     }
@@ -753,7 +765,24 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     if (currentBook == null) {
       return;
     }
-    inputName('修改书名', '书名', currentBook.name, () {});
+    inputName('修改书名', '书名', currentBook.name, (String result) {
+      if (result.isEmpty) {
+        return ;
+      }
+      if (FileUtil.isDirExists(Global.bookPathD(result))) {
+        Fluttertoast.showToast(msg: '作品《'+result+'》已存在');
+        return ;
+      }
+      if (!BookObject.canBeBookName(result)) {
+        Fluttertoast.showToast(msg: '名字《'+result+'》包含特殊字符，无法用作书名');
+        return ;
+      }
+      // 修改书名
+      currentBook.name = result;
+      
+      // 设置配置项
+      Global.setConfig('recent/book_name', result);
+    });
   }
 
   /// 删除作品操作

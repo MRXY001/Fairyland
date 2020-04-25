@@ -97,9 +97,10 @@ class _EditPageState extends State<EditorPage> {
         MaterialButton(
           onPressed: () {
             setState(() {
-              print(_editController.selection.start);
-              print(_editController.selection.end);
-              
+              print('build text span');
+              _editController.buildTextSpan(style: TextStyle(
+                color: Colors.red,
+              ),withComposing: true);
             });
           },
           child: Text('输入1'),

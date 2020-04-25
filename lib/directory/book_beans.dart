@@ -50,17 +50,13 @@ class BookObject {
       wordCount: json['wordCount'] ?? 0,
     );
   }
-  
+
   /// 设置每一项的 index（忽视删除的）displayedName
-  void setVCItemsContext() {
-  
-  }
-  
+  void setVCItemsContext() {}
+
   /// 递归 volume 的 displayedName
-  void setVolumeItemsContext() {
-  
-  }
-  
+  void setVolumeItemsContext() {}
+
   /// 随机创建一个分卷/章节ID
   String createRandomID() {
     const chi = "abcdefghijklmnopqrstuvwxyz1234567890";
@@ -71,21 +67,45 @@ class BookObject {
     do {
       result = '';
       int r = random.nextInt(chi.length);
-      for (int i = 0; i < len; i++)
-        result += chi.substring(r-1, r);
+      for (int i = 0; i < len; i++) result += chi.substring(r - 1, r);
       if (++repeat > 10000) // 次数太频繁，有问题
         return '000000';
     } while (_isIdExist(result, catalog));
     return result;
   }
-  
+
   /// 判断随机创建的ID是不是已经存在了
-  bool _isIdExist(String id, List<VCItem> vcList) {
+  static bool _isIdExist(String id, List<VCItem> vcList) {
     for (int i = 0; i < vcList.length; i++) {
-      if (vcList[i].id == id)
-        return true;
+      if (vcList[i].id == id) return true;
     }
     return false;
+  }
+
+  /// 能否作为作品名字
+  static bool canBeBookName(String name) {
+    if (name.length < 1 || name.length > 30) {
+      return false;
+    }
+    for (int i = 0; i < name.length; i++) {
+      String ch = name.substring(i, i + 1);
+      if (ch == ' ' ||
+          ch == "'" ||
+          ch == "/" ||
+          ch == ":" ||
+          ch == "?" ||
+          ch == "<" ||
+          ch == ">" ||
+          ch == "|" ||
+          ch == "\"" ||
+          ch == '\\' ||
+          ch == '\n' ||
+          ch == '\r' ||
+          ch == '\t') {
+        return false;
+      }
+    }
+    return true;
   }
 }
 
@@ -112,8 +132,8 @@ class VCItem {
   List<VCItem> vcList; // 分卷的子章节
 
   VCItem({this.id, this.name, this.wordCount, this.type, this.vcList});
-  
-  bool operator&(VCItem item) {
+
+  bool operator &(VCItem item) {
     return this.id == item.id;
   }
 
@@ -166,12 +186,11 @@ class VCItem {
       }
     }
     VCItem item = new VCItem(
-      id: json['id'],
-      name: json['name'],
-      type: type,
-      wordCount: json['wordCount'] ?? 0,
-      vcList: vcList
-    );
+        id: json['id'],
+        name: json['name'],
+        type: type,
+        wordCount: json['wordCount'] ?? 0,
+        vcList: vcList);
     item.deleted = json['deleted'] ?? false;
     item.deleteTime = json['deleteTime'] ?? 0;
     item.published = json['published'] ?? false;
