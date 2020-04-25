@@ -1,4 +1,5 @@
 // 提供五套可选主题色
+import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
 import 'package:ini/ini.dart';
 import 'package:path_provider/path_provider.dart';
@@ -48,17 +49,68 @@ class Global {
   static SharedPreferences sp;
   static Config config;
 
+  static void setConfig(String key, value) {
+    if (key.contains('/')) {
+      int pos = key.indexOf('/');
+      String name = key.substring(0, pos);
+      String option = key.substring(pos + 1);
+      if (!config.hasSection(name)) {
+        config.addSection(name);
+      }
+      config.set(name, option, value);
+    } else {
+      config.set('', key, value);
+    }
+    FileUtil.writeText(dataPath + 'settings.ini', config.toString());
+  }
+
+  static dynamic getConf(String key) {
+    if (key.contains('/')) {
+      int pos = key.indexOf('/');
+      String name = key.substring(0, pos);
+      String option = key.substring(pos + 1);
+      return config.get(name, option);
+    } else {
+      return config.get('', key);
+    }
+  }
+
+  static dynamic getConfig(String key, def) {
+    if (key.contains('/')) {
+      int pos = key.indexOf('/');
+      String name = key.substring(0, pos);
+      String option = key.substring(pos + 1);
+      if (config.hasOption(name, option)) {
+        return config.get(name, option);
+      } else {
+        return def;
+      }
+    } else {
+      if (config.hasOption('', key)) {
+        return config.get('', key);
+      } else {
+        return def;
+      }
+    }
+  }
+
   // 运行中
 
   //初始化全局信息，会在APP启动时执行
   static Future init() async {
     sp = await SharedPreferences.getInstance();
-    config = new Config();
 
     storagePath = (await getExternalStorageDirectory()).path;
     dataPath = (await getApplicationDocumentsDirectory()).path + '/data/';
     booksPath = dataPath + 'books/';
     recyclesPath = dataPath + 'recycles/';
     recyclesBooksPath = recyclesPath + 'books/';
+    
+    if (FileUtil.isFileExists(dataPath + 'settings.ini')) {
+      String content = FileUtil.readText(dataPath + 'settings.ini');
+      config = Config.fromString(content);
+    } else {
+      config = new Config();
+    }
   }
 }
