@@ -1,4 +1,7 @@
 import 'package:fairyland/assist/assist_page.dart';
+import 'package:fairyland/common/global.dart';
+import 'package:fairyland/directory/book_beans.dart';
+import 'package:fairyland/editor/chatper_editor.dart';
 import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/square/square_page.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +23,11 @@ class _MyHomePageState extends State<MyHomePage>
 		with SingleTickerProviderStateMixin {
 	var context;
 	List<PageBean> _pages;
+	DirPage dirPage;
+	EditorPage editorPage;
 	PageController pageController;
+	ChapterEditor chapterEditor;
+	AssistPage assistPage;
 	var currentPage = 0;
 	TitledBottomNavigationBar bottomBar;
 	
@@ -28,11 +35,14 @@ class _MyHomePageState extends State<MyHomePage>
 	void initState() {
 		super.initState();
 		pageController = PageController();
-		
+		dirPage = new DirPage(openChapter: _openChapter);
+		editorPage = new EditorPage();
+		assistPage = new AssistPage();
+//		chapterEditor = editorPage
 		_pages = <PageBean>[
-			PageBean(title: '目录', icon: Icons.list, widget: new DirPage()),
-			PageBean(title: '写作', icon: Icons.edit, widget: new EditorPage()),
-//			PageBean(title: '助手', icon: Icons.school, widget: AssistPage()),
+			PageBean(title: '目录', icon: Icons.list, widget: dirPage),
+			PageBean(title: '写作', icon: Icons.edit, widget: editorPage),
+			PageBean(title: '助手', icon: Icons.school, widget: assistPage),
 		];
 		bottomBar = new TitledBottomNavigationBar(
 			items: _pages,
@@ -64,5 +74,11 @@ class _MyHomePageState extends State<MyHomePage>
 				drawer: MyDrawer.globalDrawer,
 				bottomNavigationBar: bottomBar
 		);
+	}
+	
+	/// 打开章节
+	void _openChapter(VCItem chapter) {
+		String path = Global.cBookChapterPath(chapter.id);
+		
 	}
 }

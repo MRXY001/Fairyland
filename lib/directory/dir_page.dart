@@ -13,8 +13,10 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class DirPage extends StatefulWidget {
-  DirPage({Key key}) : super(key: key);
+  DirPage({Key key, this.openChapter}) : super(key: key);
 
+  final openChapter;
+  
   @override
   State<StatefulWidget> createState() {
     return new _DirPageState();
@@ -698,7 +700,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   }
 
   /// 编辑器打开章节
-  void openChapter(VCItem chapter) {}
+  void openChapter(VCItem chapter) {
+    widget.openChapter(chapter);
+  }
 
   /// 下拉刷新，快捷云同步方式
   Future<void> actionSync() async {

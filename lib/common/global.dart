@@ -35,6 +35,9 @@ class Global {
 
   static String cBookChaptersPathD() => cBookPathD() + '/chapters/';
 
+  static String cBookChapterPath(String id) =>
+      cBookChaptersPathD() + id + ".chpt";
+
   static String rBookPathD(String name) => recyclesBooksPath + name + '/';
 
   static String rBookPath(String name) => recyclesBooksPath + name;
@@ -105,7 +108,7 @@ class Global {
     booksPath = dataPath + 'books/';
     recyclesPath = dataPath + 'recycles/';
     recyclesBooksPath = recyclesPath + 'books/';
-    
+
     if (FileUtil.isFileExists(dataPath + 'settings.ini')) {
       String content = FileUtil.readText(dataPath + 'settings.ini');
       config = Config.fromString(content);
