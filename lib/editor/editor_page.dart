@@ -1,31 +1,50 @@
+import 'package:fairyland/common/global.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/editor/chatper_editor.dart';
 import 'package:fairyland/main/my_drawer.dart';
+import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:zefyr/zefyr.dart';
 
+// 输入框教程：https://flutterchina.club/text-input/
+
+// ignore: must_be_immutable
 class EditorPage extends StatefulWidget {
-  EditorPage({Key key}) : super(key: key);
+  EditorPage({Key key}) : super(key: key) {
+    _editController = new TextEditingController();
+    chapterEditor = new ChapterEditor(
+      controller: _editController,
+      onViewTapped: () {
+        print('==========onViewTapped');
+      },
+      onContentChanged: (text){
+        print('==========onContentChanged');
+        print(chapterEditor.isSystemChanging());
+      },
+    );
+  }
+
+  TextEditingController _editController;
+  ChapterEditor chapterEditor;
+  VCItem _currentChapter; // 当前打开的章节
 
   @override
   State<StatefulWidget> createState() {
     return new _EditPageState();
   }
+
+  ChapterEditor getEditor() => chapterEditor;
+
+  void openChapter(VCItem chapter) {
+    _currentChapter = chapter;
+    String path = Global.cBookChapterPath(chapter.id);
+    String content = FileUtil.readText(path);
+    chapterEditor.initContent(content);
+  }
 }
 
 class _EditPageState extends State<EditorPage> {
-  TextEditingController _editController;
-
-  VCItem currentChapter; // 当前打开的章节
-
-  @override
-  void initState() {
-    super.initState();
-    
-    _editController = new TextEditingController();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +62,7 @@ class _EditPageState extends State<EditorPage> {
             Expanded(
               child: Padding(
                 padding: EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
-                child: getChapterEditor(),
+                child: widget.chapterEditor,
               ),
             ),
             getQuickInputBar()
@@ -52,7 +71,7 @@ class _EditPageState extends State<EditorPage> {
   }
 
   PopupMenuButton getEditMenu() {
-    if (currentChapter == null) {
+    if (widget._currentChapter == null) {
       return PopupMenuButton<String>(
         itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
           PopupMenuItem<String>(
@@ -85,11 +104,6 @@ class _EditPageState extends State<EditorPage> {
     );
   }
 
-  Widget getChapterEditor() {
-    // 输入框教程：https://flutterchina.club/text-input/
-    return ChapterEditor(controller: _editController);
-  }
-
   Widget getQuickInputBar() {
     return Row(
       children: <Widget>[
@@ -97,10 +111,9 @@ class _EditPageState extends State<EditorPage> {
         MaterialButton(
           onPressed: () {
             setState(() {
-              print('build text span');
-              _editController.buildTextSpan(style: TextStyle(
-                color: Colors.red,
-              ),withComposing: true);
+              widget.chapterEditor.beginSystemChanging();
+              widget.chapterEditor.insertText('输入1');
+              widget.chapterEditor.endSystemChanging();
             });
           },
           child: Text('输入1'),

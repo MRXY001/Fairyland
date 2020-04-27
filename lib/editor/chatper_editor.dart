@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class ChapterEditor extends TextField {
   final TextEditingController controller;
+  final onViewTapped;
+  final onContentChanged;
+  bool _systemChanging = false;
 
-  ChapterEditor({this.controller})
+  ChapterEditor({this.controller, this.onViewTapped, this.onContentChanged})
       : super(
           controller: controller,
           decoration: new InputDecoration.collapsed(hintText: "正文君"),
@@ -17,16 +21,40 @@ class ChapterEditor extends TextField {
   }
 
   /// =====================================================
+  ///                       外部操作
+  /// =====================================================
+  void initContent(String content) {
+    // TODO: 删除可撤销操作
+
+    // 设置文本
+    beginSystemChanging();
+    setText(content);
+    endSystemChanging();
+  }
+
+  void beginSystemChanging() {
+    _systemChanging = true;
+  }
+
+  void endSystemChanging() {
+    _systemChanging = false;
+  }
+
+  bool isSystemChanging() => _systemChanging;
+
+  /// =====================================================
   ///                       原生事件
   /// =====================================================
 
   /// 点击时触发
-  static void onViewTapped() {
+  /// TODO: 绑定事件
+  void viewTappedEvent() {
     print('onViewTapped');
   }
 
   /// 纯内容改变时触发
-  static void onContentChanged(String text) {
+  /// TODO: 绑定事件
+  void contentChangedEvent(String text) {
     print('onContentChanged');
   }
 
@@ -55,7 +83,8 @@ class ChapterEditor extends TextField {
 
   /// 插入指定文本
   void insertText(String text, {pos: -1}) {
-    pos = getPosition();
+    if (pos == -1)
+      pos = getPosition();
     String orig = controller.text;
     setText(orig.substring(0, pos) + text + orig.substring(pos));
   }

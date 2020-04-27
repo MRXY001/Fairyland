@@ -38,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage>
 		dirPage = new DirPage(openChapter: _openChapter);
 		editorPage = new EditorPage();
 		assistPage = new AssistPage();
-//		chapterEditor = editorPage
+		chapterEditor = editorPage.getEditor();
 		_pages = <PageBean>[
 			PageBean(title: '目录', icon: Icons.list, widget: dirPage),
 			PageBean(title: '写作', icon: Icons.edit, widget: editorPage),
@@ -78,7 +78,8 @@ class _MyHomePageState extends State<MyHomePage>
 	
 	/// 打开章节
 	void _openChapter(VCItem chapter) {
-		String path = Global.cBookChapterPath(chapter.id);
-		
+		setState(() {
+			editorPage.openChapter(chapter);
+		});
 	}
 }
