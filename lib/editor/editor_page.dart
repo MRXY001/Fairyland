@@ -15,32 +15,38 @@ class EditorPage extends StatefulWidget {
     _editController = new TextEditingController();
     chapterEditor = new ChapterEditor(
       controller: _editController,
-      onViewTapped: () {
-        print('==========onViewTapped');
-      },
-      onContentChanged: (text){
-        print('==========onContentChanged');
-        print(chapterEditor.isSystemChanging());
-      },
+      onViewTapped: () => chapterEditor.viewTappedEvent(),
+      onContentChanged: (text) => chapterEditor.contentChangedEvent(text),
+      onEditSave: onEditSave,
     );
   }
 
   TextEditingController _editController;
   ChapterEditor chapterEditor;
   VCItem _currentChapter; // 当前打开的章节
+  String savedPath;
 
   @override
   State<StatefulWidget> createState() {
     return new _EditPageState();
   }
 
+  /// 获取编辑器对象
   ChapterEditor getEditor() => chapterEditor;
 
+  /// 打开一个章节
+  /// 根据传入的章节对象，获取章节路径，并设置初始值
   void openChapter(VCItem chapter) {
     _currentChapter = chapter;
-    String path = Global.cBookChapterPath(chapter.id);
-    String content = FileUtil.readText(path);
+    savedPath = Global.cBookChapterPath(chapter.id);
+    String content = FileUtil.readText(savedPath);
     chapterEditor.initContent(content);
+  }
+
+  void onEditSave(String text) {
+    if (savedPath != null) {
+      FileUtil.writeText(savedPath, text);
+    }
   }
 }
 
@@ -111,9 +117,7 @@ class _EditPageState extends State<EditorPage> {
         MaterialButton(
           onPressed: () {
             setState(() {
-              widget.chapterEditor.beginSystemChanging();
               widget.chapterEditor.insertText('输入1');
-              widget.chapterEditor.endSystemChanging();
             });
           },
           child: Text('输入1'),

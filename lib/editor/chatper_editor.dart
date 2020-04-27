@@ -5,9 +5,14 @@ class ChapterEditor extends TextField {
   final TextEditingController controller;
   final onViewTapped;
   final onContentChanged;
+  final onEditSave;
   bool _systemChanging = false;
 
-  ChapterEditor({this.controller, this.onViewTapped, this.onContentChanged})
+  ChapterEditor(
+      {this.controller,
+      this.onViewTapped,
+      this.onContentChanged,
+      @required this.onEditSave})
       : super(
           controller: controller,
           decoration: new InputDecoration.collapsed(hintText: "正文君"),
@@ -32,14 +37,17 @@ class ChapterEditor extends TextField {
     endSystemChanging();
   }
 
+  /// 开始系统批量改变
   void beginSystemChanging() {
     _systemChanging = true;
   }
 
+  /// 结束系统批量改变
   void endSystemChanging() {
     _systemChanging = false;
   }
 
+  /// 是否是系统引起的变化
   bool isSystemChanging() => _systemChanging;
 
   /// =====================================================
@@ -47,21 +55,24 @@ class ChapterEditor extends TextField {
   /// =====================================================
 
   /// 点击时触发
-  /// TODO: 绑定事件
   void viewTappedEvent() {
-    print('onViewTapped');
+    print('viewTappedEvent');
   }
 
   /// 纯内容改变时触发
-  /// TODO: 绑定事件
   void contentChangedEvent(String text) {
-    print('onContentChanged');
+    print('contentChangedEvent');
   }
 
   /// 当 TextField 内容变化、焦点变动，都会触发
   /// 但是移动光标位置，不一定触发（编辑完再点击会触发）
+  /// 并且先于 contentChangedEvent 触发
   void onChangedListener() {
-    print('onContentChangedListener');
+    print('onChangedListener');
+    // 判断输入的内容
+    
+    // 保存
+    onEditSave(getText());
   }
 
   /// =====================================================
@@ -69,8 +80,11 @@ class ChapterEditor extends TextField {
   /// =====================================================
 
   /// 设置文本
-  void setText(String text, {undoable: false}) {
+  void setText(String text, {undoable: false, pos: -1}) {
     controller.text = text;
+    if (pos > -1) {
+      setPosition(pos);
+    }
   }
 
   /// 获取文本
@@ -83,23 +97,33 @@ class ChapterEditor extends TextField {
 
   /// 插入指定文本
   void insertText(String text, {pos: -1}) {
-    if (pos == -1)
-      pos = getPosition();
+    int cursor = getPosition();
+    if (pos == -1) pos = cursor;
     String orig = controller.text;
-    setText(orig.substring(0, pos) + text + orig.substring(pos));
+    String curr = orig.substring(0, pos) + text + orig.substring(pos);
+    if (pos <= cursor) {
+      pos += text.length;
+    }
+    setText(curr, pos: pos);
   }
 
   /// 末尾插入指定文本
   void appendText(String text, {newLine: false}) {
     String total = controller.text;
-    if (newLine && !total.endsWith('\n')) total += '\n';
-    setText(total + newLine);
+    if (newLine && !total.endsWith('\n')) text = '\n' + text;
+    insertText(text, pos: total.length);
   }
 
   /// 删掉指定位置的内容
   void removeText(int start, int end) {
     String ori = controller.text;
-    setText(ori.substring(0, start) + ori.substring(end));
+    int cursor = getPosition();
+    if (cursor >= end) {
+      cursor -= (end - start);
+    } else if (cursor >= start) {
+      cursor = start;
+    }
+    setText(ori.substring(0, start) + ori.substring(end), pos: cursor);
   }
 
   /// 获取光标位置
@@ -108,6 +132,7 @@ class ChapterEditor extends TextField {
   }
 
   /// 设置光标位置
+  /// TODO: 设置光标位置
   void setPosition(int pos, {aim: -1}) {
     controller.selection =
         TextSelection.fromPosition(TextPosition(offset: pos));
