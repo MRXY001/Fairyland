@@ -54,7 +54,6 @@ class EditorPage extends StatefulWidget {
 class _EditPageState extends State<EditorPage> {
   @override
   Widget build(BuildContext context) {
-    print('================================update');
     return Scaffold(
         drawer: MyDrawer.globalDrawer,
         appBar: new AppBar(title: Text('编辑'), actions: <Widget>[
