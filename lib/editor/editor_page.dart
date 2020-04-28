@@ -53,6 +53,7 @@ class EditorPage extends StatefulWidget {
 class _EditPageState extends State<EditorPage> {
   @override
   Widget build(BuildContext context) {
+    print('================================update');
     return Scaffold(
         drawer: MyDrawer.globalDrawer,
         appBar: new AppBar(title: Text('编辑'), actions: <Widget>[
@@ -88,6 +89,7 @@ class _EditPageState extends State<EditorPage> {
         onSelected: (String value) {
           switch (value) {
             case 'need_chapter':
+              setState(() {});
               break;
           }
         },
@@ -96,12 +98,30 @@ class _EditPageState extends State<EditorPage> {
     return PopupMenuButton<String>(
       itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
         PopupMenuItem<String>(
+          value: "undo",
+          child: Text('撤销'),
+          enabled: widget.chapterEditor.undoRedoManager.canUndo(),
+        ),
+        PopupMenuItem<String>(
+          value: "redo",
+          child: Text('重做'),
+          enabled: widget.chapterEditor.undoRedoManager.canRedo(),
+        ),
+        PopupMenuItem<String>(
           value: "word_count",
           child: Text('字数统计'),
         ),
       ],
       onSelected: (String value) {
         switch (value) {
+          case 'word_count':
+            break;
+          case 'undo':
+            widget.chapterEditor.undo();
+            break;
+          case 'redo':
+            widget.chapterEditor.redo();
+            break;
           default:
             {}
             break;

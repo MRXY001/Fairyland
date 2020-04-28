@@ -85,9 +85,11 @@ class _MyHomePageState extends State<MyHomePage>
   /// 打开章节
   void _openChapter(VCItem chapter) {
     setState(() {
-      editorPage.openChapter(chapter);
+      print('main: open chapter');
       pageController.animateToPage(editorPageIndex,
           duration: Duration(milliseconds: 300), curve: Curves.easeOutQuad);
+      editorPage.openChapter(chapter);
+      editorPage;
     });
   }
 }
