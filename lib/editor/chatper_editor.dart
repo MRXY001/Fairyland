@@ -26,7 +26,7 @@ class ChapterEditor extends TextField {
         ) {
     controller.addListener(onChangedListener);
     undoRedoManager = new OperatorManager();
-    undoRedoManager.initUndoRedo(controller);
+    undoRedoManager.enable().initUndoRedo(controller);
   }
 
   /// =====================================================
@@ -39,7 +39,7 @@ class ChapterEditor extends TextField {
     // 设置文本
     beginSystemChanging();
     setText(content);
-    undoRedoManager.initUndoRedo(controller);
+    undoRedoManager.enable().initUndoRedo(controller);
     endSystemChanging();
   }
 
@@ -388,13 +388,13 @@ class OperatorManager {
     preLength = preText.length;
     preStart = controller.selection.start;
     preEnd = controller.selection.end;
-    _enable = true;
   }
 
   void onTextChanged(TextEditingController controller) {
     if (!_enable) { // 可能是在撤销的时候
       return;
     }
+    print('=====================onTextChanged');
     String text = controller.text;
     int length = text.length;
     int start = controller.selection.start;
@@ -423,6 +423,8 @@ class OperatorManager {
       int delta = preLength - length;
       preStart = start;
       preEnd = start + delta;
+      print('deletettttte: ' + start.toString() + ' ' + preStart.toString()
+      + ' ' + preEnd.toString() + ' ' + delta.toString());
       String dst = preText.substring(preStart, preEnd);
       undoOpts.add(EditOperator(
           src: dst,
@@ -442,9 +444,12 @@ class OperatorManager {
   bool undo(TextEditingController controller) {
     if (canUndo()) {
       EditOperator opt = undoOpts.removeLast();
+      print('===================================================disable');
       disable();
       opt.undo(controller);
       enable();
+      initUndoRedo(controller);
+      print('====================================================enable');
       redoOpts.add(opt);
       return true;
     }
@@ -457,6 +462,7 @@ class OperatorManager {
       disable();
       opt.redo(controller);
       enable();
+      initUndoRedo(controller);
       undoOpts.add(opt);
       return true;
     }
