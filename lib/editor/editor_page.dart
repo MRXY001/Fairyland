@@ -25,10 +25,11 @@ class EditorPage extends StatefulWidget {
   ChapterEditor chapterEditor;
   VCItem _currentChapter; // 当前打开的章节
   String savedPath;
+  State<StatefulWidget> myState;
 
   @override
   State<StatefulWidget> createState() {
-    return new _EditPageState();
+    return (myState = new _EditPageState());
   }
 
   /// 获取编辑器对象

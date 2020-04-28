@@ -89,7 +89,9 @@ class _MyHomePageState extends State<MyHomePage>
       pageController.animateToPage(editorPageIndex,
           duration: Duration(milliseconds: 300), curve: Curves.easeOutQuad);
       editorPage.openChapter(chapter);
-      editorPage;
+      if (editorPage.myState != null) {
+        editorPage.myState.setState(() { });
+      }
     });
   }
 }
