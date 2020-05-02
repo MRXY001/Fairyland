@@ -106,10 +106,27 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   }
   
   Widget _getCatalogListTree() {
-    return Text("CatalogTree: TOOD");
+    return ListView.builder(
+      itemCount: currentBook.catalog.length,
+      itemBuilder: (context, index) {
+        return _buildTreeTiles(currentBook.catalog[index]);
+      },
+    );
+  }
+  
+  /// 构建 Tree 模式的每一项
+  Widget _buildTreeTiles(VCItem item) {
+    if (item.isChapter()) {
+      return ListTile(title: Text(item.getDisplayName()),);
+    }
+    return ExpansionTile(
+      key: PageStorageKey<VCItem>(item),
+      title: Text(item.getDisplayName()),
+      children: item.vcList.map(_buildTreeTiles).toList(),
+    );
   }
 
-  /// 获取路径分割线的view
+  /// 获取 Flat 模式路径分割线的view
   Widget _getFlatRouteView() {
     /*if (currentRoute == null || currentRoute.length == 0) {
       return new Padding(

@@ -100,9 +100,9 @@ class BookObject {
     name = item.name;
     // 格式
     if (item.isVolume()) {
-      format = config.chapterDisplayFormat;
-    } else if (item.isChapter()) {
       format = config.volumeDisplayFormat;
+    } else if (item.isChapter()) {
+      format = config.chapterDisplayFormat;
     }
     item.setDisplayName(format.replaceAll('%1', number).replaceAll('%2', name));
 
@@ -304,8 +304,8 @@ class BookConfig {
   bool useRelevant = true; // 使用作品相关（第0卷不计算序号）
   bool useArabSerialNumber = false; // 使用阿拉伯数字
   bool recalculateSerialNumber = false; // 每卷里的章节重新计算序号
-  String chapterDisplayFormat = '第%s章 %s'; // 章节显示格式（不影响存储）
   String volumeDisplayFormat = '第%s卷 %s'; // 分卷显示格式
+  String chapterDisplayFormat = '第%s章 %s'; // 章节显示格式（不影响存储）
 
   BookConfig(
       {this.useRelevant,

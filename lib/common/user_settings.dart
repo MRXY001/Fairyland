@@ -28,7 +28,7 @@ class UserSettings {
   /// 读取已有的配置文件
   void readFromFile() {
     bookShelfMode = getConfig('us/book_shelf_mode', BookShelfMode.List);
-    catalogMode = getConfig('us/catalog_mode', CatalogMode.Flat);
+    catalogMode = getConfig('us/catalog_mode', CatalogMode.Tree);
   }
 
   /// 保存设置到文件
