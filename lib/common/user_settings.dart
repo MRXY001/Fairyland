@@ -31,7 +31,7 @@ class UserSettings {
     } else {
       config.set('', key, value);
     }
-    FileUtil.writeText(rt.dataPath + 'settings.ini', config.toString());
+    FileUtil.writeText(iniPath, config.toString());
   }
 
   dynamic getConf(String key) {

@@ -177,13 +177,13 @@ class _BookFields extends State<BookFields> {
 
   /// 创建新的小说
   bool create() {
-    if (name.isEmpty || FileUtil.isDirExists(G.bookPathD(name))) {
+    if (name.isEmpty || FileUtil.isDirExists(G.rt.bookPathD(name))) {
       return false;
     }
 
     // 创建默认的小说内容
-    String path = G.bookPathD(name);
-    FileUtil.createDir(G.booksPath);
+    String path = G.rt.bookPathD(name);
+    FileUtil.createDir(G.rt.booksPath);
     FileUtil.createDir(path);
     FileUtil.createDir(path + "chapters");
 
@@ -235,7 +235,7 @@ class _BookFields extends State<BookFields> {
   "createTime": $createTime
 }
 ''';
-    FileUtil.writeText(G.bookCatalogPathD(name), dirTree);
+    FileUtil.writeText(G.rt.bookCatalogPathD(name), dirTree);
 
     return true;
   }
@@ -244,7 +244,7 @@ class _BookFields extends State<BookFields> {
   /// 唯一的该用户作品ID
   /// 已废弃（想不开用小说ID干嘛。。。）
   String getUBID() {
-    List<String> UBIDs = FileUtil.entityDirNames(G.booksPath);
+    List<String> UBIDs = FileUtil.entityDirNames(G.rt.booksPath);
     String randString = 'abcdefghijklmnopqrstuvwxyz';
     String result = '';
     do {
