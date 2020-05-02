@@ -83,51 +83,53 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       body: _getCatalogGroup(),
     );
   }
-  
+
   /// 根据类型获取不同的列表
   Widget _getCatalogGroup() {
     if (G.us.catalogMode == CatalogMode.Tree) {
-      return _getCatalogListTree();
+      if (currentBook == null || currentBook.catalog == null) {
+        return new Text('请创建作品');
+      }
+      // 树状模式
+      return ListView.builder(
+        itemCount: currentBook.catalog.length,
+        itemBuilder: (context, index) {
+          return _buildCatalogTreeTiles(currentBook.catalog[index]);
+        },
+      );
     } else if (G.us.catalogMode == CatalogMode.Flat) {
+      // 显示单层模式
       return new Column(
         children: <Widget>[
-          _getFlatRouteView(),
+          _buildCatalogFlatRouteView(),
           new Expanded(
             child: RefreshIndicator(
               onRefresh: actionSync,
-              child: _getFlatVCListView(),
+              child: _buildCatalogFlatVCListView(),
             ),
           ),
         ],
       );
     } else {
+      // 其他模式
       return Text("待开发的目录视图");
     }
   }
-  
-  Widget _getCatalogListTree() {
-    return ListView.builder(
-      itemCount: currentBook.catalog.length,
-      itemBuilder: (context, index) {
-        return _buildTreeTiles(currentBook.catalog[index]);
-      },
-    );
-  }
-  
+
   /// 构建 Tree 模式的每一项
-  Widget _buildTreeTiles(VCItem item) {
+  Widget _buildCatalogTreeTiles(VCItem item) {
     if (item.isChapter()) {
-      return ListTile(title: Text(item.getDisplayName()),);
+      return _buildVolumeChapterTile(item);
     }
     return ExpansionTile(
       key: PageStorageKey<VCItem>(item),
       title: Text(item.getDisplayName()),
-      children: item.vcList.map(_buildTreeTiles).toList(),
+      children: item.vcList.map(_buildCatalogTreeTiles).toList(),
     );
   }
 
   /// 获取 Flat 模式路径分割线的view
-  Widget _getFlatRouteView() {
+  Widget _buildCatalogFlatRouteView() {
     /*if (currentRoute == null || currentRoute.length == 0) {
       return new Padding(
         padding: EdgeInsets.only(bottom: 30),
@@ -171,7 +173,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 获取 Flat 模式下 ListView 整体
   /// 如果为空则显示一个添加按钮
-  Widget _getFlatVCListView() {
+  Widget _buildCatalogFlatVCListView() {
     if (currentBook == null) {
       return new Center(
           child: new InkWell(
@@ -202,7 +204,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
                   child: SlideAnimation(
                     verticalOffset: 50.0,
                     child: FadeInAnimation(
-                      child: _getVolumeChapterTile(currentList[index], index),
+                      child: _buildVolumeChapterTile(currentList[index]),
                     ),
                   )),
             );
@@ -220,7 +222,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   }
 
   /// 获取目录的每一行
-  Widget _getVolumeChapterTile(VCItem item, int index) {
+  Widget _buildVolumeChapterTile(VCItem item) {
     String name = item.getDisplayName();
     Image image = Image.asset(item.isVolume()
         ? 'assets/icons/volume.png'
@@ -272,7 +274,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       subtitle: timeDisplayed.isNotEmpty ? new Text(timeDisplayed) : null,
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[getVCItemPopupMenuButton(item, index)],
+        children: <Widget>[getVCItemPopupMenuButton(item)],
       ),
       onTap: () {
         if (item.isVolume()) {
@@ -285,18 +287,18 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     );
   }
 
-  PopupMenuButton getVCItemPopupMenuButton(VCItem item, int index) {
+  PopupMenuButton getVCItemPopupMenuButton(VCItem item) {
     return PopupMenuButton<ChapterActions>(
         icon: Icon(Icons.more_vert),
         itemBuilder: (BuildContext context) => item.isVolume()
-            ? getVolumeActions(context, item, index)
-            : getChapterActions(context, item, index),
+            ? getVolumeActions(context, item)
+            : getChapterActions(context, item),
         onSelected: (ChapterActions result) =>
             handleVCItemAction(item, result));
   }
 
   List<PopupMenuEntry<ChapterActions>> getVolumeActions(
-      BuildContext context, VCItem item, int index) {
+      BuildContext context, VCItem item) {
     return <PopupMenuEntry<ChapterActions>>[
       const PopupMenuItem<ChapterActions>(
         child: Text('重命名'),
@@ -318,17 +320,21 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       PopupMenuItem<ChapterActions>(
         child: Text('上移'),
         value: ChapterActions.MoveUp,
-        enabled: index > 0,
+        enabled: item.indexInList > 0,
       ),
       PopupMenuItem<ChapterActions>(
           child: Text('下移'),
           value: ChapterActions.MoveDown,
-          enabled: index < currentList.length - 1),
+          enabled: item.indexInList <
+              (item.parent == null
+                      ? currentBook.catalog.length
+                      : item.parent.vcList.length) -
+                  1),
     ];
   }
 
   List<PopupMenuEntry<ChapterActions>> getChapterActions(
-      BuildContext context, VCItem item, int index) {
+      BuildContext context, VCItem item) {
     return <PopupMenuEntry<ChapterActions>>[
       const PopupMenuItem<ChapterActions>(
         child: Text('重命名'),
@@ -360,12 +366,16 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       PopupMenuItem<ChapterActions>(
         child: Text('上移'),
         value: ChapterActions.MoveUp,
-        enabled: index > 0,
+        enabled: item.indexInList > 0,
       ),
       PopupMenuItem<ChapterActions>(
           child: Text('下移'),
           value: ChapterActions.MoveDown,
-          enabled: index < currentList.length - 1),
+          enabled: item.indexInList <
+              (item.parent == null
+                      ? currentBook.catalog.length
+                      : item.parent.vcList.length) -
+                  1),
     ];
   }
 
@@ -638,8 +648,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     // 添加新卷
     inputName('添加新卷', '卷名', '', (String result) {
       // 添加分卷到末尾
-      _insertVCItemInCurrentList(
-          -1, new VCItem(name: result, type: VCItemType.VolumeType, vcList: []));
+      _insertVCItemInCurrentList(-1,
+          new VCItem(name: result, type: VCItemType.VolumeType, vcList: []));
       saveCatalog();
     });
   }

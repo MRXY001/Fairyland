@@ -54,7 +54,7 @@ class BookObject {
 
   /// 递归设置每一项的 index 和 displayedName
   void setVCItemsContext() {
-    int bookV = 0, bookC = 0, volumeV = 0, volumeC = 0;
+    int bookV = 0, bookC = 0, volumeV = 0, volumeC = 0, inList = 0;
     for (int i = 0; i < catalog.length; i++) {
       if (!G.us.showCatalogRecycle && catalog[i].isDeleted()) continue;
       if (catalog[i].isVolume()) {
@@ -66,8 +66,10 @@ class BookObject {
         catalog[i].setIndexes(bookC, volumeC);
         volumeC++;
       }
+      catalog[i].indexInList = inList;
+      inList++;
     }
-    
+
     _setVCItemsDisplayNames();
   }
 
@@ -183,6 +185,7 @@ class VCItem {
   VCItemType type; // 0: Book, 1: Volume, 2: Chapter, ?; Other
   int wordCount; // 章节有效字数/该分卷章节总有效字数
   String content; // 章节内容/分卷内容
+  bool opened; // 是否打开
   int createTime; // 创建时间
   int modifyTime; // 修改时间
   bool deleted = false; // 是否已删除
@@ -191,11 +194,19 @@ class VCItem {
   int publishTime; // 发布时间
   List<VCItem> vcList; // 分卷的子章节
 
+  VCItem parent;
   int indexInBook; // 在全部正文的索引（从0开始，不包含作品相关）
-  int indexInVolume; // 在当前分卷的索引（从0开始，章节/分卷单独计算）
+  int indexInVolume; // 在当前分卷的索引（从0开始，分卷/章节单独计算）
+  int indexInList; // 在当前分卷的list索引（从0开始，分卷/章节混合）
   String displayedName; // 带有卷/章序的完整名字
 
-  VCItem({this.id, this.name, this.wordCount, this.type, this.vcList});
+  VCItem(
+      {this.id,
+      this.name,
+      this.wordCount,
+      this.type,
+      this.vcList,
+      this.parent});
 
   bool operator &(VCItem item) {
     return this.id == item.id;
@@ -216,6 +227,7 @@ class VCItem {
     if (isVolume()) {
       int vCount = 0, cCount = 0; // 自己子级的
       int vSum = 1, cSum = 0; // 全书的，自己也算 vSum
+      int inList = 0;
       // 递归子章节
       for (int i = 0; i < vcList.length; i++) {
         if (!G.us.showCatalogRecycle && vcList[i].isDeleted()) continue;
@@ -230,6 +242,8 @@ class VCItem {
           cCount++;
           cSum++;
         }
+        vcList[i].indexInList = inList;
+        inList++;
       }
       return VCBundle(volume: vSum, chapter: cSum);
     } else {
@@ -251,6 +265,7 @@ class VCItem {
       'id': id,
       'name': name,
       'type': type.index,
+      'opened': opened,
       'deleted': deleted,
       'deleteTime': deleteTime,
       'published': published,
@@ -281,6 +296,7 @@ class VCItem {
         });
       }
     }
+
     VCItem item = new VCItem(
         id: json['id'],
         name: json['name'],
@@ -291,11 +307,17 @@ class VCItem {
                 : VCItemType.BookType,
         wordCount: json['wordCount'] ?? 0,
         vcList: vcList);
+    item.opened = json['opened'] ?? false;
     item.deleted = json['deleted'] ?? false;
     item.deleteTime = json['deleteTime'] ?? 0;
     item.published = json['published'] ?? false;
     item.publishTime = json['publishTime'] ?? 0;
-    item.createTime = json['createTime'];
+    item.createTime = json['createTime'] ?? 0;
+    if (vcList != null) {
+      vcList.forEach((VCItem i) {
+        i.parent = item;
+      });
+    }
     return item;
   }
 }
