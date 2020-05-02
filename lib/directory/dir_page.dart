@@ -121,10 +121,20 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     if (item.isChapter()) {
       return _buildVolumeChapterTile(item);
     }
+    // 分卷，构建树状列表
     return ExpansionTile(
       key: PageStorageKey<VCItem>(item),
       title: Text(item.getDisplayName()),
       children: item.vcList.map(_buildCatalogTreeTiles).toList(),
+      onExpansionChanged: (bool exp){
+        if (exp) { // 展开
+          currentList = item.vcList;
+        } else { // 收起
+          // 如果有父分卷，则聚焦至父分卷
+          // 如果没有父分卷，则使用全书最外层分卷
+          currentList = item.parent != null ? item.parent.vcList : currentBook.catalog;
+        }
+      },
     );
   }
 
@@ -386,6 +396,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             (String result) {
           setState(() {
             item.name = result;
+            currentBook.setVCItemsContext();
             saveCatalog();
           });
         });
@@ -397,16 +408,16 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             return;
           _insertVCItemInCurrentList(
               index, new VCItem(name: result, type: VCItemType.ChapterType));
+          currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
       case ChapterActions.Delete:
         setState(() {
-          {
             item.deleted = true;
             item.deleteTime = DateTime.now().millisecondsSinceEpoch;
+            currentBook.setVCItemsContext();
             saveCatalog();
-          }
         });
         break;
       case ChapterActions.Restore:
@@ -432,6 +443,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             }
           }
           currentList.insert(target, item);
+          currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
@@ -450,6 +462,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             currentList.add(item);
           else
             currentList.insert(target + 1, item);
+          currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
@@ -459,6 +472,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           if (index < 0 || index >= currentList.length) return;
           currentList.removeAt(index);
           currentList.insert(0, item);
+          currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
@@ -468,6 +482,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           if (index < 0 || index >= currentList.length) return;
           currentList.removeAt(index);
           currentList.add(item);
+          currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
@@ -607,7 +622,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       currentRoute = [];
     }
     G.us.setConfig('recent/book_name', name);
-
     setState(() {});
   }
 
@@ -634,6 +648,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       // 添加章节到末尾
       _insertVCItemInCurrentList(
           -1, new VCItem(name: result, type: VCItemType.ChapterType));
+      currentBook.setVCItemsContext();
       saveCatalog();
     });
   }
@@ -650,6 +665,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       // 添加分卷到末尾
       _insertVCItemInCurrentList(-1,
           new VCItem(name: result, type: VCItemType.VolumeType, vcList: []));
+      currentBook.setVCItemsContext();
       saveCatalog();
     });
   }

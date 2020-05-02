@@ -121,11 +121,10 @@ class BookObject {
     const chi = "abcdefghijklmnopqrstuvwxyz1234567890";
     const len = 6;
     String result = '';
-    Random random;
     int repeat = 0;
     do {
       result = '';
-      int r = random.nextInt(chi.length);
+      int r = Random().nextInt(chi.length);
       for (int i = 0; i < len; i++) result += chi.substring(r - 1, r);
       if (++repeat > 10000) // 次数太频繁，有问题
         return '000000';
