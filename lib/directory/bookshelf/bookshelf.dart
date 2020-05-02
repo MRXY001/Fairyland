@@ -15,7 +15,7 @@ class BookBean {
 
   BookBean(this.name) {
     // 读取作品
-    String path = Global.booksPath + name + '/';
+    String path = G.booksPath + name + '/';
     if (FileUtil.isFileExists(path + 'cover.png')) {
       cover = Image.file(File(path + 'cover.png'));
     } else {
@@ -47,7 +47,7 @@ class _BookshelfState extends State<Bookshelf> {
       ),
       body: Builder(builder: (BuildContext context) {
         // 读取目录里的数据
-        List<String> bookFiles = FileUtil.entityDirNames(Global.booksPath);
+        List<String> bookFiles = FileUtil.entityDirNames(G.booksPath);
 
         // 如果没有作品的话，只居中显示一个“新建作品”
         if (bookFiles.length == 0) {

@@ -39,7 +39,7 @@ class EditorPage extends StatefulWidget {
   /// 根据传入的章节对象，获取章节路径，并设置初始值
   void openChapter(VCItem chapter) {
     _currentChapter = chapter;
-    savedPath = Global.cBookChapterPath(chapter.id);
+    savedPath = G.cBookChapterPath(chapter.id);
     String content = FileUtil.readText(savedPath);
     chapterEditor.initContent(content);
   }

@@ -514,8 +514,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   
   void _initRecent() {
     // 恢复上次打开的作品
-    String bookName = Global.getConfig('recent/book_name', '');
-    if (bookName.isNotEmpty && FileUtil.isDirExists(Global.bookPathD(bookName))) {
+    String bookName = G.getConfig('recent/book_name', '');
+    if (bookName.isNotEmpty && FileUtil.isDirExists(G.bookPathD(bookName))) {
       openBook(bookName);
     }
   }
@@ -540,9 +540,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   /// 如果已经有打开的了，需要先调用 closeCurrentBook()
   void openBook(String name) {
     // 如果目录不存在或者文件有错误，弹出警告
-    String path = Global.bookPathD(name);
+    String path = G.bookPathD(name);
     if (FileUtil.isDirNotExists(path) ||
-        FileUtil.isFileNotExist(Global.bookCatalogPathD(name))) {
+        FileUtil.isFileNotExist(G.bookCatalogPathD(name))) {
       Fluttertoast.showToast(
         msg: '无法读取作品：《' + name + '》所在数据',
         toastLength: Toast.LENGTH_LONG,
@@ -553,8 +553,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     }
 
     // 读取作品目录
-    Global.currentBookName = name;
-    String str = FileUtil.readText(Global.cBookCatalogPathD());
+    G.currentBookName = name;
+    String str = FileUtil.readText(G.cBookCatalogPathD());
     try {
       // 解析JSON
       currentBook = BookObject.fromJson(json.decode(str));
@@ -564,7 +564,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       currentRoute = [];
       currentList = currentBook.catalog;
     }
-    Global.setConfig('recent/book_name', name);
+    G.setConfig('recent/book_name', name);
 
     setState(() {});
   }
@@ -573,10 +573,10 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   /// 并且保存一些状态变量，以便下次打开时恢复
   void closeCurrentBook() {
     setState(() {
-      Global.currentBookName = currentBook = null;
+      G.currentBookName = currentBook = null;
       currentRoute = null;
       currentList = null;
-      Global.setConfig('recent/book_name', '');
+      G.setConfig('recent/book_name', '');
     });
   }
 
@@ -651,7 +651,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       return;
     }
     FileUtil.writeText(
-        Global.cBookCatalogPathD(), jsonEncode(currentBook.toJson()));
+        G.cBookCatalogPathD(), jsonEncode(currentBook.toJson()));
   }
 
   /// 打开当前分卷下的子分卷
@@ -773,7 +773,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       if (result.isEmpty) {
         return ;
       }
-      if (FileUtil.isDirExists(Global.bookPathD(result))) {
+      if (FileUtil.isDirExists(G.bookPathD(result))) {
         Fluttertoast.showToast(msg: '作品《'+result+'》已存在');
         return ;
       }
@@ -785,7 +785,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       currentBook.name = result;
       
       // 设置配置项
-      Global.setConfig('recent/book_name', result);
+      G.setConfig('recent/book_name', result);
     });
   }
 
@@ -815,9 +815,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     String name = currentBook.name.toString();
     closeCurrentBook();
 
-    FileUtil.createDir(Global.recyclesBooksPath);
-    String bookPath = Global.booksPath + name;
-    String recyclePath = Global.rBookPath(name);
+    FileUtil.createDir(G.recyclesBooksPath);
+    String bookPath = G.booksPath + name;
+    String recyclePath = G.rBookPath(name);
     int index = 0;
     String tempPath = recyclePath;
     while (FileUtil.isDirExists(tempPath)) {

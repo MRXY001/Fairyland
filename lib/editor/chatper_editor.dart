@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'undo_redo_manager.dart';
 
 // ignore: must_be_immutable

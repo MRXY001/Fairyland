@@ -5,7 +5,7 @@ import 'main/my_main_home.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized(); // 不加这句启动就会报错
-  Global.init().then((e) {
+  G.init().then((e) {
     runApp(MyApp());
   });
 }
