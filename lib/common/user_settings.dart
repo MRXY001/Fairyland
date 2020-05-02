@@ -2,6 +2,9 @@ import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:ini/ini.dart';
 
+enum BookShelfMode{List, Page, Grid}
+enum CatalogMode { Tree, Flat }
+
 class UserSettings {
   UserSettings({@required this.iniPath}) {
     if (FileUtil.isFileExists(iniPath)) {
@@ -10,15 +13,25 @@ class UserSettings {
     } else {
       config = new Config();
     }
+
+    readFromFile();
   }
 
   Config config;
   String iniPath;
 
   // 配置
-  int catalog_mode;
+  BookShelfMode bookShelfMode = BookShelfMode.List;
+  CatalogMode catalogMode; // 目录结构类型
+  bool showCatalogRecycle = false; // 显示目录回收站
 
-  // 快捷方法
+  /// 读取已有的配置文件
+  void readFromFile() {
+    bookShelfMode = getConfig('us/book_shelf_mode', BookShelfMode.List);
+    catalogMode = getConfig('us/catalog_mode', CatalogMode.Flat);
+  }
+
+  /// 保存设置到文件
   void setConfig(String key, value) {
     if (key.contains('/')) {
       int pos = key.indexOf('/');
@@ -34,7 +47,8 @@ class UserSettings {
     FileUtil.writeText(iniPath, config.toString());
   }
 
-  dynamic getConf(String key) {
+  /// 读取设置，不存在则为空
+  dynamic getValue(String key) {
     if (key.contains('/')) {
       int pos = key.indexOf('/');
       String name = key.substring(0, pos);
@@ -45,6 +59,7 @@ class UserSettings {
     }
   }
 
+  /// 读取设置，不存在则返回默认值
   dynamic getConfig(String key, def) {
     if (key.contains('/')) {
       int pos = key.indexOf('/');

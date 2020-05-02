@@ -30,14 +30,12 @@ class G {
 
   //初始化全局信息，会在APP启动时执行
   static Future init() async {
-    rt = new RuntimeInfo();
-    us = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
-    sp = await SharedPreferences.getInstance();
+    rt = new RuntimeInfo(
+        dataPath: (await getApplicationDocumentsDirectory()).path + '/data/',
+        storagePath: (await getExternalStorageDirectory()).path);
 
-    rt.dataPath = (await getExternalStorageDirectory()).path;
-    rt.dataPath = (await getApplicationDocumentsDirectory()).path + '/data/';
-    rt.booksPath = rt.dataPath + 'books/';
-    rt.recyclesPath = rt.dataPath + 'recycles/';
-    rt.recyclesBooksPath = rt.recyclesPath + 'books/';
+    us = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
+
+    sp = await SharedPreferences.getInstance();
   }
 }

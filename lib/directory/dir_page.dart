@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:fairyland/common/global.dart';
-import 'package:fairyland/dialogs/my_template.dart';
+import 'package:fairyland/common/user_settings.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:fairyland/main/my_drawer.dart';
@@ -16,7 +14,7 @@ class DirPage extends StatefulWidget {
   DirPage({Key key, this.openChapter}) : super(key: key);
 
   final openChapter;
-  
+
   @override
   State<StatefulWidget> createState() {
     return new _DirPageState();
@@ -24,16 +22,16 @@ class DirPage extends StatefulWidget {
 }
 
 enum ChapterActions {
-  rename,
-  insert,
-  delete,
-  restore,
-  publish,
-  information,
-  moveUp,
-  moveDown,
-  moveTop,
-  moveBottom
+  Rename,
+  Insert,
+  Delete,
+  Restore,
+  Publish,
+  Information,
+  MoveUp,
+  MoveDown,
+  MoveTop,
+  MoveBottom
 }
 
 class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
@@ -46,7 +44,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
-    
+
     _initRecent();
   }
 
@@ -82,22 +80,37 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             ),
             getBookMenu()
           ]),
-      body: new Column(
+      body: _getCatalogGroup(),
+    );
+  }
+  
+  /// 根据类型获取不同的列表
+  Widget _getCatalogGroup() {
+    if (G.us.catalogMode == CatalogMode.Tree) {
+      return _getCatalogListTree();
+    } else if (G.us.catalogMode == CatalogMode.Flat) {
+      return new Column(
         children: <Widget>[
-          _getRouteView(),
+          _getFlatRouteView(),
           new Expanded(
             child: RefreshIndicator(
               onRefresh: actionSync,
-              child: _getVCListView(),
+              child: _getFlatVCListView(),
             ),
           ),
         ],
-      ),
-    );
+      );
+    } else {
+      return Text("待开发的目录视图");
+    }
+  }
+  
+  Widget _getCatalogListTree() {
+    return Text("CatalogTree: TOOD");
   }
 
   /// 获取路径分割线的view
-  Widget _getRouteView() {
+  Widget _getFlatRouteView() {
     /*if (currentRoute == null || currentRoute.length == 0) {
       return new Padding(
         padding: EdgeInsets.only(bottom: 30),
@@ -139,9 +152,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         ));
   }
 
-  /// 获取 ListView 整体
+  /// 获取 Flat 模式下 ListView 整体
   /// 如果为空则显示一个添加按钮
-  Widget _getVCListView() {
+  Widget _getFlatVCListView() {
     if (currentBook == null) {
       return new Center(
           child: new InkWell(
@@ -270,30 +283,30 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     return <PopupMenuEntry<ChapterActions>>[
       const PopupMenuItem<ChapterActions>(
         child: Text('重命名'),
-        value: ChapterActions.rename,
+        value: ChapterActions.Rename,
       ),
       const PopupMenuItem<ChapterActions>(
         child: Text('插入章节'),
-        value: ChapterActions.insert,
+        value: ChapterActions.Insert,
       ),
       item.deleted
           ? const PopupMenuItem<ChapterActions>(
               child: Text('从回收站恢复'),
-              value: ChapterActions.restore,
+              value: ChapterActions.Restore,
             )
           : const PopupMenuItem<ChapterActions>(
               child: Text('移到回收站'),
-              value: ChapterActions.delete,
+              value: ChapterActions.Delete,
             ),
       PopupMenuItem<ChapterActions>(
         child: Text('上移'),
-        value: ChapterActions.moveUp,
+        value: ChapterActions.MoveUp,
         enabled: index > 0,
       ),
       PopupMenuItem<ChapterActions>(
           child: Text('下移'),
-          value: ChapterActions.moveDown,
-          enabled: index < currentList.length-1),
+          value: ChapterActions.MoveDown,
+          enabled: index < currentList.length - 1),
     ];
   }
 
@@ -302,46 +315,46 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     return <PopupMenuEntry<ChapterActions>>[
       const PopupMenuItem<ChapterActions>(
         child: Text('重命名'),
-        value: ChapterActions.rename,
+        value: ChapterActions.Rename,
       ),
       const PopupMenuItem<ChapterActions>(
         child: Text('插入章节'),
-        value: ChapterActions.insert,
+        value: ChapterActions.Insert,
       ),
       const PopupMenuItem<ChapterActions>(
         child: Text('发布'),
-        value: ChapterActions.publish,
+        value: ChapterActions.Publish,
         enabled: false,
       ),
       const PopupMenuItem<ChapterActions>(
         child: Text('字数详情'),
-        value: ChapterActions.publish,
+        value: ChapterActions.Publish,
         enabled: false,
       ),
       item.deleted
           ? const PopupMenuItem<ChapterActions>(
               child: Text('从回收站恢复'),
-              value: ChapterActions.restore,
+              value: ChapterActions.Restore,
             )
           : const PopupMenuItem<ChapterActions>(
               child: Text('移到回收站'),
-              value: ChapterActions.delete,
+              value: ChapterActions.Delete,
             ),
       PopupMenuItem<ChapterActions>(
         child: Text('上移'),
-        value: ChapterActions.moveUp,
+        value: ChapterActions.MoveUp,
         enabled: index > 0,
       ),
       PopupMenuItem<ChapterActions>(
           child: Text('下移'),
-          value: ChapterActions.moveDown,
-          enabled: index < currentList.length-1),
+          value: ChapterActions.MoveDown,
+          enabled: index < currentList.length - 1),
     ];
   }
 
   void handleVCItemAction(VCItem item, ChapterActions result) {
     switch (result) {
-      case ChapterActions.rename:
+      case ChapterActions.Rename:
         inputName('修改名字', item.isVolume() ? '卷名' : '章名', item.name,
             (String result) {
           setState(() {
@@ -350,17 +363,17 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           });
         });
         break;
-      case ChapterActions.insert:
+      case ChapterActions.Insert:
         inputName('插入章节', '章名', '', (String result) {
           int index = currentList.indexOf(item);
           if (index < 0) // 出错了，没找到
             return;
           _insertVCItemInCurrentList(
-              index, new VCItem(name: result, type: VCItem.chapterType));
+              index, new VCItem(name: result, type: VCItemType.ChapterType));
           saveCatalog();
         });
         break;
-      case ChapterActions.delete:
+      case ChapterActions.Delete:
         setState(() {
           {
             item.deleted = true;
@@ -369,18 +382,18 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           }
         });
         break;
-      case ChapterActions.restore:
+      case ChapterActions.Restore:
         setState(() {
           item.deleted = false;
         });
         break;
-      case ChapterActions.publish:
+      case ChapterActions.Publish:
         // TODO: Handle this case.
         break;
-      case ChapterActions.information:
+      case ChapterActions.Information:
         // TODO: Handle this case.
         break;
-      case ChapterActions.moveUp:
+      case ChapterActions.MoveUp:
         setState(() {
           int index = currentList.indexOf(item);
           if (index <= 0) return;
@@ -395,7 +408,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           saveCatalog();
         });
         break;
-      case ChapterActions.moveDown:
+      case ChapterActions.MoveDown:
         setState(() {
           int index = currentList.indexOf(item);
           if (index < 0 || index >= currentList.length) return;
@@ -413,7 +426,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           saveCatalog();
         });
         break;
-      case ChapterActions.moveTop:
+      case ChapterActions.MoveTop:
         setState(() {
           int index = currentList.indexOf(item);
           if (index < 0 || index >= currentList.length) return;
@@ -422,7 +435,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           saveCatalog();
         });
         break;
-      case ChapterActions.moveBottom:
+      case ChapterActions.MoveBottom:
         setState(() {
           int index = currentList.indexOf(item);
           if (index < 0 || index >= currentList.length) return;
@@ -511,7 +524,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       },
     );
   }
-  
+
   void _initRecent() {
     // 恢复上次打开的作品
     String bookName = G.us.getConfig('recent/book_name', '');
@@ -558,13 +571,15 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     try {
       // 解析JSON
       currentBook = BookObject.fromJson(json.decode(str));
+//      currentBook.setVCItemsContext();
+      currentList = currentBook.catalog;
     } catch (e) {
       Fluttertoast.showToast(msg: '解析目录树错误');
     } finally {
       currentRoute = [];
-      currentList = currentBook.catalog;
     }
     G.us.setConfig('recent/book_name', name);
+    print(currentBook.toJson());
 
     setState(() {});
   }
@@ -591,7 +606,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     inputName('添加新章', '章名', '', (String result) {
       // 添加章节到末尾
       _insertVCItemInCurrentList(
-          -1, new VCItem(name: result, type: VCItem.chapterType));
+          -1, new VCItem(name: result, type: VCItemType.ChapterType));
       saveCatalog();
     });
   }
@@ -607,7 +622,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     inputName('添加新卷', '卷名', '', (String result) {
       // 添加分卷到末尾
       _insertVCItemInCurrentList(
-          -1, new VCItem(name: result, type: VCItem.volumeType, vcList: []));
+          -1, new VCItem(name: result, type: VCItemType.VolumeType, vcList: []));
       saveCatalog();
     });
   }
@@ -622,7 +637,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       item.id = currentBook.createRandomID();
       if (item.id.isEmpty) {
         Fluttertoast.showToast(msg: '章节过多，请将该需求反馈给开发者');
-        return ;
+        return;
       }
     }
     if (item.isVolume() && item.vcList == null) {
@@ -771,19 +786,19 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     }
     inputName('修改书名', '书名', currentBook.name, (String result) {
       if (result.isEmpty) {
-        return ;
+        return;
       }
       if (FileUtil.isDirExists(G.rt.bookPathD(result))) {
-        Fluttertoast.showToast(msg: '作品《'+result+'》已存在');
-        return ;
+        Fluttertoast.showToast(msg: '作品《' + result + '》已存在');
+        return;
       }
       if (!BookObject.canBeBookName(result)) {
-        Fluttertoast.showToast(msg: '名字《'+result+'》包含特殊字符，无法用作书名');
-        return ;
+        Fluttertoast.showToast(msg: '名字《' + result + '》包含特殊字符，无法用作书名');
+        return;
       }
       // 修改书名
       currentBook.name = result;
-      
+
       // 设置配置项
       G.us.setConfig('recent/book_name', result);
     });

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:fairyland/common/global.dart';
 
 class BookObject {
   String id; // 云端分配的ID（未同步则没有）
@@ -51,11 +52,67 @@ class BookObject {
     );
   }
 
-  /// 设置每一项的 index（忽视删除的）displayedName
-  void setVCItemsContext() {}
+  /// 递归设置每一项的 index 和 displayedName
+  void setVCItemsContext() {
+    int bookV = 0, bookC = 0, volumeV = 0, volumeC = 0;
+    for (int i = 0; i < catalog.length; i++) {
+      if (!G.us.showCatalogRecycle && catalog[i].isDeleted()) continue;
+      if (catalog[i].isVolume()) {
+        VCBundle bundle = catalog[i].setIndexes(bookV, volumeV);
+        bookV += bundle.volume;
+        bookC += bundle.chapter;
+        volumeV++;
+      } else if (catalog[i].isChapter()) {
+        catalog[i].setIndexes(bookC, volumeC);
+        volumeC++;
+      }
+    }
 
-  /// 递归 volume 的 displayedName
-  void setVolumeItemsContext() {}
+    _setVCItemsDisplayNames();
+  }
+
+  /// 设置所有 item 的显示名字
+  void _setVCItemsDisplayNames() {
+    catalog.forEach((item) {
+      setVCItemDisplayName(item, recursive: true);
+    });
+  }
+
+  /// 设置某一项的名字
+  /// @param recursive 是否递归
+  void setVCItemDisplayName(VCItem item, {bool recursive: false}) {
+    int index;
+    String number;
+    String name;
+    String format;
+    // 序号
+    if (config.recalculateSerialNumber) {
+      index = item.indexInVolume;
+    } else {
+      index = item.indexInBook;
+    }
+    if (config.useArabSerialNumber) {
+      // TODO: 转换成中文
+      number = index.toString();
+    } else {
+      number = index.toString();
+    }
+    name = item.name;
+    // 格式
+    if (item.isVolume()) {
+      format = config.chapterDisplayFormat;
+    } else if (item.isChapter()) {
+      format = config.volumeDisplayFormat;
+    }
+    item.setDisplayName(format.replaceAll('%1', number).replaceAll('%2', name));
+
+    // 如果是分卷，递归遍历
+    if (item.isVolume() && recursive) {
+      item.vcList.forEach((item) {
+        setVCItemDisplayName(item);
+      });
+    }
+  }
 
   /// 随机创建一个分卷/章节ID
   String createRandomID() {
@@ -109,18 +166,21 @@ class BookObject {
   }
 }
 
-/// Volume or Chapter Item Base
-class VCItem {
-  static final bookType = 0;
-  static final volumeType = 1;
-  static final chapterType = 2;
+enum VCItemType { BookType, VolumeType, ChapterType }
 
+class VCBundle {
+  VCBundle({this.volume, this.chapter});
+
+  int chapter;
+  int volume;
+}
+
+/// Volume or Chapter Item Base
+/// 记录了分卷/章节的信息
+class VCItem {
   String id; // 分卷/章节在全书中的唯一ID
   String name; // 分卷/章节显示的名字
-  int indexInBook; // 在全部正文的章节索引（从1开始，不包含作品相关）
-  int indexInVolume; // 在当前分卷的章节索引（从1开始）
-  String displayedName; // 带有章序的章节名
-  int type; // 0: Book, 1: Volume, 2: Chapter, ?; Other
+  VCItemType type; // 0: Book, 1: Volume, 2: Chapter, ?; Other
   int wordCount; // 章节有效字数/该分卷章节总有效字数
   String content; // 章节内容/分卷内容
   int createTime; // 创建时间
@@ -131,30 +191,66 @@ class VCItem {
   int publishTime; // 发布时间
   List<VCItem> vcList; // 分卷的子章节
 
+  int indexInBook; // 在全部正文的索引（从0开始，不包含作品相关）
+  int indexInVolume; // 在当前分卷的索引（从0开始，章节/分卷单独计算）
+  String displayedName; // 带有卷/章序的完整名字
+
   VCItem({this.id, this.name, this.wordCount, this.type, this.vcList});
 
   bool operator &(VCItem item) {
     return this.id == item.id;
   }
 
-  bool isVolume() => type == volumeType;
+  bool isVolume() => type == VCItemType.VolumeType;
 
-  bool isChapter() => type == chapterType;
+  bool isChapter() => type == VCItemType.ChapterType;
 
-  /// 设置当前索引
-  void setIndexes(int inBook, inVolume) {
+  bool isDeleted() => deleted;
+
+  /// 递归设置当前索引
+  VCBundle setIndexes(int inBook, int inVolume) {
     indexInBook = inBook;
     indexInVolume = inVolume;
+
+    // 如果是 volume，则需要继续递归设置下面
+    if (isVolume()) {
+      int vCount = 0, cCount = 0; // 自己子级的
+      int vSum = 1, cSum = 0; // 全书的，自己也算 vSum
+      // 递归子章节
+      for (int i = 0; i < vcList.length; i++) {
+        if (!G.us.showCatalogRecycle && vcList[i].isDeleted()) continue;
+        if (vcList[i].isVolume()) {
+          VCBundle bundle = vcList[i].setIndexes(inBook + vSum, vCount);
+          vCount++;
+          vSum++;
+          vSum += bundle.volume;
+          cSum += bundle.chapter;
+        } else if (vcList[i].isChapter()) {
+          vcList[i].setIndexes(inBook + cSum, cCount);
+          cCount++;
+          cSum++;
+        }
+      }
+      return VCBundle(volume: vSum, chapter: cSum);
+    } else {
+      return VCBundle(volume: 0, chapter: 0);
+    }
+  }
+
+  /// 设置显示的名字
+  void setDisplayName(String name) {
+    this.displayedName = name;
   }
 
   /// 获取显示的带序号的名字
-  String getDisplayName() {}
+  String getDisplayName() => displayedName;
 
+  /// 转化成JSON，用来保存至文件
   Map<String, dynamic> toJson() {
     Map<String, dynamic> map = {
       'id': id,
       'name': name,
-      'type': type,
+      'type': type.index,
       'deleted': deleted,
       'deleteTime': deleteTime,
       'published': published,
@@ -173,8 +269,8 @@ class VCItem {
 
   factory VCItem.fromJson(Map<String, dynamic> json) {
     List<VCItem> vcList;
-    int type = json['type'] ?? chapterType;
-    if (type == volumeType) {
+    int type = json['type'] ?? VCItemType.ChapterType.index;
+    if (type == VCItemType.VolumeType.index) {
       // 如果是分卷，遍历加载子分卷和子章节
       List list = json['list'];
       vcList = [];
@@ -188,7 +284,11 @@ class VCItem {
     VCItem item = new VCItem(
         id: json['id'],
         name: json['name'],
-        type: type,
+        type: type == VCItemType.VolumeType.index
+            ? VCItemType.VolumeType
+            : type == VCItemType.ChapterType.index
+                ? VCItemType.ChapterType
+                : VCItemType.BookType,
         wordCount: json['wordCount'] ?? 0,
         vcList: vcList);
     item.deleted = json['deleted'] ?? false;
@@ -230,8 +330,8 @@ class BookConfig {
       useRelevant: json['useRelevant'] ?? true,
       useArabSerialNumber: json['useArabSerialNumber'] ?? false,
       recalculateSerialNumber: json['recalculateSerialNumber'] ?? false,
-      chapterDisplayFormat: json['chapterDisplayFormat'] ?? '第%s章 %s',
-      volumeDisplayFormat: json['volumeDisplayFormat'] ?? '第%s卷 %s',
+      chapterDisplayFormat: json['chapterDisplayFormat'] ?? '第%1章 %2',
+      volumeDisplayFormat: json['volumeDisplayFormat'] ?? '第%1卷 %2',
     );
   }
 }
