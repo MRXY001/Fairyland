@@ -204,7 +204,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 获取目录的每一行
   Widget _getVolumeChapterTile(VCItem item, int index) {
-    String name = item.name; // item.getDisplayName();
+    String name = item.getDisplayName();
     Image image = Image.asset(item.isVolume()
         ? 'assets/icons/volume.png'
         : 'assets/icons/chapter.png');
@@ -571,15 +571,15 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     try {
       // 解析JSON
       currentBook = BookObject.fromJson(json.decode(str));
-//      currentBook.setVCItemsContext();
+      currentBook.setVCItemsContext();
       currentList = currentBook.catalog;
     } catch (e) {
       Fluttertoast.showToast(msg: '解析目录树错误');
+      currentList = [];
     } finally {
       currentRoute = [];
     }
     G.us.setConfig('recent/book_name', name);
-    print(currentBook.toJson());
 
     setState(() {});
   }

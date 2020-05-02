@@ -41,15 +41,15 @@ class BookObject {
     });
 
     return new BookObject(
-      name: json['name'],
-      author: json['author'],
-      style: json['style'],
-      description: json['description'],
-      catalog: catalog,
-      config: BookConfig.fromJson(json['config']),
-      createTime: json['createTime'] ?? 0,
-      wordCount: json['wordCount'] ?? 0,
-    );
+        name: json['name'],
+        author: json['author'],
+        style: json['style'],
+        description: json['description'],
+        catalog: catalog,
+        //        config: BookConfig.fromJson(json['config']),
+        createTime: json['createTime'] ?? 0,
+        wordCount: json['wordCount'] ?? 0,
+        config: BookConfig.fromJson(json['config']));
   }
 
   /// 递归设置每一项的 index 和 displayedName
@@ -67,7 +67,7 @@ class BookObject {
         volumeC++;
       }
     }
-
+    
     _setVCItemsDisplayNames();
   }
 
@@ -324,7 +324,7 @@ class BookConfig {
 
   factory BookConfig.fromJson(Map<String, dynamic> json) {
     if (json == null) {
-      return new BookConfig();
+      return BookConfig.fromJson(Map<String, dynamic>()); // 至少要设置一下默认值
     }
     return new BookConfig(
       useRelevant: json['useRelevant'] ?? true,
