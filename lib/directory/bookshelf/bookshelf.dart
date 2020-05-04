@@ -125,7 +125,7 @@ class _BookshelfState extends State<Bookshelf> {
         new MaterialPageRoute(builder: (BuildContext context) {
       return new BookFields();
     })).then((String result) {
-      if (result.isEmpty) {
+      if (result == null || result.isEmpty) {
         return;
       }
 

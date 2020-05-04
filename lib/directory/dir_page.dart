@@ -836,7 +836,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       return;
     }
     inputName('修改书名', '书名', currentBook.name, (String result) {
-      if (result.isEmpty) {
+      if (result == null || result.isEmpty) {
         return;
       }
       if (FileUtil.isDirExists(G.rt.bookPathD(result))) {
