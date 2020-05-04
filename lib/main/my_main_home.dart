@@ -1,9 +1,7 @@
 import 'package:fairyland/assist/assist_page.dart';
-import 'package:fairyland/common/global.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/editor/chatper_editor.dart';
 import 'package:fairyland/main/my_drawer.dart';
-import 'package:fairyland/square/square_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fairyland/directory/dir_page.dart';
 import 'package:fairyland/editor/editor_page.dart';
@@ -45,7 +43,7 @@ class _MyHomePageState extends State<MyHomePage>
     dirPage = new DirPage(openChapter: _openChapter);
     editorPage = new EditorPage();
     assistPage = new AssistPage();
-    chapterEditor = editorPage.getEditor();
+    chapterEditor = editorPage.chapterEditor;
     _pages = <PageBean>[
       PageBean(title: '目录', icon: Icons.list, widget: dirPage),
       PageBean(title: '写作', icon: Icons.edit, widget: editorPage),
@@ -78,7 +76,6 @@ class _MyHomePageState extends State<MyHomePage>
             });
           },
         ),
-        drawer: MyDrawer.globalDrawer,
         bottomNavigationBar: bottomBar);
   }
 
@@ -92,5 +89,21 @@ class _MyHomePageState extends State<MyHomePage>
         editorPage.myState.setState(() { });
       }
     });
+  }
+  
+  /// 重命名章节 callback
+  void _renameChapter(VCItem chapter) {
+    // 如果是正在编辑的章节
+    if (editorPage.currentChapter == chapter) {
+    
+    }
+  }
+  
+  /// 删除章节 callback
+  void _deleteChapter(VCItem chapter) {
+    // 如果是正在编辑的章节
+    if (editorPage.currentChapter == chapter) {
+      editorPage.closeChapter();
+    }
   }
 }

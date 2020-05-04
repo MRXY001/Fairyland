@@ -23,7 +23,7 @@ class EditorPage extends StatefulWidget {
 
   TextEditingController _editController;
   ChapterEditor chapterEditor;
-  VCItem _currentChapter; // 当前打开的章节
+  VCItem currentChapter; // 当前打开的章节
   String savedPath;
   State<StatefulWidget> myState;
 
@@ -32,18 +32,21 @@ class EditorPage extends StatefulWidget {
     return (myState = new _EditPageState());
   }
 
-  /// 获取编辑器对象
-  ChapterEditor getEditor() => chapterEditor;
-
   /// 打开一个章节
   /// 根据传入的章节对象，获取章节路径，并设置初始值
   void openChapter(VCItem chapter) {
-    _currentChapter = chapter;
+    currentChapter = chapter;
     savedPath = G.rt.cBookChapterPath(chapter.id);
     String content = FileUtil.readText(savedPath);
     chapterEditor.initContent(content);
   }
+  
+  /// 关闭章节
+  void closeChapter() {
+  
+  }
 
+  /// 保存章节
   void onEditSave(String text) {
     if (savedPath != null) {
       FileUtil.writeText(savedPath, text);
@@ -78,7 +81,7 @@ class _EditPageState extends State<EditorPage> {
   }
 
   PopupMenuButton getEditMenu() {
-    if (widget._currentChapter == null) {
+    if (widget.currentChapter == null) {
       return PopupMenuButton<String>(
         itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
           PopupMenuItem<String>(
