@@ -1,4 +1,5 @@
 import 'package:fairyland/assist/assist_page.dart';
+import 'package:fairyland/common/global.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/editor/chatper_editor.dart';
 import 'package:fairyland/main/my_drawer.dart';
@@ -9,7 +10,9 @@ import 'package:fairyland/editor/editor_page.dart';
 import 'my_navigation_bar.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key key, this.title}) : super(key: key) {
+    G.rt.mainHomeKey = key;
+  }
 
   final String title;
 
@@ -19,7 +22,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
-  var context;
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   DirPage dirPage;
   EditorPage editorPage;
@@ -53,7 +56,6 @@ class _MyHomePageState extends State<MyHomePage>
       items: _pages,
       controller: pageController,
     );
-    MyDrawer.globalDrawer = new MyDrawer();
   }
 
   @override
@@ -64,8 +66,9 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
-    this.context = context;
+    G.rt.mainHomeKey = _scaffoldKey;
     return new Scaffold(
+        key: _scaffoldKey,
         body: new PageView(
           children: _pages.map((PageBean page) => page.widget).toList(),
           controller: pageController,
@@ -76,6 +79,7 @@ class _MyHomePageState extends State<MyHomePage>
             });
           },
         ),
+        drawer: new MyDrawer(),
         bottomNavigationBar: bottomBar);
   }
 
@@ -86,19 +90,17 @@ class _MyHomePageState extends State<MyHomePage>
           duration: Duration(milliseconds: 300), curve: Curves.easeOutQuad);
       editorPage.openChapter(chapter);
       if (editorPage.myState != null) {
-        editorPage.myState.setState(() { });
+        editorPage.myState.setState(() {});
       }
     });
   }
-  
+
   /// 重命名章节 callback
   void _renameChapter(VCItem chapter) {
     // 如果是正在编辑的章节
-    if (editorPage.currentChapter == chapter) {
-    
-    }
+    if (editorPage.currentChapter == chapter) {}
   }
-  
+
   /// 删除章节 callback
   void _deleteChapter(VCItem chapter) {
     // 如果是正在编辑的章节

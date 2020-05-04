@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class RuntimeInfo {
   RuntimeInfo({this.dataPath, this.storagePath}) {
     booksPath = dataPath + 'books/';
@@ -12,6 +14,9 @@ class RuntimeInfo {
   String recyclesPath;
   String recyclesBooksPath; // 回收站路径
 
+  // 运行时 Key
+  GlobalKey<ScaffoldState> mainHomeKey;
+  
   // 当前配置
   String currentBookName;
 

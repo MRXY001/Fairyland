@@ -40,11 +40,9 @@ class EditorPage extends StatefulWidget {
     String content = FileUtil.readText(savedPath);
     chapterEditor.initContent(content);
   }
-  
+
   /// 关闭章节
-  void closeChapter() {
-  
-  }
+  void closeChapter() {}
 
   /// 保存章节
   void onEditSave(String text) {
@@ -58,15 +56,25 @@ class _EditPageState extends State<EditorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        drawer: MyDrawer.globalDrawer,
-        appBar: new AppBar(title: Text('编辑'), actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.search),
-            tooltip: '综合搜索',
-            onPressed: () {},
-          ),
-          getEditMenu()
-        ]),
+        appBar: new AppBar(
+            leading: Builder(builder: (context) {
+              return IconButton(
+                icon: Icon(Icons.menu), //自定义图标
+                onPressed: () {
+                  // 打开抽屉菜单
+                  G.rt.mainHomeKey.currentState.openDrawer();
+                },
+              );
+            }),
+            title: Text('编辑'),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.search),
+                tooltip: '综合搜索',
+                onPressed: () {},
+              ),
+              getEditMenu()
+            ]),
         body: Column(
           children: <Widget>[
             Expanded(

@@ -58,8 +58,16 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     super.build(context);
 
     return new Scaffold(
-      drawer: MyDrawer.globalDrawer,
+//      drawer: MyDrawer.globalDrawer,
       appBar: new AppBar(
+          leading: Builder(builder: (context) {
+            return IconButton(
+              icon: Icon(Icons.menu), //自定义图标
+              onPressed: () { // 打开抽屉菜单
+                G.rt.mainHomeKey.currentState.openDrawer();
+              },
+            );
+          }),
           title: Builder(
             builder: (BuildContext context) {
               // 获取context后才能跳转页面
