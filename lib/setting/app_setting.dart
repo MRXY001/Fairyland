@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 class AppSettingWindow extends StatelessWidget {
 	@override
 	Widget build(BuildContext context) {
-		return Container(
-			color: Colors.grey.shade200,
-			child: ListView(
+		return Scaffold(
+			appBar: AppBar(
+				title: Text('程序设置'),
+			),
+			body: ListView(
 				children: <Widget>[
 					Padding(
 						padding: const EdgeInsets.all(16.0),
