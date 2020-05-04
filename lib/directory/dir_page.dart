@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:fairyland/common/global.dart';
-import 'package:fairyland/common/user_settings.dart';
+import 'package:fairyland/common/user_setting.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:fairyland/main/my_drawer.dart';

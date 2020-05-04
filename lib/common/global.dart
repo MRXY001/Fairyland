@@ -1,9 +1,7 @@
 // 提供五套可选主题色
 import 'package:fairyland/common/runtime_info.dart';
-import 'package:fairyland/common/user_settings.dart';
-import 'package:fairyland/utils/file_util.dart';
+import 'package:fairyland/common/user_setting.dart';
 import 'package:flutter/material.dart';
-import 'package:ini/ini.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,8 +14,10 @@ const _themes = <MaterialColor>[
 ];
 
 class G {
+  // ignore: non_constant_identifier_names
+  static String APP_NAME = "创作仙国";
   static RuntimeInfo rt;
-  static UserSettings us;
+  static UserSetting us;
 
   // 可选的主题列表
   static List<MaterialColor> get themes => _themes;
@@ -34,7 +34,7 @@ class G {
         dataPath: (await getApplicationDocumentsDirectory()).path + '/data/',
         storagePath: (await getExternalStorageDirectory()).path);
 
-    us = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
+    us = new UserSetting(iniPath: rt.dataPath + 'settings.ini');
 
     sp = await SharedPreferences.getInstance();
   }

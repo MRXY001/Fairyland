@@ -5,8 +5,8 @@ import 'package:ini/ini.dart';
 enum BookShelfMode{List, Page, Grid}
 enum CatalogMode { Tree, Flat }
 
-class UserSettings {
-  UserSettings({@required this.iniPath}) {
+class UserSetting {
+  UserSetting({@required this.iniPath}) {
     if (FileUtil.isFileExists(iniPath)) {
       String content = FileUtil.readText(iniPath);
       config = Config.fromString(content);
