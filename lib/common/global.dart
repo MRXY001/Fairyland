@@ -39,5 +39,7 @@ class G {
     us = new UserSetting(iniPath: rt.dataPath + 'settings.ini');
 
     sp = await SharedPreferences.getInstance();
+    
+    asg = new AppSettingGroups();
   }
 }

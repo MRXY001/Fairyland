@@ -1,5 +1,5 @@
 import 'package:fairyland/common/global.dart';
-import 'package:fairyland/setting/app_setting.dart';
+import 'package:fairyland/setting/app_setting_window.dart';
 import 'package:flutter/material.dart';
 
 class MyDrawer extends StatelessWidget {

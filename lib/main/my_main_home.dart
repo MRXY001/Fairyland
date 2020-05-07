@@ -119,7 +119,7 @@ class _MyHomePageState extends State<MyHomePage>
     AppSettingGroups asg = G.asg;
     asg.addGroup('界面设置');
     asg.addItem(new AppSettingItem(
-        'book_shelf_mode', Icon(Icons.apps), '书架风格', '', UserDataType.U_Int,
+        'book_shelf_mode', Icon(Icons.apps), '书架风格', '', UserDataType.U_Enum,
             () {
           switch (us.bookShelfMode) {
             case BookShelfMode.List:

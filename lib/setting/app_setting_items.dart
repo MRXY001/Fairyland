@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 enum UserDataType {
   U_Null,
   U_Bool,
+  U_Enum,
   U_Int,
   U_Range,
   U_Double,
@@ -37,8 +38,8 @@ class AppSettingItem {
 }
 
 class AppSettingGroups {
-  List<String> names;
-  List<List<AppSettingItem>> items;
+  List<String> names = [];
+  List<List<AppSettingItem>> items = [];
 
   /// 添加一个分组
   List<AppSettingItem> addGroup(String name) {
@@ -62,5 +63,9 @@ class AppSettingGroups {
   /// 如果只有一个分组，则可能不特别分开显示分组
   bool isMultiGroups() {
     return names.length <= 1;
+  }
+  
+  int length() {
+    return names.length;
   }
 }
