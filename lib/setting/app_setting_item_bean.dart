@@ -10,7 +10,7 @@ enum UserDataType {
   U_Double,
   U_String,
   U_StringList,
-  U_DataList,
+  U_Next,
 }
 
 class AppSettingItem {
@@ -29,6 +29,10 @@ class AppSettingItem {
       this.dataType, this.showedValue, this.onClicked) {
     if (showedValue == null) {
       showedValue = () {
+        // 如果没有简介，也没有需要显示的值，则使用 null
+        if (description.isEmpty) {
+          return null;
+        }
         return description;
       };
     }

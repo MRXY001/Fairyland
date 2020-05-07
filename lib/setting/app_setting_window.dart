@@ -19,7 +19,6 @@ class AppSettingWindow extends StatelessWidget {
     if (appSettingGroups.length() <= 1) {
       showGroupTitle = false;
     }
-    print(appSettingGroups.length());
   }
 
   @override
@@ -158,10 +157,12 @@ class AppSettingWindow extends StatelessWidget {
             shrinkWrap: true,
             itemBuilder: (context, index) {
               var item = group[index];
+              var subTitle = item.showedValue();
               return ListTile(
                 leading: item.icon,
                 title: Text(item.title),
-                trailing: Icon(Icons.arrow_right),
+                subtitle: subTitle == null ? null : Text(subTitle),
+                trailing: item.dataType == UserDataType.U_Next ? Icon(Icons.arrow_right) : null,
                 onTap: item.onClicked,
               );
             }));
