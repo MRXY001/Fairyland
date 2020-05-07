@@ -1,8 +1,11 @@
 import 'package:fairyland/assist/assist_page.dart';
 import 'package:fairyland/common/global.dart';
+import 'package:fairyland/common/runtime_info.dart';
+import 'package:fairyland/common/user_setting.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/editor/chatper_editor.dart';
 import 'package:fairyland/main/my_drawer.dart';
+import 'package:fairyland/setting/app_setting_items.dart';
 import 'package:flutter/material.dart';
 import 'package:fairyland/directory/dir_page.dart';
 import 'package:fairyland/editor/editor_page.dart';
@@ -56,6 +59,9 @@ class _MyHomePageState extends State<MyHomePage>
       items: _pages,
       controller: pageController,
     );
+    
+    // 初始化所有设置项
+    _initAppSettingItems(G.rt, G.us);
   }
 
   @override
@@ -107,5 +113,24 @@ class _MyHomePageState extends State<MyHomePage>
     if (editorPage.currentChapter == chapter) {
       editorPage.closeChapter();
     }
+  }
+  
+  void _initAppSettingItems(RuntimeInfo rt, UserSetting us) {
+    AppSettingGroups asg = G.asg;
+    asg.addGroup('界面设置');
+    asg.addItem(new AppSettingItem(
+        'book_shelf_mode', Icon(Icons.apps), '书架风格', '', UserDataType.U_Int,
+            () {
+          switch (us.bookShelfMode) {
+            case BookShelfMode.List:
+              return '列表';
+            case BookShelfMode.Page:
+              return '页面';
+            case BookShelfMode.Grid:
+              return '网格';
+            default:
+              return '未知';
+          }
+        }, () {}));
   }
 }

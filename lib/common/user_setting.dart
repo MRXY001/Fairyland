@@ -2,7 +2,7 @@ import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:ini/ini.dart';
 
-enum BookShelfMode{List, Page, Grid}
+enum BookShelfMode { List, Page, Grid }
 enum CatalogMode { Tree, Flat }
 
 class UserSetting {
@@ -21,8 +21,8 @@ class UserSetting {
   String iniPath;
 
   // 配置
-  BookShelfMode bookShelfMode = BookShelfMode.List;
-  CatalogMode catalogMode; // 目录结构类型
+  BookShelfMode bookShelfMode; // 书架模式
+  CatalogMode catalogMode; // 目录模式
   bool showCatalogRecycle = false; // 显示目录回收站
 
   /// 读取已有的配置文件
