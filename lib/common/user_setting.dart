@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:ini/ini.dart';
 
 enum BookShelfMode { List, Page, Grid }
-enum CatalogMode { Tree, Flat }
+enum BookCatalogMode { Tree, Flat }
 
 class UserSetting {
   UserSetting({@required this.iniPath}) {
@@ -22,7 +22,7 @@ class UserSetting {
 
   // 用户配置
   BookShelfMode bookShelfMode; // 书架模式
-  CatalogMode catalogMode; // 目录模式
+  BookCatalogMode bookCatalogMode; // 目录模式
   
   // 运行时设置
   bool showCatalogRecycle = false; // 显示目录回收站
@@ -30,7 +30,7 @@ class UserSetting {
   /// 读取已有的配置文件
   void readFromFile() {
     bookShelfMode = getConfig('us/book_shelf_mode', BookShelfMode.List);
-    catalogMode = getConfig('us/catalog_mode', CatalogMode.Tree);
+    bookCatalogMode = getConfig('us/book_catalog_mode', BookCatalogMode.Tree);
   }
 
   /// 保存设置到文件

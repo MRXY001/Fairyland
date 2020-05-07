@@ -94,7 +94,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 根据类型获取不同的列表
   Widget _getCatalogGroup() {
-    if (G.us.catalogMode == CatalogMode.Tree) {
+    if (G.us.bookCatalogMode == BookCatalogMode.Tree) {
       if (currentBook == null || currentBook.catalog == null) {
         return new Text('请创建作品');
       }
@@ -105,7 +105,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           return _buildCatalogTreeTiles(currentBook.catalog[index]);
         },
       );
-    } else if (G.us.catalogMode == CatalogMode.Flat) {
+    } else if (G.us.bookCatalogMode == BookCatalogMode.Flat) {
       // 显示单层模式
       return new Column(
         children: <Widget>[
