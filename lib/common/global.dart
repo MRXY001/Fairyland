@@ -1,7 +1,7 @@
 // 提供五套可选主题色
 import 'package:fairyland/common/runtime_info.dart';
 import 'package:fairyland/common/user_setting.dart';
-import 'package:fairyland/setting/app_setting_items.dart';
+import 'package:fairyland/setting/app_setting_item_bean.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';

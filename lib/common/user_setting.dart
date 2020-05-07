@@ -20,9 +20,11 @@ class UserSetting {
   Config config;
   String iniPath;
 
-  // 配置
+  // 用户配置
   BookShelfMode bookShelfMode; // 书架模式
   CatalogMode catalogMode; // 目录模式
+  
+  // 运行时设置
   bool showCatalogRecycle = false; // 显示目录回收站
 
   /// 读取已有的配置文件

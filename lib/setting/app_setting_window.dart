@@ -1,5 +1,5 @@
 import 'package:fairyland/common/global.dart';
-import 'package:fairyland/setting/app_setting_items.dart';
+import 'package:fairyland/setting/app_setting_item_bean.dart';
 import 'package:flutter/material.dart';
 
 // ignore: must_be_immutable
