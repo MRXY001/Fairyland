@@ -6,11 +6,24 @@ import 'package:flutter/widgets.dart';
 import 'app_setting_item_bean.dart';
 
 class AppSettingFactory {
-  void initAppSettingItems(RuntimeInfo rt, UserSetting us) {
+  final RuntimeInfo rt;
+  final UserSetting us;
+
+  AppSettingFactory(this.rt, this.us);
+
+  void initAppSettingItems() {
     AppSettingGroups asg = G.asg;
 
     asg.addGroup('界面设置');
 
+    AppSettingGroups appearanceGroups = new AppSettingGroups();
+    asg.addItem(new AppSettingItem(
+        'appearance', null, '通用界面', '书架、目录', UserDataType.U_Next, null, null,
+        nextGroups: appearanceGroups));
+    initAppearanceItems(appearanceGroups);
+  }
+
+  void initAppearanceItems(AppSettingGroups asg) {
     asg.addItem(new AppSettingItem(
         'book_shelf_mode', Icon(Icons.apps), '书架风格', '', UserDataType.U_Enum,
         () {

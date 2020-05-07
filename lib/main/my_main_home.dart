@@ -6,7 +6,7 @@ import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/editor/chatper_editor.dart';
 import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/setting/app_setting_item_bean.dart';
-import 'package:fairyland/setting/app_setting_items.dart';
+import 'package:fairyland/setting/app_setting_factory.dart';
 import 'package:flutter/material.dart';
 import 'package:fairyland/directory/dir_page.dart';
 import 'package:fairyland/editor/editor_page.dart';
@@ -62,7 +62,7 @@ class _MyHomePageState extends State<MyHomePage>
     );
     
     // 初始化所有设置项
-    (new AppSettingFactory()).initAppSettingItems(G.rt, G.us);
+    (new AppSettingFactory(G.rt, G.us)).initAppSettingItems();
   }
 
   @override

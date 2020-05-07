@@ -158,12 +158,27 @@ class AppSettingWindow extends StatelessWidget {
             itemBuilder: (context, index) {
               var item = group[index];
               var subTitle = item.showedValue();
+              var onTap = (item.onClicked == null &&
+                      item.dataType == UserDataType.U_Next)
+                  ? () {
+                      // 打开这项分组
+                      Navigator.push<String>(context, new MaterialPageRoute(
+                          builder: (BuildContext context) {
+                        return new AppSettingWindow(
+                          pageTitle: item.title,
+                          appSettingGroups: item.nextGroups,
+                        );
+                      }));
+                    }
+                  : item.onClicked;
               return ListTile(
                 leading: item.icon,
                 title: Text(item.title),
                 subtitle: subTitle == null ? null : Text(subTitle),
-                trailing: item.dataType == UserDataType.U_Next ? Icon(Icons.arrow_right) : null,
-                onTap: item.onClicked,
+                trailing: item.dataType == UserDataType.U_Next
+                    ? Icon(Icons.arrow_right)
+                    : null,
+                onTap: onTap,
               );
             }));
   }

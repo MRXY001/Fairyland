@@ -21,12 +21,13 @@ class AppSettingItem {
   UserDataType dataType; // 数据种类
   var showedValue; // 显示的值
   var onClicked; // 点击后的操作
+  AppSettingGroups nextGroups; // 下一个group
 
   List<String> groupNames;
   List<List<AppSettingItem>> groupItems;
 
   AppSettingItem(this.key, this.icon, this.title, this.description,
-      this.dataType, this.showedValue, this.onClicked) {
+      this.dataType, this.showedValue, this.onClicked, {this.nextGroups}) {
     if (showedValue == null) {
       showedValue = () {
         // 如果没有简介，也没有需要显示的值，则使用 null
@@ -42,7 +43,7 @@ class AppSettingItem {
 class AppSettingGroups {
   List<String> names = [];
   List<List<AppSettingItem>> items = [];
-
+  
   /// 添加一个分组
   AppSettingGroups addGroup(String name) {
     names.add(name);
