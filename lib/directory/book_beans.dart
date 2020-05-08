@@ -65,6 +65,7 @@ class BookObject {
       } else if (catalog[i].isChapter()) {
         catalog[i].setIndexes(bookC, volumeC);
         volumeC++;
+        bookC++;
       }
       catalog[i].indexInList = inList;
       inList++;

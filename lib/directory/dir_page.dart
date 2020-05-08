@@ -99,10 +99,11 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         return new Text('请创建作品');
       }
       // 树状模式
+      var showedList = currentBook.catalog.where((element) => G.us.showCatalogRecycle || !element.deleted).toList();
       return ListView.builder(
-        itemCount: currentBook.catalog.length,
+        itemCount: showedList.length,
         itemBuilder: (context, index) {
-          return _buildCatalogTreeTiles(currentBook.catalog[index]);
+          return _buildCatalogTreeTiles(showedList[index]);
         },
       );
     } else if (G.us.bookCatalogMode == BookCatalogMode.Flat) {
@@ -126,14 +127,18 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 构建 Tree 模式的每一项
   Widget _buildCatalogTreeTiles(VCItem item) {
+    /*if (!G.us.showCatalogRecycle && item.deleted) {
+      return null;
+    }*/
     if (item.isChapter()) {
       return _buildVolumeChapterTile(item);
     }
+    
     // 分卷，构建树状列表
     return ExpansionTile(
       key: PageStorageKey<VCItem>(item),
       title: Text(item.getDisplayName()),
-      children: item.vcList.map(_buildCatalogTreeTiles).toList(),
+      children: item.vcList.where((element) => G.us.showCatalogRecycle || !element.deleted).toList().map(_buildCatalogTreeTiles).toList(),
       onExpansionChanged: (bool exp){
         if (exp) { // 展开
           currentList = item.vcList;
