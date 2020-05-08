@@ -3,7 +3,6 @@ import 'package:fairyland/common/global.dart';
 import 'package:fairyland/common/user_setting.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
-import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_beautiful_popup/main.dart';
@@ -38,8 +37,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   BookObject currentBook;
   List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
-
-  bool _showDeletedItems = false;
 
   @override
   void initState() {
@@ -127,9 +124,6 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 构建 Tree 模式的每一项
   Widget _buildCatalogTreeTiles(VCItem item) {
-    /*if (!G.us.showCatalogRecycle && item.deleted) {
-      return null;
-    }*/
     if (item.isChapter()) {
       return _buildVolumeChapterTile(item);
     }
@@ -221,7 +215,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           itemBuilder: (context, index) {
             return Offstage(
               offstage:
-                  !_showDeletedItems && currentList[index].deleted ?? false,
+                  !G.us.showCatalogRecycle && currentList[index].deleted ?? false,
               child: AnimationConfiguration.staggeredList(
                   position: index,
                   child: SlideAnimation(
@@ -436,6 +430,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       case ChapterActions.Restore:
         setState(() {
           item.deleted = false;
+          currentBook.setVCItemsContext();
+          saveCatalog();
         });
         break;
       case ChapterActions.Publish:
@@ -450,7 +446,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           if (index <= 0) return;
           currentList.removeAt(index);
           int target = index - 1;
-          if (!_showDeletedItems) {
+          if (!G.us.showCatalogRecycle) {
             while (target > 0 && currentList[target].deleted) {
               target--;
             }
@@ -466,7 +462,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           if (index < 0 || index >= currentList.length) return;
           currentList.removeAt(index);
           int target = index;
-          if (!_showDeletedItems) {
+          if (!G.us.showCatalogRecycle) {
             while (target < currentList.length && currentList[target].deleted) {
               target++;
             }
@@ -556,7 +552,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         ),
         PopupMenuItem<String>(
           value: "book_recycles",
-          child: Text(_showDeletedItems ? '隐藏回收站' : '显示回收站'),
+          child: Text(G.us.showCatalogRecycle ? '隐藏回收站' : '显示回收站'),
         ),
       ],
       onSelected: (String value) {
@@ -566,7 +562,10 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             break;
           case 'book_recycles':
             setState(() {
-              _showDeletedItems = !_showDeletedItems;
+              G.us.showCatalogRecycle = !G.us.showCatalogRecycle;
+              if (currentBook != null) {
+                currentBook.setVCItemsContext();
+              }
             });
             break;
           case 'book_delete':

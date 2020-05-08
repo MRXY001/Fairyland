@@ -59,13 +59,17 @@ class BookObject {
       if (!G.us.showCatalogRecycle && catalog[i].isDeleted()) continue;
       if (catalog[i].isVolume()) {
         VCBundle bundle = catalog[i].setIndexes(bookV, volumeV);
-        bookV += bundle.volume;
-        bookC += bundle.chapter;
-        volumeV++;
+        if (!catalog[i].isDeleted()) {
+	        bookV += bundle.volume;
+	        bookC += bundle.chapter;
+	        volumeV++;
+        }
       } else if (catalog[i].isChapter()) {
         catalog[i].setIndexes(bookC, volumeC);
-        volumeC++;
-        bookC++;
+        if (!catalog[i].isDeleted()) {
+	        volumeC++;
+	        bookC++;
+        }
       }
       catalog[i].indexInList = inList;
       inList++;
@@ -233,14 +237,18 @@ class VCItem {
         if (!G.us.showCatalogRecycle && vcList[i].isDeleted()) continue;
         if (vcList[i].isVolume()) {
           VCBundle bundle = vcList[i].setIndexes(inBook + vSum, vCount);
-          vCount++;
-          vSum++;
-          vSum += bundle.volume;
-          cSum += bundle.chapter;
+          if (!vcList[i].isDeleted()) {
+	          vCount++;
+	          vSum++;
+	          vSum += bundle.volume;
+	          cSum += bundle.chapter;
+          }
         } else if (vcList[i].isChapter()) {
           vcList[i].setIndexes(inBook + cSum, cCount);
-          cCount++;
-          cSum++;
+          if (!vcList[i].isDeleted()) {
+	          cCount++;
+	          cSum++;
+          }
         }
         vcList[i].indexInList = inList;
         inList++;
