@@ -299,11 +299,7 @@ class VCItem {
     VCItem item = new VCItem(
         id: json['id'],
         name: json['name'],
-        type: type == VCItemType.VolumeType.index
-            ? VCItemType.VolumeType
-            : type == VCItemType.ChapterType.index
-                ? VCItemType.ChapterType
-                : VCItemType.BookType,
+        type: VCItemType.values[type],
         wordCount: json['wordCount'] ?? 0,
         vcList: vcList);
     item.opened = json['opened'] ?? false;
