@@ -45,10 +45,9 @@ class AppSettingFactory {
         getter: bookShelfModeToString,
         setter: (val) {
           if (val is BookShelfMode) {
-          G.us.bookShelfMode = val;
+            G.us.bookShelfMode = val;
           } else {
-            print('无法设置的属性：');
-            print(val);
+            print('无法设置的属性');
           }
         }));
 
@@ -67,9 +66,14 @@ class AppSettingFactory {
         showedValue: () {
           return bookCatalogModeToString(us.bookCatalogMode);
         },
+        data: BookCatalogMode.values,
         getter: bookCatalogModeToString,
         setter: (val) {
-          G.us.bookCatalogMode = val;
+          if (val is BookCatalogMode) {
+            G.us.bookCatalogMode = val;
+          } else {
+            print('无法设置的属性：');
+          }
         }));
   }
 }

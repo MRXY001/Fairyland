@@ -178,6 +178,8 @@ class AppSettingWindowState extends State<AppSettingWindow> {
             }));
   }
 
+  /// 设置item单击事件
+  /// 根据对应的类型，自动判断
   dynamic _getItemClick(AppSettingItem item, BuildContext context) {
     if (item.onClicked != null) {
       return item.onClicked;
@@ -195,35 +197,37 @@ class AppSettingWindowState extends State<AppSettingWindow> {
     } else if (item.dataType == UserDataType.U_Bool) {
     } else if (item.dataType == UserDataType.U_Enum) {
       return () {
-        var result = showDialog(
+        // 枚举类型的单选对话框
+        showDialog(
             context: context,
-            builder: (context){
+            builder: (context) {
               return SimpleDialog(
-                title: Text('选择内容'),
+                title: Text(item.title),
                 children: _buildEnumWidgets(context, item, item.data),
-        
               );
-            }
-        );
-        if (item.setter != null && result != null) {
-          item.setter(result);
-        }
+            });
       };
     } else if (item.dataType == UserDataType.U_Int) {
     } else if (item.dataType == UserDataType.U_String) {}
   }
-  
-  List<Widget> _buildEnumWidgets(BuildContext context, AppSettingItem item, List list) {
+
+  /// 枚举类型（List）转单选对话框列表
+  List<Widget> _buildEnumWidgets(
+      BuildContext context, AppSettingItem item, List list) {
     List<Widget> widgets = [];
     list.forEach((element) {
-      widgets.add(
-        ListTile(
-          title: Text(item.getter(element)),
-          onTap: () {
-            Navigator.pop(context, element);
-          },
-        )
-      );
+      widgets.add(ListTile(
+        title: Text(item.getter(element)),
+        onTap: () {
+          setState(() {
+            // 设置枚举类型
+            if (item.setter != null) {
+              item.setter(element);
+            }
+          });
+          Navigator.pop(context);
+        },
+      ));
     });
     return widgets;
   }
