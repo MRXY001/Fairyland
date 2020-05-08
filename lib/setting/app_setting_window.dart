@@ -3,7 +3,7 @@ import 'package:fairyland/setting/app_setting_item_bean.dart';
 import 'package:flutter/material.dart';
 
 // ignore: must_be_immutable
-class AppSettingWindow extends StatelessWidget {
+class AppSettingWindow extends StatefulWidget {
   String pageTitle;
   AppSettingGroups appSettingGroups;
   bool showGroupTitle = true;
@@ -22,16 +22,23 @@ class AppSettingWindow extends StatelessWidget {
   }
 
   @override
+  State<StatefulWidget> createState() {
+    return new AppSettingWindowState();
+  }
+}
+
+class AppSettingWindowState extends State<AppSettingWindow> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(pageTitle),
+        title: Text(widget.pageTitle),
       ),
       body: ListView.builder(
-        itemCount: appSettingGroups.length(),
+        itemCount: widget.appSettingGroups.length(),
         itemBuilder: (context, index) {
-          return _buildGroup(
-              appSettingGroups.names[index], appSettingGroups.items[index]);
+          return _buildGroup(widget.appSettingGroups.names[index],
+              widget.appSettingGroups.items[index]);
         },
       ),
     );
@@ -40,7 +47,7 @@ class AppSettingWindow extends StatelessWidget {
   Widget build0(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(pageTitle),
+        title: Text(widget.pageTitle),
       ),
       body: ListView(
         children: <Widget>[
@@ -130,7 +137,7 @@ class AppSettingWindow extends StatelessWidget {
   /// 构建整个分组
   /// 判断是否需要分组标题（如果有多个分组则需要）
   Widget _buildGroup(String name, List<AppSettingItem> group) {
-    if (showGroupTitle) {
+    if (widget.showGroupTitle) {
       return Column(
         children: <Widget>[
           Padding(
@@ -158,19 +165,7 @@ class AppSettingWindow extends StatelessWidget {
             itemBuilder: (context, index) {
               var item = group[index];
               var subTitle = item.showedValue();
-              var onTap = (item.onClicked == null &&
-                      item.dataType == UserDataType.U_Next)
-                  ? () {
-                      // 打开这项分组
-                      Navigator.push<String>(context, new MaterialPageRoute(
-                          builder: (BuildContext context) {
-                        return new AppSettingWindow(
-                          pageTitle: item.title,
-                          appSettingGroups: item.nextGroups,
-                        );
-                      }));
-                    }
-                  : item.onClicked;
+              var onTap = _getItemClick(item, context);
               return ListTile(
                 leading: item.icon,
                 title: Text(item.title),
@@ -181,5 +176,55 @@ class AppSettingWindow extends StatelessWidget {
                 onTap: onTap,
               );
             }));
+  }
+
+  dynamic _getItemClick(AppSettingItem item, BuildContext context) {
+    if (item.onClicked != null) {
+      return item.onClicked;
+    }
+    if (item.dataType == UserDataType.U_Next) {
+      return () {
+        Navigator.push<String>(context,
+            new MaterialPageRoute(builder: (BuildContext context) {
+          return new AppSettingWindow(
+            pageTitle: item.title,
+            appSettingGroups: item.nextGroups,
+          );
+        }));
+      };
+    } else if (item.dataType == UserDataType.U_Bool) {
+    } else if (item.dataType == UserDataType.U_Enum) {
+      return () {
+        var result = showDialog(
+            context: context,
+            builder: (context){
+              return SimpleDialog(
+                title: Text('选择内容'),
+                children: _buildEnumWidgets(context, item, item.data),
+        
+              );
+            }
+        );
+        if (item.setter != null && result != null) {
+          item.setter(result);
+        }
+      };
+    } else if (item.dataType == UserDataType.U_Int) {
+    } else if (item.dataType == UserDataType.U_String) {}
+  }
+  
+  List<Widget> _buildEnumWidgets(BuildContext context, AppSettingItem item, List list) {
+    List<Widget> widgets = [];
+    list.forEach((element) {
+      widgets.add(
+        ListTile(
+          title: Text(item.getter(element)),
+          onTap: () {
+            Navigator.pop(context, element);
+          },
+        )
+      );
+    });
+    return widgets;
   }
 }

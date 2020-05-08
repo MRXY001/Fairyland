@@ -18,16 +18,14 @@ class AppSettingFactory {
 
     AppSettingGroups appearanceGroups = new AppSettingGroups();
     asg.addItem(new AppSettingItem(
-        'appearance', null, '通用界面', '书架、目录', UserDataType.U_Next, null, null,
-        nextGroups: appearanceGroups));
+        'appearance', null, '通用界面', UserDataType.U_Next,
+        description: '书架、目录', nextGroups: appearanceGroups));
     initAppearanceItems(appearanceGroups);
   }
 
   void initAppearanceItems(AppSettingGroups asg) {
-    asg.addItem(new AppSettingItem(
-        'book_shelf_mode', Icon(Icons.apps), '书架风格', '', UserDataType.U_Enum,
-        () {
-      switch (us.bookShelfMode) {
+    var bookShelfModeToString = (BookShelfMode val) {
+      switch (val) {
         case BookShelfMode.List:
           return '列表';
         case BookShelfMode.Page:
@@ -37,12 +35,25 @@ class AppSettingFactory {
         default:
           return '未知';
       }
-    }, () {}));
-
+    };
     asg.addItem(new AppSettingItem(
-        'book_catalog_mode', Icon(Icons.list), '目录风格', '', UserDataType.U_Enum,
-        () {
-      switch (us.bookCatalogMode) {
+        'book_shelf_mode', Icon(Icons.apps), '书架风格', UserDataType.U_Enum,
+        showedValue: () {
+          return bookShelfModeToString(us.bookShelfMode);
+        },
+        data: BookShelfMode.values,
+        getter: bookShelfModeToString,
+        setter: (val) {
+          if (val is BookShelfMode) {
+          G.us.bookShelfMode = val;
+          } else {
+            print('无法设置的属性：');
+            print(val);
+          }
+        }));
+
+    var bookCatalogModeToString = (BookCatalogMode val) {
+      switch (val) {
         case BookCatalogMode.Tree:
           return '树状';
         case BookCatalogMode.Flat:
@@ -50,6 +61,15 @@ class AppSettingFactory {
         default:
           return '未知';
       }
-    }, () {}));
+    };
+    asg.addItem(new AppSettingItem(
+        'book_catalog_mode', Icon(Icons.list), '目录风格', UserDataType.U_Enum,
+        showedValue: () {
+          return bookCatalogModeToString(us.bookCatalogMode);
+        },
+        getter: bookCatalogModeToString,
+        setter: (val) {
+          G.us.bookCatalogMode = val;
+        }));
   }
 }
