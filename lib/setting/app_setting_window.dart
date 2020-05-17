@@ -164,7 +164,7 @@ class AppSettingWindowState extends State<AppSettingWindow> {
             shrinkWrap: true,
             itemBuilder: (context, index) {
               var item = group[index];
-              var subTitle = item.showedValue();
+              var subTitle = item.showedValue is List ? item.showedValue[index] : item.showedValue();
               var onTap = _getItemClick(item, context);
               return ListTile(
                 leading: item.icon,
@@ -217,7 +217,7 @@ class AppSettingWindowState extends State<AppSettingWindow> {
     List<Widget> widgets = [];
     list.forEach((element) {
       widgets.add(ListTile(
-        title: Text(item.getter(element)),
+        title: Text(item.getter == null ? item.showedValue[element.index] : item.getter(element)),
         onTap: () {
           setState(() {
             // 设置枚举类型

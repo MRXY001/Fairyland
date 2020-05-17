@@ -11,6 +11,7 @@ class AppSettingFactory {
 
   AppSettingFactory(this.rt, this.us);
 
+  /// 初始化所有外层分组
   void initAppSettingItems() {
     AppSettingGroups asg = G.asg;
 
@@ -23,57 +24,22 @@ class AppSettingFactory {
     initAppearanceItems(appearanceGroups);
   }
 
+  /// 初始化界面部分
   void initAppearanceItems(AppSettingGroups asg) {
-    var bookShelfModeToString = (BookShelfMode val) {
-      switch (val) {
-        case BookShelfMode.List:
-          return '列表';
-        case BookShelfMode.Page:
-          return '页面';
-        case BookShelfMode.Grid:
-          return '网格';
-        default:
-          return '未知';
-      }
-    };
-    asg.addItem(new AppSettingItem(
-        'book_shelf_mode', Icon(Icons.apps), '书架风格', UserDataType.U_Enum,
-        showedValue: () {
-          return bookShelfModeToString(us.bookShelfMode);
-        },
-        data: BookShelfMode.values,
-        getter: bookShelfModeToString,
-        setter: (val) {
-          if (val is BookShelfMode) {
-            G.us.bookShelfMode = val;
-          } else {
-            print('无法设置的属性');
-          }
-        }));
-
-    var bookCatalogModeToString = (BookCatalogMode val) {
-      switch (val) {
-        case BookCatalogMode.Tree:
-          return '树状';
-        case BookCatalogMode.Flat:
-          return '单层';
-        default:
-          return '未知';
-      }
-    };
+    var initAppearanceItems = (index) => ['列表', '页面', '网格'][index.index];
     asg.addItem(new AppSettingItem(
         'book_catalog_mode', Icon(Icons.list), '目录风格', UserDataType.U_Enum,
-        showedValue: () {
-          return bookCatalogModeToString(us.bookCatalogMode);
-        },
+        showedValue: () => initAppearanceItems(us.bookShelfMode),
+        data: BookShelfMode.values,
+        getter: initAppearanceItems,
+        setter: (val) => G.us.bookShelfMode = val));
+
+    var bookCatalogModeToString = (index) => ['树状', '单层'][index.index];
+    asg.addItem(new AppSettingItem(
+        'book_catalog_mode', Icon(Icons.list), '目录风格', UserDataType.U_Enum,
+        showedValue: () => bookCatalogModeToString(us.bookCatalogMode),
         data: BookCatalogMode.values,
         getter: bookCatalogModeToString,
-        setter: (val) {
-          if (val is BookCatalogMode) {
-            G.us.bookCatalogMode = val;
-          } else {
-            print('无法设置的属性：');
-          }
-        }));
+        setter: (val) => G.us.bookCatalogMode = val));
   }
 }
