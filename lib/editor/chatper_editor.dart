@@ -4,17 +4,28 @@ import 'undo_redo_manager.dart';
 
 // ignore: must_be_immutable
 class ChapterEditor extends TextField {
+  // 控制器
   final TextEditingController controller;
   final onViewTapped;
   final onContentChanged;
   final onEditSave;
+  final onWordsChanged;
   OperatorManager undoRedoManager;
-  bool _systemChanging = false;
+  int _systemChanging = 0;
+
+  // 编辑属性
+  String _text;
+  int _pos;
+  int _selectionStart;
+  int _selectionEnd;
+  bool _textChanged;
+  bool _posChanged;
 
   ChapterEditor(
       {this.controller,
       this.onViewTapped,
       this.onContentChanged,
+      this.onWordsChanged,
       @required this.onEditSave})
       : super(
           controller: controller,
@@ -53,16 +64,19 @@ class ChapterEditor extends TextField {
 
   /// 开始系统批量改变
   void beginSystemChanging() {
-    _systemChanging = true;
+    _systemChanging++;
   }
 
   /// 结束系统批量改变
   void endSystemChanging() {
-    _systemChanging = false;
+    _systemChanging--;
+    if (_systemChanging < 0) {
+      _systemChanging = 0;
+    }
   }
 
   /// 是否是系统引起的变化
-  bool isSystemChanging() => _systemChanging;
+  bool isSystemChanging() => _systemChanging > 0;
 
   /// =====================================================
   ///                       原生事件
@@ -71,36 +85,39 @@ class ChapterEditor extends TextField {
   /// 当 TextField 内容变化、焦点变动，都会触发
   /// 但是移动光标位置，不一定触发（编辑完再点击会触发）
   /// 并且先于 contentChangedEvent 触发
-  void onChangedListener() {
+  void onChangedListener() {}
+
+  /// 点击时触发
+  void viewTappedEvent() {}
+
+  /// 纯内容改变时触发
+  void contentChangedEvent(String text) {
     if (isSystemChanging()) {
       return;
     }
     // 判断输入的内容
     beginSystemChanging();
+    prepareAnalyze();
 
+    // 开始分析
+    insertText('o');
+
+    finishAnalyze();
     endSystemChanging();
 
     // 保存
     undoRedoManager.onTextChanged(controller);
-    onEditSave(getText());
-  }
-
-  /// 点击时触发
-  void viewTappedEvent() {
-    //    print('viewTappedEvent');
-  }
-
-  /// 纯内容改变时触发
-  void contentChangedEvent(String text) {
-    //    print('contentChangedEvent');
+    if (onEditSave != null) onEditSave(getText());
+    if (onWordsChanged != null) onWordsChanged();
   }
 
   /// =====================================================
-  ///                       原生操作
+  ///                       整体操作
   /// =====================================================
 
   /// 设置文本
   void setText(String text, {undoable: true, pos: -1}) {
+    beginSystemChanging();
     controller.text = text;
     if (pos > -1) {
       setPosition(pos);
@@ -109,6 +126,7 @@ class ChapterEditor extends TextField {
       clearUndoRedo();
       initUndoRedo();
     }
+    endSystemChanging();
   }
 
   /// 获取文本
@@ -119,69 +137,20 @@ class ChapterEditor extends TextField {
   /// 转成纯文本
   String toPlainText() => getText();
 
-  /// 插入指定文本
-  void insertText(String text, {pos: -1}) {
-    int cursor = getPosition();
-    String orig = controller.text;
-    if (pos == -1) {
-      // 使用光标位置
-      pos = cursor;
-      // 清除选中内容
-      if (hasSelection()) {
-        pos = controller.selection.start;
-        orig = orig.substring(0, controller.selection.start) +
-            orig.substring(controller.selection.end);
-      }
-    }
-    String curr = orig.substring(0, pos) + text + orig.substring(pos);
-    if (pos <= cursor) {
-      pos += text.length;
-    }
-    setText(curr, pos: pos);
-  }
-
-  /// 末尾插入指定文本
-  void appendText(String text, {newLine: false}) {
-    String total = controller.text;
-    if (newLine && !total.endsWith('\n')) text = '\n' + text;
-    insertText(text, pos: total.length);
-  }
-
-  /// 删掉指定位置的内容
-  void removeText(int start, int end) {
-    String ori = controller.text;
-    int cursor = getPosition();
-    if (cursor >= end) {
-      cursor -= (end - start);
-    } else if (cursor >= start) {
-      cursor = start;
-    }
-    setText(ori.substring(0, start) + ori.substring(end), pos: cursor);
-  }
-
   /// 获取光标位置
   int getPosition() {
     return controller.selection.start;
   }
 
   /// 设置光标位置
-  /// TODO: 设置光标位置
   void setPosition(int pos, {aim: -1}) {
     controller.selection =
         TextSelection.fromPosition(TextPosition(offset: pos));
   }
 
-  /// 移动光标位置
-  void movePosition(int delta) {
-    setPosition(getPosition() + delta);
-  }
-
-  /// 移动光标位置
-  void moveCursor(int delta) => movePosition(delta);
-
   /// 是否选中了文本
   bool hasSelection() {
-    return controller.selection.start == controller.selection.end;
+    return controller.selection.start != controller.selection.end;
   }
 
   /// 设置选中范围
@@ -205,7 +174,81 @@ class ChapterEditor extends TextField {
 
   void paste() {}
 
-  void clear() {}
+  void clear() {
+    setText('');
+  }
+
+  /// =====================================================
+  ///                       修改操作
+  /// =====================================================
+
+  /// 捕获编辑器所有数据
+  void prepareAnalyze() {
+    _text = getText();
+    _selectionStart = _pos = getSelection().start;
+    _selectionEnd = getSelection().end;
+    _textChanged = _posChanged = false;
+  }
+
+  /// 设置本次修改的变化
+  void finishAnalyze() {
+    if (_textChanged) {
+      setText(_text, pos: _pos);
+    } else if (_posChanged) {
+      setPosition(_pos);
+    }
+  }
+
+  /// 插入指定文本
+  void insertText(String text, {pos: -1}) {
+    if (pos == -1) {
+      // 使用光标位置
+      pos = _pos;
+      // 清除选中内容
+      if (_selectionStart != _selectionEnd) {
+        pos = controller.selection.start;
+        text = text.substring(0, controller.selection.start) +
+            text.substring(controller.selection.end);
+        _selectionStart = _selectionEnd = _pos;
+      }
+    }
+    _text = _text.substring(0, pos) + text + _text.substring(pos);
+    if (_pos >= pos) {
+      _pos += text.length;
+    }
+    _textChanged = true;
+  }
+
+  /// 末尾插入指定文本
+  void appendText(String text, {newLine: false}) {
+    if (newLine && !_text.endsWith('\n')) text = '\n' + text;
+    insertText(text, pos: _text.length);
+  }
+
+  /// 删掉指定位置的内容
+  void removeText(int start, int end) {
+    if (_pos >= end) {
+      _pos -= (end - start);
+    } else if (_pos >= start) {
+      _pos = start;
+    }
+    _text = _text.substring(0, start) + _text.substring(end);
+    _textChanged = true;
+  }
+
+  void movePos(int delta) {
+    _pos = _pos + delta;
+    if (_pos < 0) {
+      _pos = 0;
+    } else if (_pos > _text.length) {
+      _pos = _text.length;
+    }
+    _posChanged = true;
+  }
+
+  /// =====================================================
+  ///                       文件操作
+  /// =====================================================
 
   /// 保存到文件
   void saveToFile(String path) {}
@@ -272,5 +315,3 @@ class ChapterEditor extends TextField {
   ///                       小说AI
   /// =====================================================
 }
-
-

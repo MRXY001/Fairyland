@@ -17,6 +17,7 @@ class EditorPage extends StatefulWidget {
       controller: _editController,
       onViewTapped: () => chapterEditor.viewTappedEvent(),
       onContentChanged: (text) => chapterEditor.contentChangedEvent(text),
+      
       onEditSave: onEditSave,
     );
   }
@@ -42,7 +43,11 @@ class EditorPage extends StatefulWidget {
   }
 
   /// 关闭章节
-  void closeChapter() {}
+  void closeChapter() {
+    currentChapter = null;
+    savedPath = null;
+    chapterEditor.clear(); // 可撤销
+  }
 
   /// 保存章节
   void onEditSave(String text) {
