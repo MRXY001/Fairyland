@@ -10,9 +10,14 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class DirPage extends StatefulWidget {
-  DirPage({Key key, this.openChapter}) : super(key: key);
+  DirPage({Key key, this.openBookCallback, this.renameBookCallback, this.closeBookCallback, this.openChapterCallback, this.renameChapterCallback, this.deleteChapterCallback}) : super(key: key);
 
-  final openChapter;
+  final openBookCallback;
+  final renameBookCallback;
+  final closeBookCallback;
+  final openChapterCallback;
+  final renameChapterCallback;
+  final deleteChapterCallback;
 
   @override
   State<StatefulWidget> createState() {
@@ -20,7 +25,7 @@ class DirPage extends StatefulWidget {
   }
 }
 
-enum ChapterActions {
+enum VCItemActions {
   Rename,
   Insert,
   Delete,
@@ -305,43 +310,43 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   }
 
   PopupMenuButton getVCItemPopupMenuButton(VCItem item) {
-    return PopupMenuButton<ChapterActions>(
+    return PopupMenuButton<VCItemActions>(
         icon: Icon(Icons.more_vert),
         itemBuilder: (BuildContext context) => item.isVolume()
             ? getVolumeActions(context, item)
             : getChapterActions(context, item),
-        onSelected: (ChapterActions result) =>
+        onSelected: (VCItemActions result) =>
             handleVCItemAction(item, result));
   }
 
-  List<PopupMenuEntry<ChapterActions>> getVolumeActions(
+  List<PopupMenuEntry<VCItemActions>> getVolumeActions(
       BuildContext context, VCItem item) {
-    return <PopupMenuEntry<ChapterActions>>[
-      const PopupMenuItem<ChapterActions>(
+    return <PopupMenuEntry<VCItemActions>>[
+      const PopupMenuItem<VCItemActions>(
         child: Text('重命名'),
-        value: ChapterActions.Rename,
+        value: VCItemActions.Rename,
       ),
-      const PopupMenuItem<ChapterActions>(
+      const PopupMenuItem<VCItemActions>(
         child: Text('插入章节'),
-        value: ChapterActions.Insert,
+        value: VCItemActions.Insert,
       ),
       item.deleted
-          ? const PopupMenuItem<ChapterActions>(
+          ? const PopupMenuItem<VCItemActions>(
               child: Text('从回收站恢复'),
-              value: ChapterActions.Restore,
+              value: VCItemActions.Restore,
             )
-          : const PopupMenuItem<ChapterActions>(
+          : const PopupMenuItem<VCItemActions>(
               child: Text('移到回收站'),
-              value: ChapterActions.Delete,
+              value: VCItemActions.Delete,
             ),
-      PopupMenuItem<ChapterActions>(
+      PopupMenuItem<VCItemActions>(
         child: Text('上移'),
-        value: ChapterActions.MoveUp,
+        value: VCItemActions.MoveUp,
         enabled: item.indexInList > 0,
       ),
-      PopupMenuItem<ChapterActions>(
+      PopupMenuItem<VCItemActions>(
           child: Text('下移'),
-          value: ChapterActions.MoveDown,
+          value: VCItemActions.MoveDown,
           enabled: item.indexInList <
               (item.parent == null
                       ? currentBook.catalog.length
@@ -350,44 +355,44 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     ];
   }
 
-  List<PopupMenuEntry<ChapterActions>> getChapterActions(
+  List<PopupMenuEntry<VCItemActions>> getChapterActions(
       BuildContext context, VCItem item) {
-    return <PopupMenuEntry<ChapterActions>>[
-      const PopupMenuItem<ChapterActions>(
+    return <PopupMenuEntry<VCItemActions>>[
+      const PopupMenuItem<VCItemActions>(
         child: Text('重命名'),
-        value: ChapterActions.Rename,
+        value: VCItemActions.Rename,
       ),
-      const PopupMenuItem<ChapterActions>(
+      const PopupMenuItem<VCItemActions>(
         child: Text('插入章节'),
-        value: ChapterActions.Insert,
+        value: VCItemActions.Insert,
       ),
-      const PopupMenuItem<ChapterActions>(
+      const PopupMenuItem<VCItemActions>(
         child: Text('发布'),
-        value: ChapterActions.Publish,
+        value: VCItemActions.Publish,
         enabled: false,
       ),
-      const PopupMenuItem<ChapterActions>(
+      const PopupMenuItem<VCItemActions>(
         child: Text('字数详情'),
-        value: ChapterActions.Publish,
+        value: VCItemActions.Publish,
         enabled: false,
       ),
       item.deleted
-          ? const PopupMenuItem<ChapterActions>(
+          ? const PopupMenuItem<VCItemActions>(
               child: Text('从回收站恢复'),
-              value: ChapterActions.Restore,
+              value: VCItemActions.Restore,
             )
-          : const PopupMenuItem<ChapterActions>(
+          : const PopupMenuItem<VCItemActions>(
               child: Text('移到回收站'),
-              value: ChapterActions.Delete,
+              value: VCItemActions.Delete,
             ),
-      PopupMenuItem<ChapterActions>(
+      PopupMenuItem<VCItemActions>(
         child: Text('上移'),
-        value: ChapterActions.MoveUp,
+        value: VCItemActions.MoveUp,
         enabled: item.indexInList > 0,
       ),
-      PopupMenuItem<ChapterActions>(
+      PopupMenuItem<VCItemActions>(
           child: Text('下移'),
-          value: ChapterActions.MoveDown,
+          value: VCItemActions.MoveDown,
           enabled: item.indexInList <
               (item.parent == null
                       ? currentBook.catalog.length
@@ -396,19 +401,22 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     ];
   }
 
-  void handleVCItemAction(VCItem item, ChapterActions result) {
+  void handleVCItemAction(VCItem item, VCItemActions result) {
     switch (result) {
-      case ChapterActions.Rename:
+      case VCItemActions.Rename:
         inputName('修改名字', item.isVolume() ? '卷名' : '章名', item.name,
             (String result) {
           setState(() {
             item.name = result;
             currentBook.setVCItemsContext();
             saveCatalog();
+            if (widget.renameBookCallback != null) {
+              widget.renameBookCallback(item);
+            }
           });
         });
         break;
-      case ChapterActions.Insert:
+      case VCItemActions.Insert:
         inputName('插入章节', '章名', '', (String result) {
           int index = currentList.indexOf(item);
           if (index < 0) // 出错了，没找到
@@ -419,28 +427,31 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           saveCatalog();
         });
         break;
-      case ChapterActions.Delete:
+      case VCItemActions.Delete:
         setState(() {
             item.deleted = true;
             item.deleteTime = DateTime.now().millisecondsSinceEpoch;
             currentBook.setVCItemsContext();
             saveCatalog();
+            if (widget.deleteChapterCallback != null) {
+              widget.deleteChapterCallback(item);
+            }
         });
         break;
-      case ChapterActions.Restore:
+      case VCItemActions.Restore:
         setState(() {
           item.deleted = false;
           currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
-      case ChapterActions.Publish:
+      case VCItemActions.Publish:
         // TODO: Handle this case.
         break;
-      case ChapterActions.Information:
+      case VCItemActions.Information:
         // TODO: Handle this case.
         break;
-      case ChapterActions.MoveUp:
+      case VCItemActions.MoveUp:
         setState(() {
           int index = currentList.indexOf(item);
           if (index <= 0) return;
@@ -456,7 +467,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           saveCatalog();
         });
         break;
-      case ChapterActions.MoveDown:
+      case VCItemActions.MoveDown:
         setState(() {
           int index = currentList.indexOf(item);
           if (index < 0 || index >= currentList.length) return;
@@ -475,7 +486,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           saveCatalog();
         });
         break;
-      case ChapterActions.MoveTop:
+      case VCItemActions.MoveTop:
         setState(() {
           int index = currentList.indexOf(item);
           if (index < 0 || index >= currentList.length) return;
@@ -485,7 +496,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           saveCatalog();
         });
         break;
-      case ChapterActions.MoveBottom:
+      case VCItemActions.MoveBottom:
         setState(() {
           int index = currentList.indexOf(item);
           if (index < 0 || index >= currentList.length) return;
@@ -627,6 +638,10 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       currentBook = BookObject.fromJson(json.decode(str));
       currentBook.setVCItemsContext();
       currentList = currentBook.catalog;
+
+      if (widget.openBookCallback != null) {
+        widget.openBookCallback(currentBook);
+      }
     } catch (e) {
       Fluttertoast.showToast(msg: '解析目录树错误');
       currentList = [];
@@ -640,6 +655,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   /// 关闭当前一打开的作品
   /// 并且保存一些状态变量，以便下次打开时恢复
   void closeCurrentBook() {
+    if (widget.closeBookCallback != null) {
+      widget.closeBookCallback(currentBook);
+    }
     setState(() {
       G.rt.currentBookName = currentBook = null;
       currentRoute = null;
@@ -771,7 +789,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 编辑器打开章节
   void openChapter(VCItem chapter) {
-    widget.openChapter(chapter);
+    widget.openChapterCallback(chapter);
   }
 
   /// 下拉刷新，快捷云同步方式

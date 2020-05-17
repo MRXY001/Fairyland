@@ -3,6 +3,7 @@ import 'package:fairyland/common/global.dart';
 import 'package:fairyland/common/runtime_info.dart';
 import 'package:fairyland/common/user_setting.dart';
 import 'package:fairyland/directory/book_beans.dart';
+import 'package:fairyland/directory/bookshelf/bookshelf.dart';
 import 'package:fairyland/editor/chatper_editor.dart';
 import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/setting/app_setting_item_bean.dart';
@@ -47,7 +48,14 @@ class _MyHomePageState extends State<MyHomePage>
   void initState() {
     super.initState();
     pageController = PageController();
-    dirPage = new DirPage(openChapter: _openChapter);
+    dirPage = new DirPage(
+      openBookCallback: _openBookCallback,
+      renameBookCallback: _renameBookCallback,
+      closeBookCallback: _closeBookCallback,
+      openChapterCallback: _openChapterCallback,
+      renameChapterCallback: _renameChapterCallback,
+      deleteChapterCallback: _deleteChapterCallback,
+    );
     editorPage = new EditorPage();
     assistPage = new AssistPage();
     chapterEditor = editorPage.chapterEditor;
@@ -60,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage>
       items: _pages,
       controller: pageController,
     );
-    
+
     // 初始化所有设置项
     (new AppSettingFactory(G.rt, G.us)).initAppSettingItems();
   }
@@ -90,8 +98,14 @@ class _MyHomePageState extends State<MyHomePage>
         bottomNavigationBar: bottomBar);
   }
 
+  void _openBookCallback(BookObject book) {}
+
+  void _renameBookCallback(BookObject book) {}
+
+  void _closeBookCallback(BookObject book) {}
+
   /// 打开章节
-  void _openChapter(VCItem chapter) {
+  void _openChapterCallback(VCItem chapter) {
     setState(() {
       pageController.animateToPage(editorPageIndex,
           duration: Duration(milliseconds: 300), curve: Curves.easeOutQuad);
@@ -103,13 +117,13 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   /// 重命名章节 callback
-  void _renameChapter(VCItem chapter) {
+  void _renameChapterCallback(VCItem chapter) {
     // 如果是正在编辑的章节
     if (editorPage.currentChapter == chapter) {}
   }
 
   /// 删除章节 callback
-  void _deleteChapter(VCItem chapter) {
+  void _deleteChapterCallback(VCItem chapter) {
     // 如果是正在编辑的章节
     if (editorPage.currentChapter == chapter) {
       editorPage.closeChapter();
