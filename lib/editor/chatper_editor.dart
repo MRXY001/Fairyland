@@ -314,4 +314,26 @@ class ChapterEditor extends TextField {
   /// =====================================================
   ///                       小说AI
   /// =====================================================
+  
+  /// 智能引号
+  void activeSmartQuote() {
+  
+  }
+  
+  /// 智能空格
+  void activeSmartSpace() {
+  
+  }
+  
+  /// 智能回车
+  void activeSmartEnter() {
+  
+  }
+  
+  /// 自动标点
+  bool activeAutoPunc() {
+    
+    
+    return false;
+  }
 }
