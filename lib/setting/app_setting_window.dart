@@ -139,10 +139,17 @@ class AppSettingWindowState extends State<AppSettingWindow> {
   Widget _buildGroup(String name, List<AppSettingItem> group) {
     if (widget.showGroupTitle) {
       return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(name),
+            padding: const EdgeInsets.only(left: 16.0, top: 16, bottom: 4),
+            child: Text(
+              name,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: Colors.grey.shade700,
+              ),
+            ),
           ),
           _buildGroupCard(group)
         ],
@@ -164,18 +171,34 @@ class AppSettingWindowState extends State<AppSettingWindow> {
             shrinkWrap: true,
             itemBuilder: (context, index) {
               var item = group[index];
-              var subTitle = item.showedValue is List ? item.showedValue[index] : item.showedValue();
+              var subTitle = item.showedValue is List
+                  ? item.showedValue[index]
+                  : item.showedValue();
               var onTap = _getItemClick(item, context);
               return ListTile(
                 leading: item.icon,
                 title: Text(item.title),
-                subtitle: subTitle == null ? null : Text(subTitle),
-                trailing: item.dataType == UserDataType.U_Next
-                    ? Icon(Icons.arrow_right)
-                    : null,
+                subtitle: subTitle == null
+                    ? null
+                    : Text(subTitle, overflow: TextOverflow.ellipsis),
+                trailing: _buildItemTail(item),
                 onTap: onTap,
               );
             }));
+  }
+
+  Widget _buildItemTail(AppSettingItem item) {
+    if (item.dataType == UserDataType.U_Next) {
+      return Icon(Icons.arrow_right);
+    } else if (item.dataType == UserDataType.U_Bool) {
+      return Switch(
+        value: item.getter(),
+        onChanged: (val) {},
+      );
+    } else if (item.dataType == UserDataType.U_Int) {
+      return Text(item.getter().toString());
+    }
+    return null;
   }
 
   /// 设置item单击事件
@@ -185,6 +208,7 @@ class AppSettingWindowState extends State<AppSettingWindow> {
       return item.onClicked;
     }
     if (item.dataType == UserDataType.U_Next) {
+      // 切换下一分组
       return () {
         Navigator.push<String>(context,
             new MaterialPageRoute(builder: (BuildContext context) {
@@ -195,6 +219,14 @@ class AppSettingWindowState extends State<AppSettingWindow> {
         }));
       };
     } else if (item.dataType == UserDataType.U_Bool) {
+      // 切换开关
+      return () {
+        setState(() {
+          item.setter(!item.getter());
+        });
+      };
+    } else if (item.dataType == UserDataType.U_Int) {
+      // 输入数字
     } else if (item.dataType == UserDataType.U_Enum) {
       return () {
         // 枚举类型的单选对话框
@@ -209,6 +241,7 @@ class AppSettingWindowState extends State<AppSettingWindow> {
       };
     } else if (item.dataType == UserDataType.U_Int) {
     } else if (item.dataType == UserDataType.U_String) {}
+    return null;
   }
 
   /// 枚举类型（List）转单选对话框列表
@@ -217,7 +250,9 @@ class AppSettingWindowState extends State<AppSettingWindow> {
     List<Widget> widgets = [];
     list.forEach((element) {
       widgets.add(ListTile(
-        title: Text(item.getter == null ? item.showedValue[element.index] : item.getter(element)),
+        title: Text(item.getter == null
+            ? item.showedValue[element.index]
+            : item.getter(element)),
         onTap: () {
           setState(() {
             // 设置枚举类型

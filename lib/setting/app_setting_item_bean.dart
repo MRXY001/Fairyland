@@ -9,6 +9,7 @@ enum UserDataType {
   U_Range,
   U_Double,
   U_String,
+  U_Color,
   U_StringList,
   U_Next,
 }
@@ -40,7 +41,7 @@ class AppSettingItem {
     if (showedValue == null) {
       showedValue = () {
         // 如果没有简介，也没有需要显示的值，则使用 null
-        if (description.isEmpty) {
+        if (description == null || description.isEmpty) {
           return null;
         }
         return description;

@@ -1,5 +1,6 @@
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:ini/ini.dart';
 
 enum BookShelfMode { List, Page, Grid }
@@ -24,15 +25,36 @@ class UserSetting {
   ///                       用户配置
   /// =====================================================
 
+  // ----------------------- 全局 -----------------------
+  bool debugMode = false;
+  Color accentColor;
+  Color windowFontColor;
+  Color windowBackgroundColor;
+  Color cardBackgroundColor;
+  Color editorFontColor;
+  
   // ----------------------- 界面 -----------------------
   BookShelfMode bookShelfMode; // 书架模式
   BookCatalogMode bookCatalogMode; // 目录模式
 
   // ----------------------- 编辑 -----------------------
-
-  // ----------------------- 功能 -----------------------
+  int indentSpace;
+  int indentLine;
+  
+  // ----------------------- 智能编辑 -----------------------
+  bool smartQuote;
+  bool smartSpace;
+  bool smartEnter;
+  bool autoPunc;
+  
+  // ----------------------- 文字感知 -----------------------
 
   // ----------------------- 数据 -----------------------
+  bool autoSave;
+  
+  // ----------------------- 同步 -----------------------
+  bool syncEnabled;
+  bool rankEnabled;
 
   // ----------------------- 交互 -----------------------
 
@@ -48,6 +70,19 @@ class UserSetting {
   void readFromFile() {
     bookShelfMode = getConfig('us/book_shelf_mode', BookShelfMode.List);
     bookCatalogMode = getConfig('us/book_catalog_mode', BookCatalogMode.Tree);
+    
+    indentSpace = getInt('us/indent_space', 2);
+    indentLine = getInt('us/indent_line', 1);
+    
+    smartQuote = getBool('us/smart_quote', true);
+    smartSpace = getBool('us/smart_space', true);
+    smartEnter = getBool('us/smart_enter', true);
+    autoPunc = getBool('us/auto_punc', true);
+    
+    autoSave = getBool('us/auto_save', true);
+    
+    syncEnabled = getBool('us/sync_enabled', true);
+    rankEnabled = getBool('us/rank_enabled', true);
   }
 
   // 运行时设置（不需要手动保存）
@@ -62,11 +97,32 @@ class UserSetting {
       if (!config.hasSection(name)) {
         config.addSection(name);
       }
-      config.set(name, option, value);
+      /*if (value is int) {
+        value = value.toString();
+      } else if (value is bool) {
+        value = value ? 'true' : 'false';
+      } else if (value is Color) {
+        value = value.toString();
+      }*/
+      config.set(name, option, value.toString());
     } else {
       config.set('', key, value);
     }
     FileUtil.writeText(iniPath, config.toString());
+  }
+  
+  bool getBool(String key, bool def) {
+    var s = getConfig(key, def);
+    if (s is String)
+      return !(s == '0' || s == '' || s.toLowerCase() == 'false');
+    return s;
+  }
+  
+  int getInt(String key, int def) {
+    var s = getConfig(key, def);
+    if (s is String)
+      return int.parse(s);
+    return s;
   }
 
   /// 读取设置，不存在则为空
