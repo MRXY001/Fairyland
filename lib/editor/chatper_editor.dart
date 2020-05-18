@@ -1,3 +1,5 @@
+import 'package:fairyland/common/global.dart';
+import 'package:fairyland/editor/novel_ai.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'undo_redo_manager.dart';
@@ -10,16 +12,19 @@ class ChapterEditor extends TextField {
   final onContentChanged;
   final onEditSave;
   final onWordsChanged;
+  NovelAI ai;
   OperatorManager undoRedoManager;
   int _systemChanging = 0;
 
   // 编辑属性
   String _text;
   int _pos;
+  int _length;
   int _selectionStart;
   int _selectionEnd;
   bool _textChanged;
   bool _posChanged;
+  String _left1, _left2, _left3, _right1;
 
   ChapterEditor(
       {this.controller,
@@ -100,7 +105,7 @@ class ChapterEditor extends TextField {
     prepareAnalyze();
 
     // 开始分析
-    insertText('o');
+    textAnalyze();
 
     finishAnalyze();
     endSystemChanging();
@@ -185,9 +190,20 @@ class ChapterEditor extends TextField {
   /// 捕获编辑器所有数据
   void prepareAnalyze() {
     _text = getText();
+    _length = _text.length;
     _selectionStart = _pos = getSelection().start;
     _selectionEnd = getSelection().end;
     _textChanged = _posChanged = false;
+    _left1 = _pos > 0 ? _text.substring(_pos - 1, _pos) : '';
+    _left2 = _pos > 1 ? _text.substring(_pos - 2, _pos - 1) : '';
+    _left3 = _pos > 2 ? _text.substring(_pos - 3, _pos - 2) : '';
+    _right1 = _pos < _text.length ? _text.substring(_pos, _pos + 1) : '';
+  }
+
+  /// 文本分析过程
+  /// 自动标点、标点替换、同音词替换、快捷输入等等
+  void textAnalyze() {
+    if (activeAutoPunc()) {}
   }
 
   /// 设置本次修改的变化
@@ -216,6 +232,7 @@ class ChapterEditor extends TextField {
     if (_pos >= pos) {
       _pos += text.length;
     }
+    _length = _text.length;
     _textChanged = true;
   }
 
@@ -233,6 +250,7 @@ class ChapterEditor extends TextField {
       _pos = start;
     }
     _text = _text.substring(0, start) + _text.substring(end);
+    _length = _text.length;
     _textChanged = true;
   }
 
@@ -312,28 +330,107 @@ class ChapterEditor extends TextField {
   /// =====================================================
 
   /// =====================================================
-  ///                       小说AI
+  ///                       小说AI::actions
   /// =====================================================
-  
+
   /// 智能引号
-  void activeSmartQuote() {
-  
-  }
-  
+  void activeSmartQuote() {}
+
   /// 智能空格
-  void activeSmartSpace() {
-  
-  }
-  
+  void activeSmartSpace() {}
+
   /// 智能回车
-  void activeSmartEnter() {
-  
-  }
-  
+  void activeSmartEnter() {}
+
   /// 自动标点
+  /// 如果末尾是语气词，则自动添加标点
   bool activeAutoPunc() {
-    
-    
+    if (!G.us.autoPunc || !ai.isChinese(_left1) || !ai.isAutoPunc(_left1)) {
+      return false;
+    }
+    // 右边是句子末尾或空的才自动添加标点
+    if (_right1 != "”" && _right1 != "\n" && _right1 != "") {
+      return false;
+    }
+    return _insertAIPunc();
+  }
+
+  /// 插入标点
+  bool _insertAIPunc() {
+    String punc;
+
+    if (_left1 == "么") {
+      if ("那这怎什多么".contains(_left2)) return false;
+      punc = getCursorSentPunc(dot: true);
+    } else if (_left1 == "呵") {
+      if (_left2 == "呵" && !ai.isChinese(_left3))
+        punc = "！";
+      else
+        return false;
+    } else if (_left1 == "哈") {
+      if (_left2 == "哈") {
+        punc = "！";
+      } else
+        return false;
+    } else if (_left1 == "诶") {
+      if (!ai.isChinese(_left2)) {
+        punc = "？";
+      } else
+        return false;
+    } else if (_left1 == "呸") {
+      if (!ai.isChinese(_left2) || (_left2 == "我" && !ai.isChinese(_left3))) {
+        punc = "！";
+      } else
+        return false;
+    } else if (_left1 == "滚") {
+      if (!ai.isChinese(_left2)) {
+        punc = "！";
+      } else
+        return false;
+    } else {
+      // 白名单内的其他词，使用智能获取标点
+      punc = getCursorSentPunc(dot: true);
+    }
+    if (punc.isNotEmpty) {
+      insertText(punc);
+      /*ac->addUserWords();
+  
+      if (punc == "！")
+        us->addClimaxValue(true);
+      else if (punc == "！")
+        us->addClimaxValue(false);*/
+
+      return true;
+    }
     return false;
+  }
+
+  /// 获取光标所在句子的标点
+  String getCursorSentPunc({bool dot : false}) {
+    int left = _pos, right = _pos;
+    while (left > 0 && _text.substring(left-1, left) != "\n") {
+      left--;
+    }
+    while (right < _length && _text.substring(right, right+1) != "\n") {
+      right++;
+    }
+    String para = _text.substring(left, right);
+    int pos = _pos = left;
+    
+    // 调AI获取标点
+    String punc = ai.getPuncInPara(para, pos);
+    if (dot && punc == '，')
+      return '。';
+    return punc;
+  }
+
+  /// 获取光标所在左边的句子
+  /// 如果在句子中间，也只取左边部分，不管右边
+  String getCursorFrontSent() {
+    int left = _pos;
+    while (left > 0 && !ai.isSentSplit(_text.substring(left - 1, left))) {
+      left--;
+    }
+    return _text.substring(left, _pos);
   }
 }
