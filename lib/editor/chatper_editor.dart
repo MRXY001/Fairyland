@@ -12,7 +12,7 @@ class ChapterEditor extends TextField {
   final onContentChanged;
   final onEditSave;
   final onWordsChanged;
-  NovelAI ai;
+  NovelAI ai = new NovelAI();
   OperatorManager undoRedoManager;
   int _systemChanging = 0;
 
@@ -415,7 +415,7 @@ class ChapterEditor extends TextField {
       right++;
     }
     String para = _text.substring(left, right);
-    int pos = _pos = left;
+    int pos = _pos;
     
     // 调AI获取标点
     String punc = ai.getPuncInPara(para, pos);

@@ -1578,19 +1578,19 @@ class NovelAI {
   /// 是否为中文
   /// @param str 单个字符
   bool isChinese(String str) {
-    return RegExp('^[\\u4e00-\\u9FA5]+\$').hasMatch(str);
+    return RegExp(r'^[\u4e00-\u9FA5]+$').hasMatch(str);
   }
 
   /// 是否为英文单词
   /// @param str 单个字符
   bool isEnglish(String str) {
-    return RegExp('^\\w+\$').hasMatch(str);
+    return RegExp(r'^\w+$').hasMatch(str);
   }
 
   /// 是否为数字
   /// @param str 单个字符
   bool isNumber(String str) {
-    return RegExp('^\\d+\$').hasMatch(str);
+    return RegExp(r'^\d+$').hasMatch(str);
   }
 
   /// 是否为空白符
