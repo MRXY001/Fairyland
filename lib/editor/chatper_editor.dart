@@ -82,6 +82,11 @@ class ChapterEditor extends TextField {
 
   /// 是否是系统引起的变化
   bool isSystemChanging() => _systemChanging > 0;
+  
+  String deb(String str) {
+    print(str);
+    return str;
+  }
 
   /// =====================================================
   ///                       原生事件
@@ -90,30 +95,48 @@ class ChapterEditor extends TextField {
   /// 当 TextField 内容变化、焦点变动，都会触发
   /// 但是移动光标位置，不一定触发（编辑完再点击会触发）
   /// 并且先于 contentChangedEvent 触发
-  void onChangedListener() {}
+  void onChangedListener() {
+  }
 
   /// 点击时触发
   void viewTappedEvent() {}
 
   /// 纯内容改变时触发
   void contentChangedEvent(String text) {
+    print('contentChangedEvent: ' + text);
     if (isSystemChanging()) {
       return;
     }
-    // 判断输入的内容
-    beginSystemChanging();
-    prepareAnalyze();
 
-    // 开始分析
-    textAnalyze();
+    // 先记录变化
+    print('----begin');
+    EditOperator oper = undoRedoManager.onTextChanged(controller);
+    bool modifyAgain = false;
 
-    finishAnalyze();
-    endSystemChanging();
+    // 正在输入的时候生效，并判断输入的内容
+    print('判断：' + getText());
+//    if (oper != null && oper.isInput()) {
+    if (oper == null || oper.isInput()) {
+      beginSystemChanging();
+      prepareAnalyze();
+  
+      // 开始分析
+      textAnalyze();
+  
+      // setText 有个操蛋的问题
+      // 会延迟触发 onChanged，而且传的参数又是 setText 之前的旧文本
+      // 以及只会触发第二次，不会再三触发……
+      // 因此需要想个办法解决
+      modifyAgain = finishAnalyze();
+  
+      endSystemChanging();
+    }
 
     // 保存
-    undoRedoManager.onTextChanged(controller);
+    //    if (modifyAgain) undoRedoManager.onTextChanged(controller);
     if (onEditSave != null) onEditSave(getText());
     if (onWordsChanged != null) onWordsChanged();
+    print('----end');
   }
 
   /// =====================================================
@@ -124,13 +147,15 @@ class ChapterEditor extends TextField {
   void setText(String text, {undoable: true, pos: -1}) {
     beginSystemChanging();
     controller.text = text;
+    deb('设置文本：'+text);
     if (pos > -1) {
       setPosition(pos);
     }
-    if (!undoable) {
+    /*if (!undoable) {
       clearUndoRedo();
       initUndoRedo();
-    }
+    }*/
+    print('设置文本结束');
     endSystemChanging();
   }
 
@@ -207,12 +232,25 @@ class ChapterEditor extends TextField {
   }
 
   /// 设置本次修改的变化
-  void finishAnalyze() {
+  bool finishAnalyze() {
     if (_textChanged) {
       setText(_text, pos: _pos);
     } else if (_posChanged) {
       setPosition(_pos);
     }
+    return _textChanged;
+  }
+  
+  void onInsertCallback(String input, int prePos) {
+  
+  }
+  
+  void onRemoveCallback(String str, int prevPos) {
+  
+  }
+  
+  void onModifyCallback(String oldStr, String newStr, int prevPos) {
+  
   }
 
   /// 插入指定文本
@@ -357,6 +395,7 @@ class ChapterEditor extends TextField {
 
   /// 插入标点
   bool _insertAIPunc() {
+    deb('插入标点');
     String punc;
 
     if (_left1 == "么") {

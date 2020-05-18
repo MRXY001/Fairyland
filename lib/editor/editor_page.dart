@@ -18,7 +18,6 @@ class EditorPage extends StatefulWidget {
       controller: _editController,
       onViewTapped: () => chapterEditor.viewTappedEvent(),
       onContentChanged: (text) => chapterEditor.contentChangedEvent(text),
-      
       onEditSave: onEditSave,
     );
   }
@@ -89,14 +88,12 @@ class _EditPageState extends State<EditorPage> {
                 child: RawKeyboardListener(
                   focusNode: FocusNode(),
                   onKey: (RawKeyEvent event) {
-//                    RawKeyDownEvent rawKeyDownEvent = event;
+                    //                    RawKeyDownEvent rawKeyDownEvent = event;
                     RawKeyEventDataAndroid rawKeyEventDataAndroid = event.data;
-                    if (rawKeyEventDataAndroid.keyCode == 288) {
-                      //
-                    }
-                    print("键盘 keyCode: ${rawKeyEventDataAndroid.keyCode}");
+                    int keyCode = rawKeyEventDataAndroid.keyCode;
+//                    print("键盘 keyCode: $keyCode");
                   },
-                  child: Container(child:widget.chapterEditor),
+                  child: Container(child: widget.chapterEditor),
                 ),
               ),
             ),

@@ -20,6 +20,8 @@ class EditOperator {
       this.dstStart,
       this.dstEnd});
 
+  bool isInput() => src==null && dst!=null;
+  
   void undo(TextEditingController controller) {
     String text = controller.text;
 
@@ -119,10 +121,10 @@ class OperatorManager {
     preEnd = controller.selection.end;
   }
 
-  void onTextChanged(TextEditingController controller) {
+  EditOperator onTextChanged(TextEditingController controller) {
     if (!_enable) {
       // 可能是在撤销的时候
-      return;
+      return null;
     }
     String text = controller.text;
     int length = text.length;
@@ -135,7 +137,7 @@ class OperatorManager {
       preStart = start;
       preEnd = end;
 //      print('---------------------same-----------------');
-      return;
+      return null;
     } else if (preEnd > -1 && preEnd != preStart) {
       // 选中内容的替换
       if (preText == text) {
@@ -185,6 +187,8 @@ class OperatorManager {
     preLength = length;
     preStart = start;
     preEnd = end;
+    
+    return undoOpts.last;
   }
 
   bool undo(TextEditingController controller) {
