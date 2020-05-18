@@ -4,6 +4,7 @@ import 'package:fairyland/editor/chatper_editor.dart';
 import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:zefyr/zefyr.dart';
 
@@ -85,7 +86,18 @@ class _EditPageState extends State<EditorPage> {
             Expanded(
               child: Padding(
                 padding: EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
-                child: widget.chapterEditor,
+                child: RawKeyboardListener(
+                  focusNode: FocusNode(),
+                  onKey: (RawKeyEvent event) {
+//                    RawKeyDownEvent rawKeyDownEvent = event;
+                    RawKeyEventDataAndroid rawKeyEventDataAndroid = event.data;
+                    if (rawKeyEventDataAndroid.keyCode == 288) {
+                      //
+                    }
+                    print("键盘 keyCode: ${rawKeyEventDataAndroid.keyCode}");
+                  },
+                  child: Container(child:widget.chapterEditor),
+                ),
               ),
             ),
             getQuickInputBar()
