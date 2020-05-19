@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'account_info.dart';
+
 const _themes = <MaterialColor>[
   Colors.blue,
   Colors.cyan,
@@ -19,6 +21,7 @@ class G {
   static String APP_NAME = "创作仙国";
   static RuntimeInfo rt;
   static UserSetting us;
+  static AccountInfo ac;
   static AppSettingGroups asg;
 
   // 可选的主题列表
@@ -37,6 +40,8 @@ class G {
         storagePath: (await getExternalStorageDirectory()).path);
 
     us = new UserSetting(iniPath: rt.dataPath + 'settings.ini');
+    
+    ac = new AccountInfo();
 
     sp = await SharedPreferences.getInstance();
     

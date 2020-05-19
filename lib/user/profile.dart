@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:fairyland/common/global.dart';
 
-class ProfileWidget extends StatefulWidget {
+class ProfileWindow extends StatefulWidget {
 	@override
-	_ProfileWidgetState createState() => _ProfileWidgetState();
+	_ProfileWindowState createState() => _ProfileWindowState();
 }
 
-class _ProfileWidgetState extends State<ProfileWidget> {
+class _ProfileWindowState extends State<ProfileWindow> {
 	var barKey = GlobalKey();
 	var cardHeadKey = GlobalKey();
 	var adKey = GlobalKey();
@@ -37,45 +37,48 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 	
 	@override
 	Widget build(BuildContext context) {
-		return Container(
-			color: Colors.grey.shade200,
-			child: SingleChildScrollView(
-				physics: ClampingScrollPhysics(),
-				child: SizedBox(
-					height: barHeight + cardHeadHeight + adHeight + gridHeight + itemHeight,
-					child: Stack(
-						children: <Widget>[
-							Positioned(
-								top: barHeight + padding * 2,
-								left: padding,
-								right: padding,
-								child: ProfileCardHead(cardHeadKey),
-							),
-							Positioned(
-								top: barHeight + cardHeadHeight + padding,
-								left: padding,
-								right: padding,
-								child: ProfileAD(adKey),
-							),
-							Positioned(
-								top: barHeight + cardHeadHeight + adHeight,
-								left: 0,
-								right: 0,
-								child: ProfileGrid(gridKey),
-							),
-							Positioned(
-								top: padding,
-								left: 0,
-								right: 0,
-								child: ProfileBar(barKey),
-							),
-							Positioned(
-								top: barHeight + cardHeadHeight + adHeight + gridHeight,
-								left: 0,
-								right: 0,
-								child: ProfileItems(itemKey),
-							),
-						],
+		return Scaffold(
+			appBar: new AppBar(title: Text('用户信息'),),
+			body: Container(
+				color: Colors.grey.shade200,
+				child: SingleChildScrollView(
+					physics: ClampingScrollPhysics(),
+					child: SizedBox(
+						height: barHeight + cardHeadHeight + adHeight + gridHeight + itemHeight,
+						child: Stack(
+							children: <Widget>[
+								Positioned(
+									top: barHeight + padding * 2,
+									left: padding,
+									right: padding,
+									child: ProfileCardHead(cardHeadKey),
+								),
+								Positioned(
+									top: barHeight + cardHeadHeight + padding,
+									left: padding,
+									right: padding,
+									child: ProfileAD(adKey),
+								),
+								Positioned(
+									top: barHeight + cardHeadHeight + adHeight,
+									left: 0,
+									right: 0,
+									child: ProfileGrid(gridKey),
+								),
+								Positioned(
+									top: padding,
+									left: 0,
+									right: 0,
+									child: ProfileBar(barKey),
+								),
+								Positioned(
+									top: barHeight + cardHeadHeight + adHeight + gridHeight,
+									left: 0,
+									right: 0,
+									child: ProfileItems(itemKey),
+								),
+							],
+						),
 					),
 				),
 			),

@@ -1,5 +1,6 @@
 import 'package:fairyland/common/global.dart';
 import 'package:fairyland/setting/app_setting_window.dart';
+import 'package:fairyland/user/login.dart';
 import 'package:flutter/material.dart';
 
 class MyDrawer extends StatelessWidget {
@@ -11,7 +12,19 @@ class MyDrawer extends StatelessWidget {
           UserAccountsDrawerHeader(
             accountName: Text('创作仙国'),
             accountEmail: Text('云同步：未登录'),
-            onDetailsPressed: () {},
+            onDetailsPressed: () {
+              // 切换登录
+              if (G.ac.isLogin()) {
+              
+              } else {
+                // 未登录，打开登录页面
+                Navigator.pop(context); // 隐藏侧边栏
+                Navigator.push<String>(context,
+                    new MaterialPageRoute(builder: (BuildContext context) {
+                      return new LoginWindow();
+                    }));
+              }
+            },
             // 会导致账号右边出现箭头
             currentAccountPicture: null,
             otherAccountsPictures: <Widget>[],
