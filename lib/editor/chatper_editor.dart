@@ -109,12 +109,9 @@ class ChapterEditor extends TextField {
     }
 
     // 先记录变化
-    print('----begin');
     EditOperator oper = undoRedoManager.onTextChanged(controller);
-    bool modifyAgain = false;
 
     // 正在输入的时候生效，并判断输入的内容
-    print('判断：' + getText());
 //    if (oper != null && oper.isInput()) {
     if (oper == null || oper.isInput()) {
       beginSystemChanging();
@@ -122,21 +119,19 @@ class ChapterEditor extends TextField {
   
       // 开始分析
       textAnalyze();
-  
-      // setText 有个操蛋的问题
+      
+      // setText 有个操蛋的问题（也可能是输入法的原因）
       // 会延迟触发 onChanged，而且传的参数又是 setText 之前的旧文本
       // 以及只会触发第二次，不会再三触发……
       // 因此需要想个办法解决
-      modifyAgain = finishAnalyze();
-  
+      finishAnalyze();
+      
       endSystemChanging();
     }
 
     // 保存
-    //    if (modifyAgain) undoRedoManager.onTextChanged(controller);
     if (onEditSave != null) onEditSave(getText());
     if (onWordsChanged != null) onWordsChanged();
-    print('----end');
   }
 
   /// =====================================================
@@ -147,15 +142,12 @@ class ChapterEditor extends TextField {
   void setText(String text, {undoable: true, pos: -1}) {
     beginSystemChanging();
     controller.text = text;
-    deb('设置文本：'+text);
     if (pos > -1) {
       setPosition(pos);
     }
-    /*if (!undoable) {
-      clearUndoRedo();
+    if (!undoable) {
       initUndoRedo();
-    }*/
-    print('设置文本结束');
+    }
     endSystemChanging();
   }
 
