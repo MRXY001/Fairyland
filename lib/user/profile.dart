@@ -49,6 +49,12 @@ class _ProfileWindowState extends State<ProfileWindow> {
 						child: Stack(
 							children: <Widget>[
 								Positioned(
+									top: padding,
+									left: 0,
+									right: 0,
+									child: ProfileBar(barKey),
+								),
+								Positioned(
 									top: barHeight + padding * 2,
 									left: padding,
 									right: padding,
@@ -65,12 +71,6 @@ class _ProfileWindowState extends State<ProfileWindow> {
 									left: 0,
 									right: 0,
 									child: ProfileGrid(gridKey),
-								),
-								Positioned(
-									top: padding,
-									left: 0,
-									right: 0,
-									child: ProfileBar(barKey),
 								),
 								Positioned(
 									top: barHeight + cardHeadHeight + adHeight + gridHeight,
@@ -117,9 +117,9 @@ class ProfileBar extends StatelessWidget {
 						),
 						child: Row(
 							children: <Widget>[
-								Icon(Icons.brightness_2, size: 16),
+								Icon(Icons.settings, size: 16),
 								Text(
-									'夜间',
+									'设置',
 									style: TextStyle(fontSize: 10),
 								),
 							],
@@ -424,10 +424,13 @@ class ProfileGrid extends StatelessWidget {
 		return Container(
 			key: sizeKey,
 			color: Colors.white,
-			height: 240,
+			height: 180,
 			child: GridView.count(
 				physics: NeverScrollableScrollPhysics(),
 				crossAxisCount: 4,
+				crossAxisSpacing: 0.0,
+				mainAxisSpacing: 0.0,
+				childAspectRatio: 4 / 3,
 				children: List.generate(datas.length, (index) {
 					return ProfileADGridItem(icon: datas[index].icon, text: datas[index].text,);
 				}),
