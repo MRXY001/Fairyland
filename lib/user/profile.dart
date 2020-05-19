@@ -1,3 +1,4 @@
+import 'package:fairyland/utils/web_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:fairyland/common/global.dart';
@@ -273,7 +274,7 @@ class ProfileCardHead extends StatelessWidget {
 									minWidth: 50,
 									height: 25,
 									child: RaisedButton(
-										color: Colors.red,
+										color: Theme.of(context).accentColor,
 										shape: RoundedRectangleBorder(
 											borderRadius: BorderRadius.circular(20),
 										),
@@ -307,7 +308,7 @@ class ProfileAD extends StatelessWidget {
 			key: sizeKey,
 			padding: EdgeInsets.all(8),
 			decoration: BoxDecoration(
-				color: Colors.red,
+				color: Theme.of(context).accentColor,
 				borderRadius: BorderRadius.circular(8),
 			),
 			child: Column(
@@ -316,13 +317,13 @@ class ProfileAD extends StatelessWidget {
 						children: <Widget>[
 							Icon(
 								Icons.star,
-								color: Colors.orangeAccent,
+								color: Colors.white,
 							),
 							Text(
 								'开通畅享卡',
 								style: TextStyle(
 									fontSize: 14,
-									color: Colors.orangeAccent,
+									color: Colors.white,
 								),
 							),
 							Spacer(),
@@ -330,12 +331,12 @@ class ProfileAD extends StatelessWidget {
 								'享免费书库等10项福利',
 								style: TextStyle(
 									fontSize: 12,
-									color: Colors.orangeAccent,
+									color: Colors.white,
 								),
 							),
 							Icon(
 								Icons.keyboard_arrow_right,
-								color: Colors.orangeAccent,
+								color: Colors.white,
 								size: 14,
 							),
 						],
@@ -344,7 +345,7 @@ class ProfileAD extends StatelessWidget {
 					SizedBox(
 						height: 1,
 						child: Container(
-							color: Colors.orangeAccent,
+							color: Colors.white70,
 						),
 					),
 					SizedBox(height: 30),
@@ -355,20 +356,26 @@ class ProfileAD extends StatelessWidget {
 }
 
 class ProfileADGridItem extends StatelessWidget {
+	final IconData icon;
+	final String text;
+	final onTap;
+
+  const ProfileADGridItem({Key key, this.icon, this.text, this.onTap}) : super(key: key);
+	
 	@override
 	Widget build(BuildContext context) {
-		return Container(
+		return InkWell(
 			child: Column(
 				mainAxisAlignment: MainAxisAlignment.center,
 				children: <Widget>[
 					Icon(
-						Icons.near_me,
+						icon,
 						size: 24,
 						color: Colors.black,
 					),
 					SizedBox(height: 12),
 					Text(
-						'特权',
+						text,
 						style: TextStyle(
 							color: Colors.black,
 							fontSize: 12,
@@ -376,14 +383,41 @@ class ProfileADGridItem extends StatelessWidget {
 					),
 				],
 			),
+			onTap: onTap,
 		);
 	}
 }
 
+class ProfileData {
+	final IconData icon;
+	final String text;
+	final onTap;
+	IconData tail;
+
+  ProfileData(this.icon, this.text, this.onTap);
+  
+  ProfileData setTail(IconData icon) {
+	  this.tail = icon;
+    return this;
+  }
+}
+
+// ignore: must_be_immutable
 class ProfileGrid extends StatelessWidget {
 	final GlobalKey sizeKey;
 	
-	ProfileGrid(this.sizeKey);
+	List<ProfileData> datas = [
+		ProfileData(Icons.favorite, '我的好友', (){}),
+		ProfileData(Icons.star, '我的收藏', (){}),
+		ProfileData(Icons.description, '我的文章', (){}),
+		ProfileData(Icons.send, '小说发布', (){}),
+		ProfileData(Icons.device_hub, '拼字房间', (){}),
+		ProfileData(Icons.backup, '云端网盘', (){}),
+		ProfileData(Icons.history, '浏览历史', (){}),
+		ProfileData(Icons.more_horiz, '更多', (){}),
+	];
+
+  ProfileGrid(this.sizeKey);
 	
 	@override
 	Widget build(BuildContext context) {
@@ -394,16 +428,26 @@ class ProfileGrid extends StatelessWidget {
 			child: GridView.count(
 				physics: NeverScrollableScrollPhysics(),
 				crossAxisCount: 4,
-				children: List.generate(8, (index) {
-					return ProfileADGridItem();
+				children: List.generate(datas.length, (index) {
+					return ProfileADGridItem(icon: datas[index].icon, text: datas[index].text,);
 				}),
 			),
 		);
 	}
 }
 
+// ignore: must_be_immutable
 class ProfileItems extends StatelessWidget {
 	final GlobalKey sizeKey;
+	List<ProfileData> datas = [
+		ProfileData(Icons.face, '码字风云榜', (){}),
+		ProfileData(Icons.center_focus_strong, '思绪深渊', (){}),
+		ProfileData(Icons.color_lens, '主题风格', (){}).setTail(Icons.brightness_2),
+		ProfileData(Icons.computer, '电脑下载', (){
+			WebUtil.launchURL('http://writerfly.cn/download');
+		}),
+		ProfileData(Icons.restore, '回收站', (){}),
+	];
 	
 	ProfileItems(this.sizeKey);
 	
@@ -414,10 +458,12 @@ class ProfileItems extends StatelessWidget {
 			color: Colors.white,
 			child: Column(
 				mainAxisSize: MainAxisSize.min,
-				children: List.generate(8, (index) {
+				children: List.generate(datas.length, (index) {
 					return ListTile(
-						leading: Icon(Icons.book),
-						title: Text('积分商城'),
+						leading: Icon(datas[index].icon),
+						title: Text(datas[index].text),
+						trailing: datas[index].tail != null ? Icon(datas[index].tail) : null,
+						onTap: datas[index].onTap,
 					);
 				})
 					..insert(
