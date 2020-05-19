@@ -60,15 +60,15 @@ class BookObject {
       if (catalog[i].isVolume()) {
         VCBundle bundle = catalog[i].setIndexes(bookV, volumeV);
         if (!catalog[i].isDeleted()) {
-	        bookV += bundle.volume;
-	        bookC += bundle.chapter;
-	        volumeV++;
+          bookV += bundle.volume;
+          bookC += bundle.chapter;
+          volumeV++;
         }
       } else if (catalog[i].isChapter()) {
         catalog[i].setIndexes(bookC, volumeC);
         if (!catalog[i].isDeleted()) {
-	        volumeC++;
-	        bookC++;
+          volumeC++;
+          bookC++;
         }
       }
       catalog[i].indexInList = inList;
@@ -88,21 +88,26 @@ class BookObject {
   /// 设置某一项的名字
   /// @param recursive 是否递归
   void setVCItemDisplayName(VCItem item, {bool recursive: false}) {
+    if (!G.us.showCatalogRecycle && item.isDeleted()) return;
+
     int index;
     String number;
     String name;
     String format;
-    // 序号
+    // 每卷重新计数
     if (config.recalculateSerialNumber) {
       index = item.indexInVolume;
     } else {
       index = item.indexInBook;
     }
+    int add =
+        item.isChapter() ? config.chapterStartNumber : config.volumeStartNumber;
+    index += add;
     if (config.useArabSerialNumber) {
       // TODO: 转换成中文
       number = index.toString();
     } else {
-      number = index.toString();
+      number = (index).toString();
     }
     name = item.name;
     // 格式
@@ -238,16 +243,16 @@ class VCItem {
         if (vcList[i].isVolume()) {
           VCBundle bundle = vcList[i].setIndexes(inBook + vSum, vCount);
           if (!vcList[i].isDeleted()) {
-	          vCount++;
-	          vSum++;
-	          vSum += bundle.volume;
-	          cSum += bundle.chapter;
+            vCount++;
+            vSum++;
+            vSum += bundle.volume;
+            cSum += bundle.chapter;
           }
         } else if (vcList[i].isChapter()) {
           vcList[i].setIndexes(inBook + cSum, cCount);
           if (!vcList[i].isDeleted()) {
-	          cCount++;
-	          cSum++;
+            cCount++;
+            cSum++;
           }
         }
         vcList[i].indexInList = inList;
@@ -330,6 +335,8 @@ class BookConfig {
   bool useRelevant = true; // 使用作品相关（第0卷不计算序号）
   bool useArabSerialNumber = false; // 使用阿拉伯数字
   bool recalculateSerialNumber = false; // 每卷里的章节重新计算序号
+  int volumeStartNumber = 1;
+  int chapterStartNumber = 1;
   String volumeDisplayFormat = '第%s卷 %s'; // 分卷显示格式
   String chapterDisplayFormat = '第%s章 %s'; // 章节显示格式（不影响存储）
 
@@ -337,15 +344,19 @@ class BookConfig {
       {this.useRelevant,
       this.useArabSerialNumber,
       this.recalculateSerialNumber,
-      this.chapterDisplayFormat,
-      this.volumeDisplayFormat});
+      this.volumeStartNumber,
+      this.chapterStartNumber,
+      this.volumeDisplayFormat,
+      this.chapterDisplayFormat});
 
   Map<String, dynamic> toJson() => {
         'useRelevant': useRelevant,
         'useArabSerialNumber': useArabSerialNumber,
         'recalculateSerialNumber': recalculateSerialNumber,
+        'volumeStartNumber': volumeStartNumber,
+        'chapterStartNumber': chapterStartNumber,
+        'volumeDisplayFormat': volumeDisplayFormat,
         'chapterDisplayFormat': chapterDisplayFormat,
-        'volumeDisplayFormat': volumeDisplayFormat
       };
 
   factory BookConfig.fromJson(Map<String, dynamic> json) {
@@ -356,6 +367,8 @@ class BookConfig {
       useRelevant: json['useRelevant'] ?? true,
       useArabSerialNumber: json['useArabSerialNumber'] ?? false,
       recalculateSerialNumber: json['recalculateSerialNumber'] ?? false,
+      volumeStartNumber: json['volumeStartNumber'] ?? 1,
+      chapterStartNumber: json['chapterStartNumber'] ?? 1,
       chapterDisplayFormat: json['chapterDisplayFormat'] ?? '第%1章 %2',
       volumeDisplayFormat: json['volumeDisplayFormat'] ?? '第%1卷 %2',
     );
