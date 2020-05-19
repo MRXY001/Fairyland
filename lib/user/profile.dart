@@ -106,7 +106,7 @@ class ProfileBar extends StatelessWidget {
 			),
 			child: Row(
 				children: <Widget>[
-					Icon(Icons.repeat, size: 20),
+					Icon(Icons.sync, size: 20),
 					Spacer(),
 					Container(
 						padding: EdgeInsets.symmetric(horizontal: 8),
@@ -116,9 +116,9 @@ class ProfileBar extends StatelessWidget {
 						),
 						child: Row(
 							children: <Widget>[
-								Icon(Icons.wb_sunny, size: 16),
+								Icon(Icons.brightness_2, size: 16),
 								Text(
-									'日间',
+									'夜间',
 									style: TextStyle(fontSize: 10),
 								),
 							],
@@ -154,7 +154,7 @@ class ProfileCardHead extends StatelessWidget {
 						children: <Widget>[
 							CircleAvatar(
 								radius: 24,
-								backgroundImage: AssetImage('images/book.jpg'),
+								backgroundImage: AssetImage('assets/icons/writerfly_appicon.png'),
 							),
 							SizedBox(width: 14),
 							Column(
@@ -162,7 +162,7 @@ class ProfileCardHead extends StatelessWidget {
 								crossAxisAlignment: CrossAxisAlignment.start,
 								children: <Widget>[
 									Text(
-										'eclipse_xu',
+										G.ac.getNickname(),
 										style: TextStyle(fontSize: 20),
 									),
 									SizedBox(height: 4),
@@ -176,7 +176,7 @@ class ProfileCardHead extends StatelessWidget {
 											),
 											SizedBox(width: 4),
 											Text(
-												'Lv.5',
+												G.ac.getLevel().toString(),
 												style: TextStyle(
 													fontWeight: FontWeight.bold,
 													fontSize: 10,
@@ -190,7 +190,7 @@ class ProfileCardHead extends StatelessWidget {
 											),
 											SizedBox(width: 4),
 											Text(
-												'普通用户',
+												G.ac.isVIP() ? 'VIP用户' : '普通用户',
 												style: TextStyle(
 													fontWeight: FontWeight.bold,
 													fontSize: 10,
@@ -210,17 +210,17 @@ class ProfileCardHead extends StatelessWidget {
 							mainAxisSize: MainAxisSize.min,
 							children: <Widget>[
 								Column(
-									crossAxisAlignment: CrossAxisAlignment.start,
+									crossAxisAlignment: CrossAxisAlignment.center,
 									children: <Widget>[
 										Text(
-											'99',
+											G.ac.getAllWords().toString(),
 											style: TextStyle(
 												fontWeight: FontWeight.bold,
 												fontSize: 14,
 											),
 										),
 										Text(
-											'推荐票',
+											'字数',
 											style: TextStyle(
 												fontSize: 12,
 												color: Colors.grey.shade600,
@@ -230,17 +230,17 @@ class ProfileCardHead extends StatelessWidget {
 								),
 								SizedBox(width: 16),
 								Column(
-									crossAxisAlignment: CrossAxisAlignment.start,
+									crossAxisAlignment: CrossAxisAlignment.center,
 									children: <Widget>[
 										Text(
-											'999',
+											G.ac.getAllTimes().toString(),
 											style: TextStyle(
 												fontWeight: FontWeight.bold,
 												fontSize: 14,
 											),
 										),
 										Text(
-											'月票',
+											'分钟',
 											style: TextStyle(
 												fontSize: 12,
 												color: Colors.grey.shade600,
@@ -250,17 +250,17 @@ class ProfileCardHead extends StatelessWidget {
 								),
 								SizedBox(width: 16),
 								Column(
-									crossAxisAlignment: CrossAxisAlignment.start,
+									crossAxisAlignment: CrossAxisAlignment.center,
 									children: <Widget>[
 										Text(
-											'9999',
+											G.ac.getRank().toString(),
 											style: TextStyle(
 												fontWeight: FontWeight.bold,
 												fontSize: 14,
 											),
 										),
 										Text(
-											'我的账户',
+											'排名',
 											style: TextStyle(
 												fontSize: 12,
 												color: Colors.grey.shade600,
@@ -380,6 +380,28 @@ class ProfileADGridItem extends StatelessWidget {
 	}
 }
 
+class ProfileGrid extends StatelessWidget {
+	final GlobalKey sizeKey;
+	
+	ProfileGrid(this.sizeKey);
+	
+	@override
+	Widget build(BuildContext context) {
+		return Container(
+			key: sizeKey,
+			color: Colors.white,
+			height: 240,
+			child: GridView.count(
+				physics: NeverScrollableScrollPhysics(),
+				crossAxisCount: 4,
+				children: List.generate(8, (index) {
+					return ProfileADGridItem();
+				}),
+			),
+		);
+	}
+}
+
 class ProfileItems extends StatelessWidget {
 	final GlobalKey sizeKey;
 	
@@ -405,28 +427,6 @@ class ProfileItems extends StatelessWidget {
 							color: Colors.grey.shade200,
 						),
 					),
-			),
-		);
-	}
-}
-
-class ProfileGrid extends StatelessWidget {
-	final GlobalKey sizeKey;
-	
-	ProfileGrid(this.sizeKey);
-	
-	@override
-	Widget build(BuildContext context) {
-		return Container(
-			key: sizeKey,
-			color: Colors.white,
-			height: 180,
-			child: GridView.count(
-				physics: NeverScrollableScrollPhysics(),
-				crossAxisCount: 4,
-				children: List.generate(8, (index) {
-					return ProfileADGridItem();
-				}),
 			),
 		);
 	}
