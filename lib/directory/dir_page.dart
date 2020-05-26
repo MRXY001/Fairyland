@@ -10,7 +10,15 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class DirPage extends StatefulWidget {
-  DirPage({Key key, this.openBookCallback, this.renameBookCallback, this.closeBookCallback, this.openChapterCallback, this.renameChapterCallback, this.deleteChapterCallback}) : super(key: key);
+  DirPage(
+      {Key key,
+      this.openBookCallback,
+      this.renameBookCallback,
+      this.closeBookCallback,
+      this.openChapterCallback,
+      this.renameChapterCallback,
+      this.deleteChapterCallback})
+      : super(key: key);
 
   final openBookCallback;
   final renameBookCallback;
@@ -60,12 +68,13 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     super.build(context);
 
     return new Scaffold(
-//      drawer: MyDrawer.globalDrawer,
+      //      drawer: MyDrawer.globalDrawer,
       appBar: new AppBar(
           leading: Builder(builder: (context) {
             return IconButton(
               icon: Icon(Icons.menu), //自定义图标
-              onPressed: () { // 打开抽屉菜单
+              onPressed: () {
+                // 打开抽屉菜单
                 G.rt.mainHomeKey.currentState.openDrawer();
               },
             );
@@ -101,7 +110,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         return new Text('请创建作品');
       }
       // 树状模式
-      var showedList = currentBook.catalog.where((element) => G.us.showCatalogRecycle || !element.deleted).toList();
+      var showedList = currentBook.catalog
+          .where((element) => G.us.showCatalogRecycle || !element.deleted)
+          .toList();
       return ListView.builder(
         itemCount: showedList.length,
         itemBuilder: (context, index) {
@@ -132,19 +143,26 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
     if (item.isChapter()) {
       return _buildVolumeChapterTile(item);
     }
-    
+
     // 分卷，构建树状列表
     return ExpansionTile(
       key: PageStorageKey<VCItem>(item),
       title: Text(item.getDisplayName()),
-      children: item.vcList.where((element) => G.us.showCatalogRecycle || !element.deleted).toList().map(_buildCatalogTreeTiles).toList(),
-      onExpansionChanged: (bool exp){
-        if (exp) { // 展开
+      children: item.vcList
+          .where((element) => G.us.showCatalogRecycle || !element.deleted)
+          .toList()
+          .map(_buildCatalogTreeTiles)
+          .toList(),
+      onExpansionChanged: (bool exp) {
+        if (exp) {
+          // 展开
           currentList = item.vcList;
-        } else { // 收起
+        } else {
+          // 收起
           // 如果有父分卷，则聚焦至父分卷
           // 如果没有父分卷，则使用全书最外层分卷
-          currentList = item.parent != null ? item.parent.vcList : currentBook.catalog;
+          currentList =
+              item.parent != null ? item.parent.vcList : currentBook.catalog;
         }
       },
     );
@@ -220,7 +238,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           itemBuilder: (context, index) {
             return Offstage(
               offstage:
-                  !G.us.showCatalogRecycle && currentList[index].deleted ?? false,
+                  !G.us.showCatalogRecycle && currentList[index].deleted ??
+                      false,
               child: AnimationConfiguration.staggeredList(
                   position: index,
                   child: SlideAnimation(
@@ -288,7 +307,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             item.isVolume()
                 ? ((item.vcList != null ? item.vcList.length.toString() : '?') +
                     ' 章')
-                : (item.wordCount.toString() + ' 字'),
+                : (G.us.bookCatalogWordCount
+                    ? item.wordCount.toString() + ' 字'
+                    : ''),
             style: TextStyle(color: Colors.grey),
           ),
         ],
@@ -315,8 +336,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         itemBuilder: (BuildContext context) => item.isVolume()
             ? getVolumeActions(context, item)
             : getChapterActions(context, item),
-        onSelected: (VCItemActions result) =>
-            handleVCItemAction(item, result));
+        onSelected: (VCItemActions result) => handleVCItemAction(item, result));
   }
 
   List<PopupMenuEntry<VCItemActions>> getVolumeActions(
@@ -429,13 +449,13 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
         break;
       case VCItemActions.Delete:
         setState(() {
-            item.deleted = true;
-            item.deleteTime = DateTime.now().millisecondsSinceEpoch;
-            currentBook.setVCItemsContext();
-            saveCatalog();
-            if (widget.deleteChapterCallback != null) {
-              widget.deleteChapterCallback(item);
-            }
+          item.deleted = true;
+          item.deleteTime = DateTime.now().millisecondsSinceEpoch;
+          currentBook.setVCItemsContext();
+          saveCatalog();
+          if (widget.deleteChapterCallback != null) {
+            widget.deleteChapterCallback(item);
+          }
         });
         break;
       case VCItemActions.Restore:

@@ -36,6 +36,7 @@ class UserSetting {
   // ----------------------- 界面 -----------------------
   BookShelfMode bookShelfMode; // 书架模式
   BookCatalogMode bookCatalogMode; // 目录模式
+  bool bookCatalogWordCount;
 
   // ----------------------- 编辑 -----------------------
   int indentSpace;
@@ -70,6 +71,7 @@ class UserSetting {
   void readFromFile() {
     bookShelfMode = getConfig('us/book_shelf_mode', BookShelfMode.List);
     bookCatalogMode = getConfig('us/book_catalog_mode', BookCatalogMode.Tree);
+    bookCatalogWordCount = getBool('us/book_catalog_word_count', false);
     
     indentSpace = getInt('us/indent_space', 2);
     indentLine = getInt('us/indent_line', 1);

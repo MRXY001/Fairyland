@@ -19,6 +19,8 @@ const _themes = <MaterialColor>[
 class G {
   // ignore: non_constant_identifier_names
   static String APP_NAME = "创作仙国";
+  // ignore: non_constant_identifier_names
+  static int APP_VERSION = 2001;
   static RuntimeInfo rt;
   static UserSetting us;
   static AccountInfo ac;
