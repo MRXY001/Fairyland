@@ -57,6 +57,10 @@ flutter:
     - assets/icons/chapter.png
     - assets/icons/mzfy_appicon.png
     - assets/icons/writerfly_appicon.png
+    - assets/keys/BXOR.key
+    - assets/keys/LOW.key
+    - assets/keys/MOD.key
+    - assets/keys/MOD2.key
 
   # To add assets to your application, add an assets section, like this:
   # assets:
