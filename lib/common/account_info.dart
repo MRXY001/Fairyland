@@ -11,6 +11,7 @@ class AccountInfo {
   String _password;
   String _nickname;
   bool _VIP; // ignore: non_constant_identifier_names
+  int _VIP_Deadline;
   int _rank;
 
   // 用户数据
@@ -18,7 +19,9 @@ class AccountInfo {
   int _allTimes;
   int _allUseds;
   int _allBonus;
-  
+  String _roomID;
+  String _roomname;
+
   // 运行数据
   String dataPath; // 用户数据文件路径
   String serverPath; // 后台网址
@@ -45,7 +48,7 @@ class AccountInfo {
     // 获取运行数据
     dataPath = G.rt.dataPath + 'account';
     serverPath = G.SERVER_PATH;
-    
+
     // 读取秘钥内容
     Future.sync(() => getKeys());
 
@@ -64,34 +67,36 @@ class AccountInfo {
     FileUtil.loadAsset('assets/keys/LOW.key')
         .then((value) => _______ = int.parse(value));
   }
-  
+
   /// 保存用户数据
   void saveAccountInfo() {
     // 转换为字符串
     String text = toJson().toString();
-    
+
     // TODO: 加密字符串
-    
+
     // 保存到文件
     FileUtil.writeText(dataPath, text);
     print('保存用户数据：' + text);
   }
-  
+
   /// 读取用户数据
   void restoreAccountInfo() {
     String text = FileUtil.readText(dataPath);
-    fromJson(json.decode(text));
+    if (text != null && text.isNotEmpty) {
+      fromJson(json.decode(text));
+    }
   }
 
   Map<String, dynamic> toJson() => {
-    'username': _username,
-    'password': _password,
-    'nickname': _nickname,
-    'allWords': _allWords,
-    'allTimes': _allTimes,
-    'allUseds': _allUseds,
-    'allBonus': _allBonus,
-  };
+        'username': _username,
+        'password': _password,
+        'nickname': _nickname,
+        'allWords': _allWords,
+        'allTimes': _allTimes,
+        'allUseds': _allUseds,
+        'allBonus': _allBonus,
+      };
 
   void fromJson(Map<String, dynamic> json) {
     _username = json['username'];
@@ -106,10 +111,13 @@ class AccountInfo {
   /// 尝试自动登录
   void tryLogin() async {
     // 如果没有账号信息
-    if (_username.isEmpty || _password.isEmpty) {
-      return ;
+    if (_username == null ||
+        _password == null ||
+        _username.isEmpty ||
+        _password.isEmpty) {
+      return;
     }
-    
+
     // 开始登录
     login(_username, _password);
   }
@@ -132,7 +140,8 @@ class AccountInfo {
 
   String getUsername() => _username;
 
-  String getNickname() => _nickname;
+  String getNickname() =>
+      (_nickname != null && _nickname.isEmpty) ? _username : _nickname;
 
   int getAllWords() => _allWords;
 
@@ -140,18 +149,39 @@ class AccountInfo {
 
   int getAllUseds() => _allUseds;
 
+  int getAllBonus() => _allBonus;
+
   int getRank() => _rank;
 
   /// 登录结束设置用户账号
   void setAccount(
-      String userID, String username, String password, String nickname) {}
+      String userID, String username, String password, String nickname) {
+    this._userID = userID;
+    this._username = username;
+    this._password = password;
+    this._nickname = nickname;
+  }
 
   /// 设置用户数据
   void setIntegral(int words, int times, int useds, int bonus) {
-    _allWords = words;
-    _allTimes = times;
-    _allUseds = useds;
-    _allBonus = bonus;
+    this._allWords = words;
+    this._allTimes = times;
+    this._allUseds = useds;
+    this._allBonus = bonus;
+  }
+
+  void setRank(int rank) {
+    this._rank = rank;
+  }
+
+  void setVIP(int level, int deadline) {
+    this._VIP = (level > 0);
+    this._VIP_Deadline = deadline;
+  }
+
+  void setRoom(String id, String name) {
+    this._roomID = id;
+    this._roomname = name;
   }
 
   /// 修改数据
