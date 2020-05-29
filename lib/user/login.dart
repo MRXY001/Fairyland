@@ -208,7 +208,7 @@ class LoginWindow extends StatelessWidget {
       var xmlI = (String tag) => StringUtil.getXmlInt(result, tag);
       if (xml('state').toUpperCase() == 'OK') {
         // 登录成功
-        G.ac.setAccount(xml('userID'), xml('username'), xml('password'), xml('nickname'));
+        G.ac.setAccount(xml('userID'), xml('username'), _password, xml('nickname'));
         G.ac.setIntegral(xmlI('allwords'), xmlI('alltimes'), xmlI('alluseds'), xmlI('allbonus'));
         G.ac.setVIP(xmlI('VIP'), xmlI('VIP_deadline'));
         G.ac.setRoom(xml('roomID'), xml('roomname'));

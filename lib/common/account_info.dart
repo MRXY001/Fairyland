@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:dio/dio.dart';
 import 'package:fairyland/utils/file_util.dart';
+import 'package:fairyland/utils/string_util.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'global.dart';
 
@@ -71,13 +74,12 @@ class AccountInfo {
   /// 保存用户数据
   void saveAccountInfo() {
     // 转换为字符串
-    String text = toJson().toString();
+    String text = jsonEncode(toJson());
 
     // TODO: 加密字符串
 
     // 保存到文件
     FileUtil.writeText(dataPath, text);
-    print('保存用户数据：' + text);
   }
 
   /// 读取用户数据
@@ -123,7 +125,49 @@ class AccountInfo {
   }
 
   /// 手动登录
-  Future login(String username, String password) async {}
+  Future login(String username, String password) async {
+    try {
+      List<String> params = [
+        'username',
+        _username,
+        'password',
+        _password,
+        'version',
+        G.APP_VERSION.toString(),
+        'vericode',
+        enVerity(),
+        'allwords',
+        getAllWords().toString(),
+        'alltimes',
+        getAllTimes().toString(),
+        'alluseds',
+        getAllUseds().toString(),
+        'allbonus',
+        getAllBonus().toString()
+      ];
+      Response response = await Dio().get(G.SERVER_PATH +
+          'account_login.php?' +
+          StringUtil.listToUrlParam(params));
+      String result = response.toString();
+      var xml = (String tag) => StringUtil.getXml(result, tag);
+      var xmlI = (String tag) => StringUtil.getXmlInt(result, tag);
+      if (xml('state').toUpperCase() == 'OK') {
+        // 登录成功
+        setAccount(xml('userID'), xml('username'), xml('password'), xml('nickname'));
+        setIntegral(xmlI('allwords'), xmlI('alltimes'), xmlI('alluseds'), xmlI('allbonus'));
+        setVIP(xmlI('VIP'), xmlI('VIP_deadline'));
+        setRoom(xml('roomID'), xml('roomname'));
+        setRank(xmlI('rank'));
+        saveAccountInfo();
+        print('登录成功：' + _username);
+      } else {
+        String error = xml('ERROR');
+        Fluttertoast.showToast(msg: error);
+      }
+    } catch (e) {
+      print('login connect error:' + e.toString());
+    }
+  }
 
   /// 注册
   Future register(String username, String password,
@@ -158,12 +202,12 @@ class AccountInfo {
       return '';
     }
     return 'Lv.' +
+        getLevel().toString() +
+        ' (第' +
         _rank.toString() +
-        ', ' +
+        ') ' +
         _allWords.toString() +
-        '字, ' +
-        _allTimes.toString() +
-        '分钟';
+        '字';
   }
 
   /// 登录结束设置用户账号
