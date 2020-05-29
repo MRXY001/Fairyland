@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: G.rt.navigatorKey,
       title: '写作天下',
       theme: ThemeData(
         primarySwatch: Colors.blue,

@@ -1751,6 +1751,14 @@ class NovelAI {
     return len;
   }
   
+  /// 按分类统计字数，显示最详细的信息
+  /// 每一个分类多少字数都显示出来
+  static List<String> wordCountType(String text) {
+    List<String> result = [];
+    result.add('总字符数：' + wordCount(text).toString());
+    return result;
+  }
+  
   int getWordCount(String text) {
     return wordCount(text);
   }

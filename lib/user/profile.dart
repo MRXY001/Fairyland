@@ -2,6 +2,8 @@ import 'package:fairyland/utils/web_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:fairyland/common/global.dart';
+import 'package:flutter_beautiful_popup/main.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class ProfileWindow extends StatefulWidget {
   @override
@@ -458,7 +460,7 @@ class ProfileItems extends StatelessWidget {
   final GlobalKey sizeKey;
   List<ProfileData> datas = [
     ProfileData(Icons.face, '码字风云榜', () {
-      WebUtil.launchURL('http://writerfly.cn/rank');
+      WebUtil.launchURL('http://web.writerfly.cn/rank');
     }),
     ProfileData(Icons.center_focus_strong, '思绪深渊', () {
       WebUtil.launchURL('http://web.writerfly.cn/index/muse/entrance.html');
@@ -469,8 +471,31 @@ class ProfileItems extends StatelessWidget {
     }),
     ProfileData(Icons.restore, '回收站', () {}),
     ProfileData(Icons.exit_to_app, '退出登录', () {
-      
+      // TODO: 询问用户要不要退出。顺便看看怎么使用全局context
+//      var context = G.rt.navigatorKey.currentState.context; // 有问题
       G.ac.logout();
+      Fluttertoast.showToast(msg: '退出成功');
+//      Navigator.of(context).pop();
+      /*final popup = BeautifulPopup(
+        context: context,
+        template: TemplateBlueRocket,
+      );
+      final newColor = Color.fromARGB(127, 0x4A, 0xA3, 0xF9);
+      popup.recolor(newColor);
+      popup.show(title: '退出登录', content: '确定退出程序？\n\n重新登录以继续云同步', actions: [
+        popup.button(
+            label: '确定退出',
+            onPressed: () {
+              G.ac.logout();
+              Fluttertoast.showToast(msg: '退出成功');
+              Navigator.of(context).pop();
+            }),
+        popup.button(
+            label: '保持登录',
+            onPressed: () {
+              Navigator.of(context).pop();
+            })
+      ]);*/
     }),
   ];
 
