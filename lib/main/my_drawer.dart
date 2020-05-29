@@ -53,6 +53,16 @@ class MyDrawerState extends State<MyDrawer> {
                 onTap: () {WebUtil.launchURL('http://writerfly.cn/rank');},
               ),
               ListTile(
+                leading: Icon(Icons.golf_course),
+                title: Text('作品网盘'),
+                onTap: () {WebUtil.launchURL('http://writerfly.cn/rank');},
+              ),
+              ListTile(
+                leading: Icon(Icons.golf_course),
+                title: Text('小说广场'),
+                onTap: () {WebUtil.launchURL('http://writerfly.cn/rank');},
+              ),
+              ListTile(
                 leading: Icon(Icons.settings),
                 title: Text('小黑屋'),
                 onTap: () {},

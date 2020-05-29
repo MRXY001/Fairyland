@@ -5,9 +5,12 @@ import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_beautiful_popup/main.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:zefyr/zefyr.dart';
+
+import 'novel_ai.dart';
 
 // 输入框教程：https://flutterchina.club/text-input/
 
@@ -92,7 +95,7 @@ class _EditPageState extends State<EditorPage> {
                     //                    RawKeyDownEvent rawKeyDownEvent = event;
                     RawKeyEventDataAndroid rawKeyEventDataAndroid = event.data;
                     int keyCode = rawKeyEventDataAndroid.keyCode;
-//                    print("键盘 keyCode: $keyCode");
+                    //                    print("键盘 keyCode: $keyCode");
                   },
                   child: Container(child: widget.chapterEditor),
                 ),
@@ -157,6 +160,7 @@ class _EditPageState extends State<EditorPage> {
       onSelected: (String value) {
         switch (value) {
           case 'word_count':
+            actionWordCount(widget.chapterEditor.getSelectionOrFull());
             break;
           case 'undo':
             widget.chapterEditor.undo();
@@ -165,10 +169,12 @@ class _EditPageState extends State<EditorPage> {
             widget.chapterEditor.redo();
             break;
           case 'paste':
-            widget.chapterEditor.onlyInsertText(Clipboard.getData(Clipboard.kTextPlain).toString());
+            widget.chapterEditor.onlyInsertText(
+                Clipboard.getData(Clipboard.kTextPlain).toString());
             break;
           case 'copy':
-            Clipboard.setData(ClipboardData(text: widget.chapterEditor.getText()));
+            Clipboard.setData(
+                ClipboardData(text: widget.chapterEditor.getText()));
             Fluttertoast.showToast(msg: '复制成功');
             break;
           case 'typeset':
@@ -199,6 +205,24 @@ class _EditPageState extends State<EditorPage> {
         ),
       ],
     );
+  }
+
+  /// 字数统计操作
+  void actionWordCount(String text) {
+    String result = NovelAI.wordCount(text).toString();
+    final popup = BeautifulPopup(
+      context: context,
+      template: TemplateCoin,
+    );
+    final newColor = Color.fromARGB(127, 0xFF, 0x82, 0x68);
+    popup.recolor(newColor);
+    popup.show(title: '字数统计', content: '　　当前字数为：' + result, actions: [
+      popup.button(
+          label: '确定',
+          onPressed: () {
+            Navigator.of(context).pop();
+          })
+    ]);
   }
 }
 

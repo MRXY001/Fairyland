@@ -1741,5 +1741,17 @@ class NovelAI {
         !quantifiers.contains(str);
   }
 
-  void func() {}
+  /// 字数统计
+  /// - 空白符不算
+  /// - 连续符号算一个字符
+  /// - 连续字母、数字算一个单词
+  static int wordCount(String text) {
+    int len = text.length;
+    // TODO: 字数统计
+    return len;
+  }
+  
+  int getWordCount(String text) {
+    return wordCount(text);
+  }
 }

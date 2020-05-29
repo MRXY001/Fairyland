@@ -155,6 +155,17 @@ class ChapterEditor extends TextField {
   String getText() {
     return controller.text;
   }
+  
+  /// 获取文本
+  /// 如果有选中，则返回选中文本
+  /// 如果没有选中，则返回全部文本
+  String getSelectionOrFull() {
+    if (hasSelection()) {
+      return selectionText();
+    } else {
+      return getText();
+    }
+  }
 
   /// 转成纯文本
   String toPlainText() => getText();
@@ -173,6 +184,21 @@ class ChapterEditor extends TextField {
   /// 是否选中了文本
   bool hasSelection() {
     return controller.selection.start != controller.selection.end;
+  }
+  
+  int selectionStart() {
+    return controller.selection.start;
+  }
+  
+  int selectionEnd() {
+    return controller.selection.end;
+  }
+  
+  String selectionText() {
+    _selectionStart = getSelection().start;
+    _selectionEnd = getSelection().end;
+    _text = controller.text;
+    return _text.substring(_selectionStart, _selectionEnd);
   }
 
   /// 设置选中范围
@@ -365,6 +391,7 @@ class ChapterEditor extends TextField {
   ///                       简单动作
   /// =====================================================
 
+  
   /// =====================================================
   ///                       小说AI::actions
   /// =====================================================
@@ -469,5 +496,15 @@ class ChapterEditor extends TextField {
       left--;
     }
     return _text.substring(left, _pos);
+  }
+  
+  /// 一键排版
+  /// 如果有选中文字，则只排版选中文字
+  void activeTypeset() {
+    prepareAnalyze();
+    
+    // TODO: 一键排版
+    
+    finishAnalyze();
   }
 }
