@@ -1,6 +1,6 @@
+import 'dart:convert';
 import 'dart:math';
 import 'package:fairyland/utils/file_util.dart';
-import 'package:flutter/services.dart';
 
 import 'global.dart';
 
@@ -18,6 +18,10 @@ class AccountInfo {
   int _allTimes;
   int _allUseds;
   int _allBonus;
+  
+  // 运行数据
+  String dataPath; // 用户数据文件路径
+  String serverPath; // 后台网址
 
   // 同步秘钥
   final _________ = 1000; // ignore: non_constant_identifier_names
@@ -38,10 +42,18 @@ class AccountInfo {
     _allBonus = 783;
     _rank = 35;*/
 
+    // 获取运行数据
+    dataPath = G.rt.dataPath + 'account';
+    serverPath = G.SERVER_PATH;
+    
     // 读取秘钥内容
     Future.sync(() => getKeys());
 
-    Future.delayed(Duration(seconds: 3)).then((value) => tryLogin());
+    // 因为有多线程的存在，所以需要延迟读取，唉
+    Future.delayed(Duration(seconds: 3)).then((value) {
+      restoreAccountInfo();
+      tryLogin();
+    });
   }
 
   void getKeys() {
@@ -52,19 +64,54 @@ class AccountInfo {
     FileUtil.loadAsset('assets/keys/LOW.key')
         .then((value) => _______ = int.parse(value));
   }
+  
+  /// 保存用户数据
+  void saveAccountInfo() {
+    // 转换为字符串
+    String text = toJson().toString();
+    
+    // TODO: 加密字符串
+    
+    // 保存到文件
+    FileUtil.writeText(dataPath, text);
+    print('保存用户数据：' + text);
+  }
+  
+  /// 读取用户数据
+  void restoreAccountInfo() {
+    String text = FileUtil.readText(dataPath);
+    fromJson(json.decode(text));
+  }
+
+  Map<String, dynamic> toJson() => {
+    'username': _username,
+    'password': _password,
+    'nickname': _nickname,
+    'allWords': _allWords,
+    'allTimes': _allTimes,
+    'allUseds': _allUseds,
+    'allBonus': _allBonus,
+  };
+
+  void fromJson(Map<String, dynamic> json) {
+    _username = json['username'];
+    _password = json['password'];
+    _nickname = json['nickname'];
+    _allWords = json['allWords'];
+    _allTimes = json['allTimes'];
+    _allUseds = json['allUseds'];
+    _allBonus = json['allBonus'];
+  }
 
   /// 尝试自动登录
   void tryLogin() async {
-    // 读取存储的内容
-    String username = '', password = '';
-    
     // 如果没有账号信息
-    if (username.isEmpty || password.isEmpty) {
+    if (_username.isEmpty || _password.isEmpty) {
       return ;
     }
     
     // 开始登录
-    login(username, password);
+    login(_username, _password);
   }
 
   /// 手动登录

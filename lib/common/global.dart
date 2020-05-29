@@ -21,6 +21,8 @@ class G {
   static String APP_NAME = "创作仙国";
   // ignore: non_constant_identifier_names
   static int APP_VERSION = 2001;
+  // ignore: non_constant_identifier_names
+  static String SERVER_PATH = 'http://server.writerfly.cn';
   static RuntimeInfo rt;
   static UserSetting us;
   static AccountInfo ac;
