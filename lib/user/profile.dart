@@ -5,7 +5,10 @@ import 'package:fairyland/common/global.dart';
 import 'package:flutter_beautiful_popup/main.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+var profileWindowContext;
+
 class ProfileWindow extends StatefulWidget {
+  
   @override
   _ProfileWindowState createState() => _ProfileWindowState();
 }
@@ -43,6 +46,7 @@ class _ProfileWindowState extends State<ProfileWindow> {
 
   @override
   Widget build(BuildContext context) {
+    profileWindowContext = context;
     return Scaffold(
       appBar: new AppBar(
         title: Text('用户信息'),
@@ -471,13 +475,8 @@ class ProfileItems extends StatelessWidget {
     }),
     ProfileData(Icons.restore, '回收站', () {}),
     ProfileData(Icons.exit_to_app, '退出登录', () {
-      // TODO: 询问用户要不要退出。顺便看看怎么使用全局context
-//      var context = G.rt.navigatorKey.currentState.context; // 有问题
-      G.ac.logout();
-      Fluttertoast.showToast(msg: '退出成功');
-//      Navigator.of(context).pop();
-      /*final popup = BeautifulPopup(
-        context: context,
+      final popup = BeautifulPopup(
+        context: profileWindowContext,
         template: TemplateBlueRocket,
       );
       final newColor = Color.fromARGB(127, 0x4A, 0xA3, 0xF9);
@@ -488,14 +487,15 @@ class ProfileItems extends StatelessWidget {
             onPressed: () {
               G.ac.logout();
               Fluttertoast.showToast(msg: '退出成功');
-              Navigator.of(context).pop();
+              Navigator.of(profileWindowContext).pop(); // 第一下是退出对话框
+              Navigator.of(profileWindowContext).pop(); // 第二下是退出窗口
             }),
         popup.button(
             label: '保持登录',
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(profileWindowContext).pop();
             })
-      ]);*/
+      ]);
     }),
   ];
 
