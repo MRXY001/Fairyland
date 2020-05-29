@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:fairyland/dialogs/loading_dialog.dart';
 import 'package:fairyland/utils/string_util.dart';
 import 'package:flutter/material.dart';
 import 'package:fairyland/common/global.dart';
@@ -180,6 +181,11 @@ class LoginWindow extends StatelessWidget {
   }
 
   void _goLogin(BuildContext context) async {
+    var dialogContext;
+    showDialog(context: context, barrierDismissible: false, builder: (BuildContext context) {
+      dialogContext = context;
+      return new LoadingDialog(text: '正在登录中...');
+    });
     try {
       List<String> params = [
         'username',
@@ -223,5 +229,6 @@ class LoginWindow extends StatelessWidget {
     } catch (e) {
       print('login connect error:' + e.toString());
     }
+    Navigator.pop(dialogContext);
   }
 }
