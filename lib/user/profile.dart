@@ -443,8 +443,8 @@ class ProfileGrid extends StatelessWidget {
 class ProfileItems extends StatelessWidget {
 	final GlobalKey sizeKey;
 	List<ProfileData> datas = [
-		ProfileData(Icons.face, '码字风云榜', (){}),
-		ProfileData(Icons.center_focus_strong, '思绪深渊', (){}),
+		ProfileData(Icons.face, '码字风云榜', (){WebUtil.launchURL('http://writerfly.cn/rank');}),
+		ProfileData(Icons.center_focus_strong, '思绪深渊', (){WebUtil.launchURL('http://web.writerfly.cn/index/muse/entrance.html');}),
 		ProfileData(Icons.color_lens, '主题风格', (){}).setTail(Icons.brightness_2),
 		ProfileData(Icons.computer, '电脑下载', (){
 			WebUtil.launchURL('http://writerfly.cn/download');
