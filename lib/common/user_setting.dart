@@ -69,8 +69,8 @@ class UserSetting {
 
   /// 读取已有的配置文件
   void readFromFile() {
-    bookShelfMode = getConfig('us/book_shelf_mode', BookShelfMode.List);
-    bookCatalogMode = getConfig('us/book_catalog_mode', BookCatalogMode.Tree);
+    bookShelfMode = BookShelfMode.values[getInt('us/book_shelf_mode', BookShelfMode.List.index)];
+    bookCatalogMode = BookCatalogMode.values[getInt('us/book_catalog_mode', BookCatalogMode.Tree.index)];
     bookCatalogWordCount = getBool('us/book_catalog_word_count', false);
     
     indentSpace = getInt('us/indent_space', 2);

@@ -78,8 +78,10 @@ class AppSettingFactory {
         showedValue: () => initAppearanceItems(us.bookShelfMode),
         data: BookShelfMode.values,
         getter: initAppearanceItems,
-        setter: (val) =>
-            us.setConfig('us/book_shelf_mode', us.bookShelfMode = val)));
+        setter: (val) {
+          us.bookShelfMode = val;
+          us.setConfig('us/book_shelf_mode', val.index);
+        }));
 
     var bookCatalogModeToString = (index) => ['树状', '单层'][index.index];
     group.addItem(new AppSettingItem(
@@ -87,8 +89,10 @@ class AppSettingFactory {
         showedValue: () => bookCatalogModeToString(us.bookCatalogMode),
         data: BookCatalogMode.values,
         getter: bookCatalogModeToString,
-        setter: (val) =>
-            us.setConfig('us/book_catalog_mode', us.bookCatalogMode = val)));
+        setter: (val) {
+          us.bookCatalogMode = val;
+          us.setConfig('us/book_catalog_mode', val.index);
+        }));
 
     return group;
   }
@@ -100,7 +104,8 @@ class AppSettingFactory {
     group.addItem(new AppSettingItem(
         'indent_space', Icon(Icons.space_bar), '行首缩进', UserDataType.U_Int,
         getter: () => us.indentSpace,
-    setter: (val) => us.setConfig('us/indent_space', us.indentSpace = val)));
+        setter: (val) =>
+            us.setConfig('us/indent_space', us.indentSpace = val)));
     group.addItem(new AppSettingItem('indent_line',
         Icon(Icons.format_line_spacing), '空行数量', UserDataType.U_Int,
         getter: () => us.indentLine,
@@ -121,7 +126,7 @@ class AppSettingFactory {
     group.addItem(new AppSettingItem(
         'smart_space', Icon(Icons.space_bar), '智能空格', UserDataType.U_Bool,
         getter: () => false,
-        setter: (val) => us.setConfig('us/smart_space', us.smartSpace= val)));
+        setter: (val) => us.setConfig('us/smart_space', us.smartSpace = val)));
 
     group.addItem(new AppSettingItem('smart_enter',
         Icon(Icons.transit_enterexit), '智能回车', UserDataType.U_Bool,
@@ -157,14 +162,16 @@ class AppSettingFactory {
         'sync_enabled', Icon(Icons.format_quote), '同步作品', UserDataType.U_Bool,
         description: '据说有人担心投稿？',
         getter: () => false,
-        setter: (val) => us.setConfig('us/sync_enabled', us.syncEnabled = val)));
+        setter: (val) =>
+            us.setConfig('us/sync_enabled', us.syncEnabled = val)));
 
     group.addItem(new AppSettingItem(
         'rank_enabled', Icon(Icons.format_quote), '参与排行榜', UserDataType.U_Bool,
         description: '传说大神都是默默无闻的',
         getter: () => false,
-        setter: (val) => us.setConfig('us/rank_enabled', us.rankEnabled = val)));
-    
+        setter: (val) =>
+            us.setConfig('us/rank_enabled', us.rankEnabled = val)));
+
     return group;
   }
 
