@@ -153,6 +153,19 @@ class AccountInfo {
 
   int getRank() => _rank;
 
+  String getSimpleInfo() {
+    if (!isLogin()) {
+      return '';
+    }
+    return 'Lv.' +
+        _rank.toString() +
+        ', ' +
+        _allWords.toString() +
+        '字, ' +
+        _allTimes.toString() +
+        '分钟';
+  }
+
   /// 登录结束设置用户账号
   void setAccount(
       String userID, String username, String password, String nickname) {

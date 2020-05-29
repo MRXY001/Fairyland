@@ -213,8 +213,9 @@ class LoginWindow extends StatelessWidget {
         G.ac.setVIP(xmlI('VIP'), xmlI('VIP_deadline'));
         G.ac.setRoom(xml('roomID'), xml('roomname'));
         G.ac.setRank(xmlI('rank'));
+        G.ac.saveAccountInfo();
         Fluttertoast.showToast(msg: '欢迎回来，' + G.ac.getNickname());
-        Navigator.pop(context);
+        Navigator.pop(context, G.ac.getUserID());
       } else {
         String error = xml('ERROR');
         Fluttertoast.showToast(msg: error);
