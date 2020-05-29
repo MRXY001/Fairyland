@@ -244,9 +244,15 @@ class ChapterEditor extends TextField {
   void onModifyCallback(String oldStr, String newStr, int prevPos) {
   
   }
+  
+  void onlyInsertText(String text, {pos: -1}) {
+    prepareAnalyze();
+    _insertText(text, pos: pos);
+    finishAnalyze();
+  }
 
   /// 插入指定文本
-  void insertText(String text, {pos: -1}) {
+  void _insertText(String text, {pos: -1}) {
     if (pos == -1) {
       // 使用光标位置
       pos = _pos;
@@ -269,11 +275,11 @@ class ChapterEditor extends TextField {
   /// 末尾插入指定文本
   void appendText(String text, {newLine: false}) {
     if (newLine && !_text.endsWith('\n')) text = '\n' + text;
-    insertText(text, pos: _text.length);
+    _insertText(text, pos: _text.length);
   }
 
   /// 删掉指定位置的内容
-  void removeText(int start, int end) {
+  void _removeText(int start, int end) {
     if (_pos >= end) {
       _pos -= (end - start);
     } else if (_pos >= start) {
@@ -284,7 +290,7 @@ class ChapterEditor extends TextField {
     _textChanged = true;
   }
 
-  void movePos(int delta) {
+  void _movePos(int delta) {
     _pos = _pos + delta;
     if (_pos < 0) {
       _pos = 0;
@@ -423,7 +429,7 @@ class ChapterEditor extends TextField {
       punc = getCursorSentPunc(dot: true);
     }
     if (punc.isNotEmpty) {
-      insertText(punc);
+      _insertText(punc);
       /*ac->addUserWords();
   
       if (punc == "！")

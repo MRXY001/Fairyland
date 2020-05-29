@@ -153,12 +153,12 @@ class AccountInfo {
       var xmlI = (String tag) => StringUtil.getXmlInt(result, tag);
       if (xml('state').toUpperCase() == 'OK') {
         // 登录成功
-        setAccount(xml('userID'), xml('username'), xml('password'), xml('nickname'));
-        setIntegral(xmlI('allwords'), xmlI('alltimes'), xmlI('alluseds'), xmlI('allbonus'));
+        setAccount(xml('userID'), username, password, xml('nickname'));
+        setIntegral(xmlI('allwords'), xmlI('alltimes'), xmlI('alluseds'),
+            xmlI('allbonus'));
         setVIP(xmlI('VIP'), xmlI('VIP_deadline'));
         setRoom(xml('roomID'), xml('roomname'));
         setRank(xmlI('rank'));
-        saveAccountInfo();
         print('登录成功：' + _username);
       } else {
         String error = xml('ERROR');
@@ -172,6 +172,14 @@ class AccountInfo {
   /// 注册
   Future register(String username, String password,
       {String tel: '', String mail: '', String qq: '', String wx: ''}) async {}
+
+  void logout() async {
+    _userID = null;
+    _username = null;
+    _password = null;
+    _nickname = null;
+    saveAccountInfo();
+  }
 
   bool isLogin() => _userID != null && _userID.isNotEmpty;
 
@@ -220,7 +228,9 @@ class AccountInfo {
   }
 
   /// 设置用户数据
+  /// 如果本机有很高的字数，那么不修改本机文字
   void setIntegral(int words, int times, int useds, int bonus) {
+    if (this._allWords > words) return;
     this._allWords = words;
     this._allTimes = times;
     this._allUseds = useds;

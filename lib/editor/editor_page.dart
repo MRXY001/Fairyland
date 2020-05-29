@@ -5,6 +5,7 @@ import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:zefyr/zefyr.dart';
 
@@ -133,8 +134,24 @@ class _EditPageState extends State<EditorPage> {
           enabled: widget.chapterEditor.undoRedoManager.canRedo(),
         ),
         PopupMenuItem<String>(
+          value: "paste",
+          child: Text('粘贴'),
+        ),
+        PopupMenuItem<String>(
+          value: "copy",
+          child: Text('一键复制'),
+        ),
+        PopupMenuItem<String>(
+          value: "typeset",
+          child: Text('一键排版'),
+        ),
+        PopupMenuItem<String>(
           value: "word_count",
           child: Text('字数统计'),
+        ),
+        PopupMenuItem<String>(
+          value: "share",
+          child: Text('单章分享'),
         ),
       ],
       onSelected: (String value) {
@@ -146,6 +163,19 @@ class _EditPageState extends State<EditorPage> {
             break;
           case 'redo':
             widget.chapterEditor.redo();
+            break;
+          case 'paste':
+            widget.chapterEditor.onlyInsertText(Clipboard.getData(Clipboard.kTextPlain).toString());
+            break;
+          case 'copy':
+            Clipboard.setData(ClipboardData(text: widget.chapterEditor.getText()));
+            Fluttertoast.showToast(msg: '复制成功');
+            break;
+          case 'typeset':
+            // TODO: 一键排版
+            break;
+          case 'share':
+            // TODO: 单章分享
             break;
           default:
             {}
@@ -162,7 +192,7 @@ class _EditPageState extends State<EditorPage> {
         MaterialButton(
           onPressed: () {
             setState(() {
-              widget.chapterEditor.insertText('输入1');
+              widget.chapterEditor.onlyInsertText('输入1');
             });
           },
           child: Text('输入1'),
