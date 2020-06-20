@@ -181,19 +181,23 @@ class AppSettingWindowState extends State<AppSettingWindow> {
                 subtitle: subTitle == null
                     ? null
                     : Text(subTitle, overflow: TextOverflow.ellipsis),
-                trailing: _buildItemTail(item),
+                trailing: _buildItemTail(item, onTap),
                 onTap: onTap,
               );
             }));
   }
 
-  Widget _buildItemTail(AppSettingItem item) {
+  /// 设置每一个设置项的尾部显示状态控件
+  /// Bool类型是开关
+  Widget _buildItemTail(AppSettingItem item, var onTap) {
     if (item.dataType == UserDataType.U_Next) {
       return Icon(Icons.arrow_right);
     } else if (item.dataType == UserDataType.U_Bool) {
       return Switch(
         value: item.getter(),
-        onChanged: (val) {},
+        onChanged: (val) {
+          onTap();
+        },
       );
     } else if (item.dataType == UserDataType.U_Int) {
       return Text(item.getter().toString());

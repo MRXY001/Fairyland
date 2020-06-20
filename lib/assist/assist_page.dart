@@ -28,7 +28,7 @@ class _AssistPageState extends State<AssistPage> {
             actions: <Widget>[
               IconButton(
                 icon: Icon(Icons.announcement),
-                tooltip: '综合搜索',
+                tooltip: '咨询',
                 onPressed: () {},
               ),
               getAssistMenu()

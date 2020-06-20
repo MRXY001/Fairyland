@@ -213,7 +213,7 @@ class AccountInfo {
         getLevel().toString() +
         ' (第' +
         _rank.toString() +
-        ') ' +
+        '名) ' +
         _allWords.toString() +
         '字';
   }

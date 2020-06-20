@@ -120,22 +120,22 @@ class AppSettingFactory {
 
     group.addItem(new AppSettingItem(
         'smart_quote', Icon(Icons.format_quote), '智能引号', UserDataType.U_Bool,
-        getter: () => false,
+        getter: () => us.smartQuote,
         setter: (val) => us.setConfig('us/smart_quote', us.smartQuote = val)));
 
     group.addItem(new AppSettingItem(
         'smart_space', Icon(Icons.space_bar), '智能空格', UserDataType.U_Bool,
-        getter: () => false,
+        getter: () => us.smartSpace,
         setter: (val) => us.setConfig('us/smart_space', us.smartSpace = val)));
 
     group.addItem(new AppSettingItem('smart_enter',
         Icon(Icons.transit_enterexit), '智能回车', UserDataType.U_Bool,
-        getter: () => false,
+        getter: () => us.smartEnter,
         setter: (val) => us.setConfig('us/smart_enter', us.smartEnter = val)));
 
     group.addItem(new AppSettingItem(
         'auto_punc', Icon(Icons.bubble_chart), '自动句末标点', UserDataType.U_Bool,
-        getter: () => false,
+        getter: () => us.autoPunc,
         setter: (val) => us.setConfig('us/auto_punc', us.autoPunc = val)));
 
     return group;
