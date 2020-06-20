@@ -148,7 +148,7 @@ class AppSettingFactory {
     group.addItem(new AppSettingItem(
         'auto_save', Icon(Icons.format_quote), '自动保存', UserDataType.U_Bool,
         description: '每修改一个字就保存',
-        getter: () => false,
+        getter: () => us.autoSave,
         setter: (val) => us.setConfig('us/auto_save', us.autoSave = val)));
 
     return group;
@@ -161,14 +161,14 @@ class AppSettingFactory {
     group.addItem(new AppSettingItem(
         'sync_enabled', Icon(Icons.format_quote), '同步作品', UserDataType.U_Bool,
         description: '据说有人担心投稿？',
-        getter: () => false,
+        getter: () => us.syncEnabled,
         setter: (val) =>
             us.setConfig('us/sync_enabled', us.syncEnabled = val)));
 
     group.addItem(new AppSettingItem(
         'rank_enabled', Icon(Icons.format_quote), '参与排行榜', UserDataType.U_Bool,
         description: '传说大神都是默默无闻的',
-        getter: () => false,
+        getter: () => us.rankEnabled,
         setter: (val) =>
             us.setConfig('us/rank_enabled', us.rankEnabled = val)));
 
@@ -178,6 +178,8 @@ class AppSettingFactory {
   /// 初始化词库部分
   AppSettingGroups getLexiconGroup() {
     AppSettingGroups group = new AppSettingGroups();
+    
+    
 
     return group;
   }

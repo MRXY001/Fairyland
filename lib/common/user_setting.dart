@@ -32,36 +32,41 @@ class UserSetting {
   Color windowBackgroundColor;
   Color cardBackgroundColor;
   Color editorFontColor;
-  
+
   // ----------------------- 界面 -----------------------
   BookShelfMode bookShelfMode; // 书架模式
   BookCatalogMode bookCatalogMode; // 目录模式
-  bool bookCatalogWordCount;
+  bool bookCatalogWordCount; // 目录显示章节的字数
 
   // ----------------------- 编辑 -----------------------
-  int indentSpace;
-  int indentLine;
-  
+  int indentSpace; // 段首缩进全角空格数量
+  int indentLine; // 空行数量（不包括自己的空行）
+
   // ----------------------- 智能编辑 -----------------------
-  bool smartQuote;
-  bool smartSpace;
-  bool smartEnter;
-  bool autoPunc;
-  
+  bool smartQuote; // 智能引号
+  bool smartSpace; // 智能空格
+  bool smartEnter; // 智能回车
+  bool autoPunc; // 自动标点
+
   // ----------------------- 文字感知 -----------------------
 
   // ----------------------- 数据 -----------------------
-  bool autoSave;
-  
+  bool autoSave; // 每改一个字就自动保存
+
   // ----------------------- 同步 -----------------------
-  bool syncEnabled;
-  bool rankEnabled;
+  bool syncEnabled; // 同步数据
+  bool rankEnabled; // 同步积分并参加排行榜
 
   // ----------------------- 交互 -----------------------
 
   // ----------------------- 素材 -----------------------
 
   // ----------------------- 排版 -----------------------
+  bool typesetLongPara; // 长段落自动排版
+  bool typesetWordsBlank; // 单词和中文之间的空格
+  bool typesetArab; // 阿拉伯数字转中文
+  bool typesetFirstLetter; // 句子首字母大写
+  bool typesetPaste; // 粘贴排版
 
   /// =====================================================
   ///                       一些方法
@@ -69,22 +74,30 @@ class UserSetting {
 
   /// 读取已有的配置文件
   void readFromFile() {
-    bookShelfMode = BookShelfMode.values[getInt('us/book_shelf_mode', BookShelfMode.List.index)];
-    bookCatalogMode = BookCatalogMode.values[getInt('us/book_catalog_mode', BookCatalogMode.Tree.index)];
+    bookShelfMode = BookShelfMode
+        .values[getInt('us/book_shelf_mode', BookShelfMode.List.index)];
+    bookCatalogMode = BookCatalogMode
+        .values[getInt('us/book_catalog_mode', BookCatalogMode.Tree.index)];
     bookCatalogWordCount = getBool('us/book_catalog_word_count', false);
-    
+
     indentSpace = getInt('us/indent_space', 2);
     indentLine = getInt('us/indent_line', 1);
-    
+
     smartQuote = getBool('us/smart_quote', true);
     smartSpace = getBool('us/smart_space', true);
     smartEnter = getBool('us/smart_enter', true);
     autoPunc = getBool('us/auto_punc', true);
-    
+
     autoSave = getBool('us/auto_save', true);
-    
+
     syncEnabled = getBool('us/sync_enabled', true);
     rankEnabled = getBool('us/rank_enabled', true);
+
+    typesetLongPara = getBool('us/typesetLongPara', true);
+    typesetWordsBlank = getBool('us/typesetWordsBlank', true);
+    typesetArab = getBool('us/typesetArab', false);
+    typesetFirstLetter = getBool('us/typesetFirstLetter', false);
+    typesetPaste = getBool('us/typesetPaste', true);
   }
 
   // 运行时设置（不需要手动保存）
@@ -112,18 +125,17 @@ class UserSetting {
     }
     FileUtil.writeText(iniPath, config.toString());
   }
-  
+
   bool getBool(String key, bool def) {
     var s = getConfig(key, def);
     if (s is String)
       return !(s == '0' || s == '' || s.toLowerCase() == 'false');
     return s;
   }
-  
+
   int getInt(String key, int def) {
     var s = getConfig(key, def);
-    if (s is String)
-      return int.parse(s);
+    if (s is String) return int.parse(s);
     return s;
   }
 
