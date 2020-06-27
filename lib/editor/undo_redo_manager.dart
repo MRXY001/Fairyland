@@ -20,15 +20,17 @@ class EditOperator {
       this.dstStart,
       this.dstEnd});
 
-  bool isInput() => src==null && dst!=null;
+  bool isInput() => src == null && dst != null;
   
+  bool isDelete() => src != null && dst == null;
+
   void undo(TextEditingController controller) {
     String text = controller.text;
 
     int idx = -1;
     // 删除输入内容
     if (dstEnd != null && dstEnd > 0) {
-//      print('delete input: ' + dst);
+      //      print('delete input: ' + dst);
       text = text.substring(0, dstStart) + text.substring(dstEnd);
       if (src == null) {
         idx = dstStart;
@@ -36,7 +38,7 @@ class EditOperator {
     }
     // 插入删掉内容
     if (src != null) {
-//      print('insert delete: ' + src);
+      //      print('insert delete: ' + src);
       text = text.substring(0, srcStart) + src + text.substring(srcStart);
     }
 
@@ -54,7 +56,7 @@ class EditOperator {
     int idx = -1;
     // 删除输入内容
     if (srcEnd != null && srcEnd > 0) {
-//      print('delete delete: ' + src);
+      //      print('delete delete: ' + src);
       text = text.substring(0, srcStart) + text.substring(srcEnd);
       if (dst == null) {
         idx = srcStart;
@@ -62,7 +64,7 @@ class EditOperator {
     }
     // 插入输入内容
     if (dst != null) {
-//      print('insert insert: ' + dst);
+      //      print('insert insert: ' + dst);
       text = text.substring(0, dstStart) + dst + text.substring(dstStart);
       idx = dstStart + dst.length;
     }
@@ -130,25 +132,25 @@ class OperatorManager {
     int length = text.length;
     int start = controller.selection.start;
     int end = controller.selection.end;
-//    print('selection: ' + start.toString() + ' ' + end.toString());
+    //    print('selection: ' + start.toString() + ' ' + end.toString());
     // 保存记录
     if (length == preLength && preEnd == preStart) {
-      // 一样长，可能是选中后输入
+      // 一样长，可能是选中后输入或全文刷新
       preStart = start;
       preEnd = end;
-//      print('---------------------same-----------------');
+      //      print('---------------------same-----------------');
       return null;
     } else if (preEnd > -1 && preEnd != preStart) {
       // 选中内容的替换
       if (preText == text) {
         // 文本没改变，只是选择的内容改变了
-//        print('-----------------selection changed--------------');
+        //        print('-----------------selection changed--------------');
       } else if (end == start && start >= preStart) {
-//        print('---------------------selection replace---------------');
+        //        print('---------------------selection replace---------------');
         String src = preText.substring(preStart, preEnd);
         String dst = text.substring(preStart, start);
-//        print(src + '  ' + preStart.toString() + '~' + preEnd.toString());
-//        print(dst + '  ' + start.toString() + '~' + end.toString());
+        //        print(src + '  ' + preStart.toString() + '~' + preEnd.toString());
+        //        print(dst + '  ' + start.toString() + '~' + end.toString());
         undoOpts.add(EditOperator(
             src: src,
             srcStart: preStart,
@@ -158,27 +160,27 @@ class OperatorManager {
             dstEnd: start));
         redoOpts.clear();
       } else {
-//        print('------------------unknow selection replace----------------');
+        //        print('------------------unknow selection replace----------------');
       }
     } else if (length > preLength) {
       // 输入新内容；也可能是选中后替换为新内容
-//      print('---------------------insert-----------------');
+      //      print('---------------------insert-----------------');
       int delta = length - preLength;
       preStart = start - delta;
       String src = text.substring(preStart, start);
       undoOpts.add(EditOperator(dst: src, dstStart: preStart, dstEnd: start));
-//      print(src + '  ' + preStart.toString() + '~' + start.toString());
+      //      print(src + '  ' + preStart.toString() + '~' + start.toString());
       redoOpts.clear();
     } else {
       // 变短，比如是删除一部分
-//      print('---------------------delete-----------------');
+      //      print('---------------------delete-----------------');
       int delta = preLength - length;
       preStart = start;
       preEnd = start + delta;
-//      print('delete: ' + preStart.toString() + ' ' + preEnd.toString());
+      //      print('delete: ' + preStart.toString() + ' ' + preEnd.toString());
       String dst = preText.substring(preStart, preEnd);
       undoOpts.add(EditOperator(src: dst, srcStart: preStart, srcEnd: preEnd));
-//      print(dst + '  ' + preStart.toString() + '~' + preEnd.toString());
+      //      print(dst + '  ' + preStart.toString() + '~' + preEnd.toString());
       redoOpts.clear();
     }
 
@@ -187,7 +189,7 @@ class OperatorManager {
     preLength = length;
     preStart = start;
     preEnd = end;
-    
+
     return undoOpts.last;
   }
 

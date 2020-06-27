@@ -47,7 +47,7 @@ class ChapterEditor extends TextField {
   }
 
   /// =====================================================
-  ///                       外部操作
+  ///                       状态操作
   /// =====================================================
   void initContent(String content) {
     // TODO: 删除可撤销操作
@@ -112,13 +112,18 @@ class ChapterEditor extends TextField {
     EditOperator oper = undoRedoManager.onTextChanged(controller);
 
     // 正在输入的时候生效，并判断输入的内容
-//    if (oper != null && oper.isInput()) {
-    if (oper == null || oper.isInput()) {
+    if (oper != null && !isSystemChanging()) {
+//    if (oper == null || oper.isInput()) {
       beginSystemChanging();
       prepareAnalyze();
   
       // 开始分析
-      textAnalyze();
+//      textAnalyze();
+      if (oper.isInput()) {
+        onTextInput(oper.dst, oper.dstEnd);
+      } else if (oper.isDelete()) {
+        onTextDeleted(oper.src, oper.srcStart);
+      }
       
       // setText 有个操蛋的问题（也可能是输入法的原因）
       // 会延迟触发 onChanged，而且传的参数又是 setText 之前的旧文本
@@ -135,7 +140,37 @@ class ChapterEditor extends TextField {
   }
 
   /// =====================================================
-  ///                       整体操作
+  ///                       用户事件
+  /// =====================================================
+  
+  /// 文字输入事件
+  /// 输入text，修改后的位置为pos（原位置为pos-text.length）
+  /// 已经在 SystemChanging 里面，可以任意修改文本
+  void onTextInput(String text, int pos) {
+    // 检测符号
+    if (text.length == 1) {
+    
+    }
+    
+    // 自动标点
+    if (activeAutoPunc()) {
+      return ;
+    }
+    
+  }
+  
+  /// 文字删除事件
+  /// 删掉text，修改后的位置为pos（原位置=pos+text.length）
+  /// 已经在 SystemChanging 里面，可以任意修改文本
+  void onTextDeleted(String text, int pos) {
+    // 删除一个字符（可能是符号）
+    if (text.length == 1) {
+    
+    }
+  }
+
+  /// =====================================================
+  ///                       API封装
   /// =====================================================
 
   /// 设置文本
@@ -246,7 +281,7 @@ class ChapterEditor extends TextField {
   /// 文本分析过程
   /// 自动标点、标点替换、同音词替换、快捷输入等等
   void textAnalyze() {
-    if (activeAutoPunc()) {}
+  
   }
 
   /// 设置本次修改的变化
@@ -420,7 +455,6 @@ class ChapterEditor extends TextField {
 
   /// 插入标点
   bool _insertAIPunc() {
-    deb('插入标点');
     String punc;
 
     if (_left1 == "么") {
