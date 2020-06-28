@@ -24,7 +24,8 @@ class ChapterEditor extends TextField {
   int _selectionEnd;
   bool _textChanged;
   bool _posChanged;
-  String _left1, _left2, _left3, _right1;
+  String _left1, _left2, _left3, _right1, _right2;
+  bool _isInQuotes;
 
   ChapterEditor(
       {this.controller,
@@ -288,7 +289,7 @@ class ChapterEditor extends TextField {
     _textChanged = _posChanged = false;
     updateSurround();
   }
-  
+
   /// 更新光标附近的字符
   /// 通常用于增删光标附近的文字后，更新局部内容
   void updateSurround() {
@@ -296,6 +297,8 @@ class ChapterEditor extends TextField {
     _left2 = _pos > 1 ? _text.substring(_pos - 2, _pos - 1) : '';
     _left3 = _pos > 2 ? _text.substring(_pos - 3, _pos - 2) : '';
     _right1 = _pos < _text.length ? _text.substring(_pos, _pos + 1) : '';
+    _right1 =
+        _pos < _text.length - 1 ? _text.substring(_pos + 1, _pos + 2) : '';
   }
 
   /// 文本分析过程
@@ -527,8 +530,278 @@ class ChapterEditor extends TextField {
     return false;
   }
 
-  bool _smartQuote() {
-    return false;
+  void _smartQuote() {
+    // 判断是否为人物的第二句话（即双引号前面是逗号而不是冒号）
+    bool isSecondSaid = false;
+    if (ai.isChinese(_left1) ||
+        _left1 == "“" ||
+        _right1 == "“" ||
+        _right2 == "“") {
+      int pos = _pos;
+      if (pos > 4) {
+        if (pos == _text.length || _text.substring(pos, pos + 1) == "\n") pos--;
+        int nPos = _text.lastIndexOf("\n", pos);
+        if (nPos == -1) nPos = 0;
+        if (_left1 == "”")
+          pos -= 2;
+        else if (_right1 == "”") pos--;
+        int qPos = _text.lastIndexOf("”", pos);
+        if (qPos > nPos) // 前面有对双引号
+        {
+          int i = qPos;
+          bool isSent = true;
+          while (++i < pos) {
+            String cha = _text.substring(i, i + 1);
+            if (ai.isSentPunc(cha)) // 句中标点，不是连续的话，就没有必要用逗号了
+            {
+              isSent = false;
+              break;
+            }
+          }
+          if (isSent) {
+            isSecondSaid = true;
+          }
+        }
+      }
+    }
+
+    // 左右前后引号的位置
+    int qll, qlr, qrl, qrr, nl, nr;
+    qll = _text.lastIndexOf("“", _pos);
+    qlr = _text.lastIndexOf("”", _pos);
+    qrl = _text.indexOf("“", _pos);
+    qrr = _text.indexOf("”", _pos);
+    nl = _text.lastIndexOf("\n", _pos);
+    nr = _text.indexOf("\n", _pos);
+    if (nl > -1 && qll < nl) qll = -1;
+    if (nl > -1 && qlr < nl) qlr = -1;
+    if (nr > -1 && qrl > nr) qrl = -1;
+    if (nr > -1 && qrr > nr) qrr = -1;
+    bool isInQuotes = qlr > qrr;
+
+    // ==== 分析标点 ====
+    if (_left1 == "“") {
+      // ，“|    ：“|    汉“|    “|”    “|
+      if (_left2 == "，") {
+        _deleteText(_pos - 2, _pos - 1);
+        _insertText("：", pos: _pos - 1);
+        // ac->addUserWords();
+      } else if (_left2 == "：") {
+        _deleteText(_pos - 2, _pos - 1);
+      } else if (ai.isChinese(_left2)) {
+        _insertText("：", pos: _pos - 1);
+        // ac->addUserWords();
+      } else if (_right1 == "”") {
+        // 空引号
+        if (ai.isBlankChar(_left2) ||
+            ai.isBlankChar(_right2)) if (_left2 == "，" || _left2 == "：")
+          _deleteText(_pos - 2, _pos);
+        else
+          _deleteText(_pos - 1, _pos + 1);
+        else
+          _deleteText(_pos - 1, _pos);
+      } else if (ai.isBlankChar(_right1)) {
+        _insertText("”");
+        _moveCursor(-1);
+        // ac->addUserWords();
+      } else {
+        _moveCursor(-1);
+      }
+    } else if (_left1 == "”") {
+      // 。”|    汉”|     ”|
+      if (ai.isSentPunc(_left2)) {
+        _deleteText(_pos - 2, _pos - 1);
+        _moveCursor(-1);
+      } else if (ai.isChinese(_left2)) {
+        String punc = getCursorSentPunc(pos: _pos - 1);
+        _insertText(punc, pos: _pos - 1);
+        // ac->addUserWords();
+      } else {
+        int lPos = _pos - 1;
+        bool isOperator = false;
+        while (lPos-- > 0 && _text.substring(lPos, lPos + 1) != "\n")
+          if (_text.substring(lPos, lPos + 1) == "“") {
+            // 有前引号，则只是移动位置
+            _moveCursor(-1);
+            isOperator = true;
+            break;
+          } else if (_text.substring(lPos, lPos + 1) == "”") break;
+        if (!isOperator) {
+          // 如果什么都没有操作，可能前面就是空的内容，补全一个前引号
+          _moveCursor(-1);
+          _insertText("“");
+          // ac->addUserWords();
+        }
+      }
+    } else if (_right1 == "“") {
+      // 汉|“    ，|“    ：|“    |“
+      if (ai.isChinese(_left1)) {
+        if (isSecondSaid) {
+          _insertText("，");
+          // ac->addUserWords();
+        } else {
+          _insertText("：");
+          // ac->addUserWords();
+        }
+        if (_right2 == "”") {
+          _moveCursor(1);
+        }
+      } else if (_left1 == "，") {
+        _deleteText(_pos - 1, _pos);
+        _insertText("：");
+        if (_right2 == "”") {
+          _moveCursor(1);
+        }
+      } else if (_left1 == "；") {
+        _deleteText(_pos - 1, _pos);
+      } else if (ai.isBlankChar(_left1)) {
+        _moveCursor(1);
+      } else {
+        _moveCursor(1);
+      }
+    } else if (_right1 == "”") {
+      // 汉|”    。|”    ，|”
+      if (ai.isChinese(_left1)) {
+        bool usePunc = true;
+        int qPos = _text.lastIndexOf("“", _pos);
+        int nPos = _text.lastIndexOf("\n", _pos);
+        if (qPos > nPos + 1) {
+          // 前引号左边是中文时不增加标签
+          String cha = _text.substring(qPos - 1, qPos);
+          if (ai.isChinese(cha)) {
+            usePunc = false;
+          }
+        }
+        if (usePunc) // 需要插入标点
+        {
+          _insertText(getPunc2());
+          // ac->addUserWords();
+        }
+        _moveCursor(1);
+      } else if (_left1 == "。") {
+        _moveCursor(1);
+      } else if (_left1 == "，") {
+        _deleteText(_pos - 1, _pos);
+        _insertText(getPunc2());
+        _moveCursor(1);
+      } else {
+        _moveCursor(1);
+      }
+    } else if (qll <= qlr && qrl == -1 && qrr != -1) {
+      // 缺 前引号
+      _insertText("“");
+      // ac->addUserWords();
+    } else if (qll <= qlr && qrl > -1 && qrl > qrr) {
+      // 缺 前引号
+      _insertText("“");
+      // ac->addUserWords();
+    } else if (qll > qlr && qrl > -1 && qrr > qrl) {
+      // 缺 后引号
+      if (ai.isChinese(_left1)) {
+        if (ai.isSentPunc(_right1) && ai.isBlankChar(_right2))
+          _moveCursor(1);
+        else {
+          _insertText(getPunc2());
+          // ac->addUserWords();
+        }
+      }
+      _insertText("”");
+      // ac->addUserWords();
+    } else if (qll > qlr && qrr == -1) {
+      // 缺 后引号
+      if (ai.isChinese(_left1)) {
+        if (ai.isSentPunc(_right1) && ai.isBlankChar(_right2))
+          _moveCursor(1);
+        else {
+          _insertText(getPunc2());
+          // ac->addUserWords();
+        }
+      } else if (_left1 == "，") {
+        // 句子结尾
+        _deleteText(_pos - 1, _pos);
+        _insertText(getPunc2());
+        // ac->addUserWords();
+      }
+      _insertText("”");
+      // ac->addUserWords();
+    } else if (isInQuotes) {
+      // 添加或者删除单引号
+      qll = _text.lastIndexOf("‘", _pos);
+      qlr = _text.lastIndexOf("’", _pos);
+      qrl = _text.indexOf("‘", _pos);
+      qrr = _text.indexOf("’", _pos);
+      nl = _text.lastIndexOf("\n", _pos);
+      nr = _text.indexOf("\n", _pos);
+      if (nl > -1 && qll < nl) qll = -1;
+      if (nl > -1 && qlr < nl) qlr = -1;
+      if (nr > -1 && qrl > nr) qrl = -1;
+      if (nr > -1 && qrr > nr) qrr = -1;
+
+      if (_right1 == "’" || _right1 == "‘" || _right1 == "'") {
+        _moveCursor(1);
+      } else if (_left1 == "‘" || _left1 == "’") {
+        _moveCursor(-1);
+      } else if (qll <= qlr && qrl == -1 && qrr != -1) {
+        // 缺 前引号
+        _insertText("‘");
+        // ac->addUserWords();
+      } else if (qll <= qlr && qrl > -1 && qrl > qrr) {
+        // 缺 前引号
+        _insertText("‘");
+        // ac->addUserWords();
+      } else if (qll > qlr && qrl > -1 && qrr > qrl) {
+        // 缺 后引号
+        _insertText("’");
+        // ac->addUserWords();
+      } else if (qll > qlr && qrr == -1) {
+        // 缺 后引号
+        if (_left1 == "，") {
+          _deleteText(_pos - 1, _pos);
+          _insertText(getPunc2());
+          // ac->addUserWords();
+        }
+        _insertText("’");
+        // ac->addUserWords();
+      } else {
+        _insertText("‘’");
+        _moveCursor(-1);
+        // ac->addUserWords();
+      }
+    } else if (_left1 == "，") {
+      // ，|
+      _insertText("“”");
+      _moveCursor(-1);
+      // ac->addUserWords();
+    } else if (_left1 == "：") {
+      // ：|
+      _insertText("“”");
+      _moveCursor(-1);
+      // ac->addUserWords();
+    } else if (_right1 == "，" && _right2 == "“") {
+      // |，“
+      _deleteText(_pos, _pos + 1);
+      _insertText("：");
+      // ac->addUserWords();
+    } else if (_right1 == "：" && _right2 == "“") {
+      // |：“
+      _deleteText(_pos, _pos + 1);
+    } else if (ai.isChinese(_left1)) {
+      // 汉|    =>    汉：“”    汉，“”    汉“”
+      if (ai.isQuoteColon(_left1)) {
+        if (isSecondSaid)
+          _insertText("，");
+        else
+          _insertText("：");
+        // ac->addUserWords();
+      }
+      _insertText("“”");
+      _moveCursor(-1);
+      // ac->addUserWords();
+    } else {
+      _insertText("“”");
+      _moveCursor(-1);
+      // ac->addUserWords(2);
+    }
   }
 
   bool _smartSpace() {
@@ -668,8 +941,11 @@ class ChapterEditor extends TextField {
   String getPunc2() => getCursorSentPunc();
 
   /// 获取光标所在句子的标点
-  String getCursorSentPunc({bool dot: false}) {
-    int left = _pos, right = _pos;
+  String getCursorSentPunc({bool dot: false, int pos: -1}) {
+    if (pos == -1) {
+      pos = _pos;
+    }
+    int left = pos, right = pos;
     while (left > 0 && _text.substring(left - 1, left) != "\n") {
       left--;
     }
@@ -677,7 +953,6 @@ class ChapterEditor extends TextField {
       right++;
     }
     String para = _text.substring(left, right);
-    int pos = _pos;
 
     // 调AI获取标点
     String punc = ai.getPuncInPara(para, pos);
