@@ -131,6 +131,8 @@ class ChapterEditor extends TextField {
       // 因此需要想个办法解决
       finishAnalyze();
       endSystemChanging();
+      // 记录新变化至undoRedo，以便于连续的修改（不然变化会断层）
+      undoRedoManager.initUndoRedo(controller);
     }
 
     // 保存
