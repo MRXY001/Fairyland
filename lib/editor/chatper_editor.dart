@@ -930,8 +930,128 @@ class ChapterEditor extends TextField {
     return true;
   }
 
-  bool _smartEnter() {
-    return false;
+  void _smartEnter() {
+	  bool blankLineCut = false; // 空行后面暂时减少一行
+	
+	  // ==== 删除前后空白 ====
+	  int blankStart = _pos, blankEnd = _pos;
+	  while (blankStart > 0 && ai.isBlankChar2(_text.substring(blankStart-1, blankStart)))
+		  blankStart--;
+	  while (blankEnd < _text.length && ai.isBlankChar2(_text.substring(blankEnd, blankEnd+1)))
+		  blankEnd++;
+	  if (blankEnd > blankStart)
+		  _deleteText(blankStart, blankEnd);
+	
+	  // ==== 智能引号 ====
+	  if (_left1 == "“" && _right1 == "”")   // 空的双引号中间，删除
+			  {
+		  _deleteText(_pos - 1, _pos + 1);
+		  updateSurround();
+		  if (_left1 == "，" || _left1 == "：")
+		  {
+			  _deleteText(_pos - 1, _pos);
+		  }
+		  updateSurround();
+		  if (ai.isChinese(_left1))
+		  {
+			  String punc = getPunc2();
+			  _insertText(punc);
+			  // ac->addUserWords();
+		  }
+	  }
+	  else if (_left1 == "“" || _right1 == "“")   // 左1 是 前引号
+			  {
+		  if (_left1 == "“")
+		  {
+			  _moveCursor(-1);
+			  updateSurround();
+		  }
+		  if (ai.isChinese(_left1))    // 中文|”“
+				  {
+			  _insertText(":");
+			  // ac->addUserWords();
+		  }
+		  else if (_left1 == "，")   // 中文，|”“
+				  {
+			  _deleteText(_pos - 1, _pos);
+			  _insertText(":");
+			  // ac->addUserWords();
+		  }
+	  }
+	  else if (ai.isChinese(_left1) || (_left1 == "，" && ai.isChinese(_left2))) // 左1 是中文
+			  {
+		  if (_left1 == "，") // 逗号变成句末标点，先删除
+				  {
+			  _deleteText(_pos - 1, _pos);
+			  updateSurround();
+		  }
+		  if (ai.isSentPunc(_right1))   // 右1是句末标点，移动一位
+				  {
+			  _moveCursor(1);
+			  if ("-—…~".indexOf(_right1) > -1 && _right1 == _right2)   // 双标点，继续移动一位
+					  {
+				  _moveCursor(1);
+			  }
+			  updateSurround();
+		  }
+		  else // if (isBlankChar(_right1)) // 添加一个标点
+				  {
+			  bool enablePunc = true;
+			  if (G.us.smartEnterNoPunc.isNotEmpty)
+			  {
+				  int leftN = _text.lastIndexOf("\n", _pos - 1) + 1;
+				  String para = _text.substring(leftN, _pos);
+				  if (ai.canRegExp(para, G.us.smartEnterNoPunc))
+					  enablePunc = false;
+			  }
+			
+			  if (enablePunc)
+			  {
+				  String punc = getPunc2();
+				  _insertText(punc);
+				  // ac->addUserWords();
+				
+				  /* if (punc == "！")
+                    G.us.addClimaxValue(true);
+                else if (punc == "。" || punc == "？")
+                    G.us.addClimaxValue(false); */
+			  }
+		  }
+	  }
+	  else if (_left2 != "\n" &&  _left1 == "\n" && ai.isBlankChar(_right1))    // 段落下一行的空行，很可能是不小心点错了位置
+			  {
+		  blankLineCut = true;
+	  }
+	  else if (_right1 != "" && ai.isSymPairRight(_right1) && (_right2 == "" || _right2 == "\n"))
+	  {
+		  _moveCursor(1);
+		  updateSurround();
+	  }
+	
+	  // ==== 跳过还是填充引号 ====
+	  if (_right1 == "”")   // 右1 是 右引号
+			  {
+		  _moveCursor(1);
+	  }
+	  else if (isCursorInQuote(_text, _pos))   // 自动填充双引号
+			  {
+		  if (G.us.paraAfterQuote) // 多段后引号：插入后引号
+			  _insertText("”“");
+		  else // 只插入前引号
+			  _insertText("“");
+		  _moveCursor(-1);
+		  // ac->addUserWords();
+	  }
+	
+	  // ==== 修改缩进 ====
+	  String insText = "";
+	  int blankLineNum = G.us.indentLine;
+	  if (blankLineCut && blankLineNum > 0) blankLineNum--;
+	  for (int i = 0; i <= blankLineNum; i++)
+		  insText += "\n";
+	  for (int i = 0; i < G.us.indentSpace; i++)
+		  insText += "　";
+	  _insertText(insText);
   }
 
   /// 获取当前句子的标点
@@ -970,6 +1090,37 @@ class ChapterEditor extends TextField {
       left--;
     }
     return _text.substring(left, _pos);
+  }
+  
+  /// 光标是否在引号内
+  bool isCursorInQuote(String text, int pos) {
+	  if (pos > 0 && text.substring(pos-1,pos ) == "“")
+		  return true;
+	  if (pos < text.length && text.substring(pos, pos+1)=="”")
+		  return true;
+	
+	  // 获取段落的文本
+	  int lPos = text.lastIndexOf("\n",pos);
+	  int rPos = text.indexOf("\n", pos);
+	  // if (l_pos == -1) l_pos = 0;
+	  lPos++; // 不包括第一个前引号
+	  if (rPos == -1) rPos = text.length;
+	  if (rPos - lPos < 2) return false;
+	  text = text.substring(lPos, rPos);
+	  pos -= lPos;
+	
+	  // 搜索左右两边的最近的前后引号
+	  int llPos = text.lastIndexOf("“", pos);
+	  int lrPos = text.lastIndexOf("”", pos);
+	  int rlPos = text.indexOf("“", pos);
+	  int rrPos = text.indexOf("”", pos);
+	  if (llPos == -1) return false;                         // 没有前引号
+	  if (rrPos == -1) return false;                         // 没有后引号
+	  if (llPos <= lrPos) return false;                     // “”|
+	  if (rlPos > -1 && rlPos < rrPos) return false;       // |“”
+	  //if (lr_pos < ll_pos && rl_pos <= rr_pos) return true; // 接着前引号，但是没有后引号
+	
+	  return true;
   }
 
   /// 一键排版

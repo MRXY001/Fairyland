@@ -50,6 +50,8 @@ class UserSetting {
   bool autoPunc; // 自动标点
   String smartSpaceSpaceLeft; // 智能空格 符合左边表达式时强制空格
   String smartSpaceSpaceRight; // 智能空格 符合右边表达式时强制空格
+  String smartEnterNoPunc; // 智能回车 不添加标点的正则表达式
+  bool paraAfterQuote; // 多段后引号
 
   // ----------------------- 文字感知 -----------------------
 
@@ -93,6 +95,8 @@ class UserSetting {
     autoPunc = getBool('us/auto_punc', true);
     smartSpaceSpaceLeft = getStr('us/smart_space_space_left', '');
     smartSpaceSpaceRight = getStr('us/smart_space_space_right', '');
+    smartEnterNoPunc = getStr('us/smart_enter_no_punc', '');
+    paraAfterQuote = getBool('us/para_after_quote', false);
 
     autoSave = getBool('us/auto_save', true);
 
