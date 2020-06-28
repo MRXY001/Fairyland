@@ -115,7 +115,7 @@ class ChapterEditor extends TextField {
       //    if (oper == null || oper.isInput()) {
       beginSystemChanging();
       prepareAnalyze();
-      
+
       // 开始分析
       //      textAnalyze();
       if (oper.isInput()) {
@@ -147,6 +147,7 @@ class ChapterEditor extends TextField {
   void onTextInput(String text, int pos) {
     var undoInput = () {
       _deleteText(pos - text.length, pos);
+      updateSurround();
     };
 
     // 检测符号
@@ -285,6 +286,12 @@ class ChapterEditor extends TextField {
     _pos = _selectionStart = getSelection().start;
     _selectionEnd = getSelection().end;
     _textChanged = _posChanged = false;
+    updateSurround();
+  }
+  
+  /// 更新光标附近的字符
+  /// 通常用于增删光标附近的文字后，更新局部内容
+  void updateSurround() {
     _left1 = _pos > 0 ? _text.substring(_pos - 1, _pos) : '';
     _left2 = _pos > 1 ? _text.substring(_pos - 2, _pos - 1) : '';
     _left3 = _pos > 2 ? _text.substring(_pos - 3, _pos - 2) : '';
@@ -589,15 +596,15 @@ class ChapterEditor extends TextField {
         bool usePunc = true;
         int qPos = _text.lastIndexOf("“", _pos);
         int nPos = _text.lastIndexOf("\n", _pos > 0 ? _pos - 1 : _pos);
-        if (qPos > nPos + 1) // 前引号左边是中文时不增加
-        {
+        if (qPos > nPos + 1) {
+          // 前引号左边是中文时不增加
           String cha = _text.substring(qPos - 1, qPos);
           if (ai.isChinese(cha)) {
             usePunc = false;
           }
         }
-        if (usePunc) // 需要插入标点
-        {
+        if (usePunc) {
+          // 需要插入标点
           String punc = getPunc();
           _insertText(punc);
           // ac->addUserWords();
@@ -606,8 +613,8 @@ class ChapterEditor extends TextField {
             G.us.addClimaxValue(true);
           else if (punc == "！")
             G.us.addClimaxValue(false);*/
-        } else // 直接跳过引号
-        {
+        } else {
+          // 直接跳过引号
           _moveCursor(1);
         }
       } else {
@@ -652,15 +659,13 @@ class ChapterEditor extends TextField {
     return false;
   }
 
-  String getPunc() => getCursorSentPunc();
+  /// 获取当前句子的标点
+  /// 句号转变为逗号
+  String getPunc() => getCursorSentPunc(dot: true);
 
-  String getPunc2() {
-    String p = getPunc();
-    if (p == "。") {
-      return "，";
-    }
-    return p;
-  }
+  /// 获取当前句子的标点
+  /// 不使用小段落，强制断句
+  String getPunc2() => getCursorSentPunc();
 
   /// 获取光标所在句子的标点
   String getCursorSentPunc({bool dot: false}) {
@@ -676,7 +681,7 @@ class ChapterEditor extends TextField {
 
     // 调AI获取标点
     String punc = ai.getPuncInPara(para, pos);
-    if (dot && punc == '，') return '。';
+    if (dot && punc == '。') return '，';
     return punc;
   }
 

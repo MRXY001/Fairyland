@@ -66,8 +66,11 @@ class NovelAI {
       desc = para.substring(left, right);
     }
 
-    return getTalkTone(
+    String punc = getTalkTone(
         sent, sent2, getDescTone(desc), left1, left2, left3, inQuote);
+    if (punc == '')
+      return '。';
+    return punc;
   }
 
   /// 获取句子语气
@@ -265,6 +268,7 @@ class NovelAI {
   }
 
   /// 获取句子标点
+  /// 如果未检测到确定的标点，则返回空（理应为默认）
   String getTalkTone(String sent, String sent2, int tone, String left1,
       String left2, String left3, bool inQuote) {
     String punc = "";
@@ -1571,7 +1575,7 @@ class NovelAI {
         punc = "！";
       else {}
     } else {}
-
+    
     return punc;
   }
 
