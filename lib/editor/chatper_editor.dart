@@ -115,7 +115,7 @@ class ChapterEditor extends TextField {
       //    if (oper == null || oper.isInput()) {
       beginSystemChanging();
       prepareAnalyze();
-
+      
       // 开始分析
       //      textAnalyze();
       if (oper.isInput()) {
@@ -154,16 +154,16 @@ class ChapterEditor extends TextField {
       if (text == " " && G.us.smartSpace) {
         undoInput();
         _smartSpace();
-        return ;
+        return;
       } else if ((text == "“" || text == "”" || text == "\"") &&
           G.us.smartQuote) {
         undoInput();
         activeSmartQuote();
-        return ;
+        return;
       } else if (text == "\n" && G.us.smartEnter) {
         undoInput();
         activeSmartEnter();
-        return ;
+        return;
       }
     }
 
@@ -224,8 +224,9 @@ class ChapterEditor extends TextField {
 
   /// 设置光标位置
   void setPosition(int pos, {aim: -1}) {
-    controller.selection =
-        TextSelection.fromPosition(TextPosition(offset: pos));
+    controller.selection = TextSelection.fromPosition(TextPosition(
+        affinity: TextAffinity.upstream, // 必须要上游，downstream不行
+        offset: pos));
   }
 
   /// 是否选中了文本
@@ -281,7 +282,7 @@ class ChapterEditor extends TextField {
   void prepareAnalyze() {
     _text = getText();
     _length = _text.length;
-    _selectionStart = _pos = getSelection().start;
+    _pos = _selectionStart = getSelection().start;
     _selectionEnd = getSelection().end;
     _textChanged = _posChanged = false;
     _left1 = _pos > 0 ? _text.substring(_pos - 1, _pos) : '';
@@ -529,145 +530,119 @@ class ChapterEditor extends TextField {
     int leftN = _text.lastIndexOf("\n", _pos) + 1;
     String leftText = _text.substring(leftN, _pos);
     int rightN = _text.indexOf("\n", _pos);
-    if (rightN == -1)
-      rightN = _text.length;
+    if (rightN == -1) rightN = _text.length;
     String rightText = _text.substring(_pos, rightN);
-    if (G.us.smartSpaceSpaceLeft.isNotEmpty && ai.canRegExp(leftText, G.us.smartSpaceSpaceLeft))
-        blackLeft = true;
-    else if (G.us.smartSpaceSpaceRight.isNotEmpty && ai.canRegExp(rightText, G.us.smartSpaceSpaceRight))
-        blackRight = true;
-    if (blackLeft || blackRight)
-      return false;
+    if (G.us.smartSpaceSpaceLeft.isNotEmpty &&
+        ai.canRegExp(leftText, G.us.smartSpaceSpaceLeft))
+      blackLeft = true;
+    else if (G.us.smartSpaceSpaceRight.isNotEmpty &&
+        ai.canRegExp(rightText, G.us.smartSpaceSpaceRight)) blackRight = true;
+    if (blackLeft || blackRight) return false;
 
-    if (_left1 == "" || _left1 == "\n")   // 增加缩进
-        {
+    if (_left1 == "" || _left1 == "\n") {
+      // 增加缩进
       String insText = "";
-      for (int i = 0; i < G.us.indentSpace; i++)
-        insText += "　";
+      for (int i = 0; i < G.us.indentSpace; i++) insText += "　";
       _insertText(insText);
-    }
-    else if (_left1 == "“" && _right1 == "”")   // 空的引号中间
-        {
+    } else if (_left1 == "“" && _right1 == "”") {
+      // 空的引号中间
       _deleteText(_pos - 1, _pos + 1);
-      if (_left2 == "：")
-      {
+      if (_left2 == "：") {
         _deleteText(_pos - 1, _pos);
       }
-      if (ai.isChinese(_left1))
-      {
+      if (ai.isChinese(_left1)) {
         String punc = getPunc();
         _insertText(punc);
         // ac->addUserWords();
       }
-    }
-    else if (_right1 == "，")
-    {
+    } else if (_right1 == "，") {
       _moveCursor(1);
-    }
-    else if (_left1 == "，")   // 逗号变句号
-        {
-      if (_right1 == "“")
-      {
+    } else if (_left1 == "，") {
+      // 逗号变句号
+      if (_right1 == "“") {
         _moveCursor(1);
-      }
-      else
-      {
+      } else {
         _deleteText(_pos - 1, _pos);
         String punc = getPunc2();
         _insertText(punc);
         // ac->addUserWords();
-      
+
         /*if (punc == "！")
           G.us.addClimaxValue(true);
         else if (punc == "！")
           G.us.addClimaxValue(false);*/
       }
-    }
-    else if (ai.isSentPunc(_right1))   // 跳过标点
-        {
+    } else if (ai.isSentPunc(_right1)) {
+      // 跳过标点
       _moveCursor(1);
-    }
-    else if (ai.isEnglish(_left1) || ai.isNumber(_left1) || ai.isEnglish(_right1) || ai.isNumber(_right1))
-    {
+    } else if (ai.isEnglish(_left1) ||
+        ai.isNumber(_left1) ||
+        ai.isEnglish(_right1) ||
+        ai.isNumber(_right1)) {
       _insertText(" ");
-    }
-    else if (ai.isASCIIPunc(_left1))
-    {
+    } else if (ai.isASCIIPunc(_left1)) {
       _insertText(" ");
-    }
-    else if (ai.isChinese(_left1))   // 添加标点
-        {
-      if (_right1 == "”")   // 判断需不需要插入一个标点
-          {
+    } else if (ai.isChinese(_left1)) {
+      // 添加标点
+      if (_right1 == "”") {
+        // 判断需不需要插入一个标点
         bool usePunc = true;
         int qPos = _text.lastIndexOf("“", _pos);
         int nPos = _text.lastIndexOf("\n", _pos > 0 ? _pos - 1 : _pos);
         if (qPos > nPos + 1) // 前引号左边是中文时不增加
-            {
+        {
           String cha = _text.substring(qPos - 1, qPos);
-          if (ai.isChinese(cha))
-          {
+          if (ai.isChinese(cha)) {
             usePunc = false;
           }
         }
-        if (usePunc)   // 需要插入标点
-            {
+        if (usePunc) // 需要插入标点
+        {
           String punc = getPunc();
           _insertText(punc);
           // ac->addUserWords();
-        
+
           /*if (punc == "！")
             G.us.addClimaxValue(true);
           else if (punc == "！")
             G.us.addClimaxValue(false);*/
-        }
-        else   // 直接跳过引号
-            {
+        } else // 直接跳过引号
+        {
           _moveCursor(1);
         }
-      }
-      else   // 插入一个标点
-          {
+      } else {
+        // 插入一个标点
         String punc = getPunc();
         _insertText(punc);
         // ac->addUserWords();
-      
+
         /* if (punc == "！")
             	G.us.addClimaxValue(true);
             else if (punc == "！")
             	G.us.addClimaxValue(false); */
       }
-    }
-    else if (_right1 == "”")
-    {
+    } else if (_right1 == "”") {
       _moveCursor(1);
-    }
-    else if (ai.isSentPunc(_left1) && _left1 != "，" && (_right1 != "" && ai.isSymPairRight(_right1)) )
-    {
+    } else if (ai.isSentPunc(_left1) &&
+        _left1 != "，" &&
+        (_right1 != "" && ai.isSymPairRight(_right1))) {
       _moveCursor(1);
-    }
-    else if (G.us.spaceQuotes && (_left1 == "　" || ai.isSentPunc(_left1)) && _right1 != "”")   // 空格引号
-        {
+    } else if (G.us.spaceQuotes &&
+        (_left1 == "　" || ai.isSentPunc(_left1)) &&
+        _right1 != "”") {
+      // 空格引号
       _insertText("“”");
       _moveCursor(-1);
       // ac->addUserWords(2);
-    }
-    else if (ai.isSentPunc(_left1) && _left1 != "，") // 句末标点 变成 逗号，或者跳转
-        {
+    } else if (ai.isSentPunc(_left1) && _left1 != "，") {
+      // 句末标点 变成 逗号，或者跳转
       _deleteText(_pos - 1, _pos);
       _insertText("，");
       // ac->addUserWords();
-    }
-    else if (_left1 == "　")
-    {
+    } else if (_left1 == "　") {
       _insertText("　");
-    }
-    else if (_left1 == " ")
-    {
-      _insertText(" ");
-    }
-    else   // 普通空格
-        {
+    } else {
+      // 普通空格
       _insertText(" ");
     }
     return true;
@@ -676,9 +651,9 @@ class ChapterEditor extends TextField {
   bool _smartEnter() {
     return false;
   }
-  
+
   String getPunc() => getCursorSentPunc();
-  
+
   String getPunc2() {
     String p = getPunc();
     if (p == "。") {
