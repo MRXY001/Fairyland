@@ -157,14 +157,14 @@ class ChapterEditor extends TextField {
         undoInput();
         _smartSpace();
         return;
-      } else if ((text == "“" || text == "”" || text == "\"") &&
+      } else if ((text == "“" || text == "”" || text == "‘" || text == "’") &&
           G.us.smartQuote) {
         undoInput();
-        activeSmartQuote();
+        _smartQuote();
         return;
       } else if (text == "\n" && G.us.smartEnter) {
         undoInput();
-        activeSmartEnter();
+        _smartEnter();
         return;
       }
     }
