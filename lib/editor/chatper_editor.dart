@@ -1077,7 +1077,7 @@ class ChapterEditor extends TextField {
     String para = _text.substring(left, right);
 
     // 调AI获取标点
-    String punc = ai.getPuncInPara(para, pos);
+    String punc = ai.getPuncInPara(para, pos-left);
     if (dot && punc == '。') return '，';
     return punc;
   }
