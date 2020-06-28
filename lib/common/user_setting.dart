@@ -45,8 +45,11 @@ class UserSetting {
   // ----------------------- 智能编辑 -----------------------
   bool smartQuote; // 智能引号
   bool smartSpace; // 智能空格
+  bool spaceQuotes; // 空格引号
   bool smartEnter; // 智能回车
   bool autoPunc; // 自动标点
+  String smartSpaceSpaceLeft; // 智能空格 符合左边表达式时强制空格
+  String smartSpaceSpaceRight; // 智能空格 符合右边表达式时强制空格
 
   // ----------------------- 文字感知 -----------------------
 
@@ -85,8 +88,11 @@ class UserSetting {
 
     smartQuote = getBool('us/smart_quote', true);
     smartSpace = getBool('us/smart_space', true);
+    spaceQuotes = getBool('us/space_quotes', true);
     smartEnter = getBool('us/smart_enter', true);
     autoPunc = getBool('us/auto_punc', true);
+    smartSpaceSpaceLeft = getStr('us/smart_space_space_left', '');
+    smartSpaceSpaceRight = getStr('us/smart_space_space_right', '');
 
     autoSave = getBool('us/auto_save', true);
 
@@ -137,6 +143,11 @@ class UserSetting {
     var s = getConfig(key, def);
     if (s is String) return int.parse(s);
     return s;
+  }
+  
+  String getStr(String key, String def) {
+    var s = getConfig(key, def);
+    return s.toString();
   }
 
   /// 读取设置，不存在则为空
