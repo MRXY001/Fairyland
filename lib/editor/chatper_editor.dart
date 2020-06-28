@@ -297,7 +297,7 @@ class ChapterEditor extends TextField {
     _left2 = _pos > 1 ? _text.substring(_pos - 2, _pos - 1) : '';
     _left3 = _pos > 2 ? _text.substring(_pos - 3, _pos - 2) : '';
     _right1 = _pos < _text.length ? _text.substring(_pos, _pos + 1) : '';
-    _right1 =
+    _right2 =
         _pos < _text.length - 1 ? _text.substring(_pos + 1, _pos + 2) : '';
   }
 
