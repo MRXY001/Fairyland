@@ -35,7 +35,7 @@ class AppSettingFactory {
         description: '智能标点、同音词覆盖、标点覆盖', nextGroups: getEditorAIGroup()));
 
     asg.addItem(new AppSettingItem(
-        'appearance', null, '文字感知', UserDataType.U_Next,
+        'appearance', null, '内容感知', UserDataType.U_Next,
         description: '情绪滤镜、高潮模式', nextGroups: getEditorAIGroup()));
 
     asg.addGroup('其他');
@@ -72,6 +72,7 @@ class AppSettingFactory {
   /// 初始化界面部分
   AppSettingGroups getAppearanceGroup() {
     AppSettingGroups group = new AppSettingGroups();
+    
     var initAppearanceItems = (index) => ['列表', '页面', '网格'][index.index];
     group.addItem(new AppSettingItem(
         'book_catalog_mode', Icon(Icons.list), '目录风格', UserDataType.U_Enum,
@@ -80,7 +81,6 @@ class AppSettingFactory {
         getter: initAppearanceItems,
         setter: (val) {
           us.bookShelfMode = val;
-          us.setConfig('us/book_shelf_mode', val.index);
         }));
 
     var bookCatalogModeToString = (index) => ['树状', '单层'][index.index];
@@ -91,8 +91,18 @@ class AppSettingFactory {
         getter: bookCatalogModeToString,
         setter: (val) {
           us.bookCatalogMode = val;
-          us.setConfig('us/book_catalog_mode', val.index);
         }));
+
+    var restartPageIndex = (index) => ['自动', '目录', '写作', '助手'][index.index];
+    group.addItem(new AppSettingItem(
+      'restart_page_index', Icon(Icons.pages), '默认页面', UserDataType.U_Enum,
+      showedValue: ()=>restartPageIndex(us.restartPageIndex),
+      data: RestartPageIndex.values,
+      getter: restartPageIndex,
+      setter: (val) {
+        us.restartPageIndex = val;
+      }
+    ));
 
     return group;
   }
@@ -107,7 +117,7 @@ class AppSettingFactory {
         setter: (val) =>
             us.setConfig('us/indent_space', us.indentSpace = val)));
     group.addItem(new AppSettingItem('indent_line',
-        Icon(Icons.format_line_spacing), '空行数量', UserDataType.U_Int,
+        Icon(Icons.format_line_spacing), '段落空行', UserDataType.U_Int,
         getter: () => us.indentLine,
         setter: (val) => us.setConfig('us/indent_line', us.indentLine = val)));
 
@@ -121,24 +131,36 @@ class AppSettingFactory {
     group.addItem(new AppSettingItem(
         'smart_quote', Icon(Icons.format_quote), '智能引号', UserDataType.U_Bool,
         getter: () => us.smartQuote,
-        setter: (val) => us.setConfig('us/smart_quote', us.smartQuote = val)));
+        setter: (val) => us.smartQuote = val));
 
     group.addItem(new AppSettingItem(
         'smart_space', Icon(Icons.space_bar), '智能空格', UserDataType.U_Bool,
         getter: () => us.smartSpace,
-        setter: (val) => us.setConfig('us/smart_space', us.smartSpace = val)));
+        setter: (val) => us.smartSpace = val));
 
     group.addItem(new AppSettingItem('smart_enter',
         Icon(Icons.transit_enterexit), '智能回车', UserDataType.U_Bool,
         getter: () => us.smartEnter,
-        setter: (val) => us.setConfig('us/smart_enter', us.smartEnter = val)));
+        setter: (val) => us.smartEnter = val));
 
     group.addItem(new AppSettingItem(
         'auto_punc', Icon(Icons.bubble_chart), '自动句末标点', UserDataType.U_Bool,
         getter: () => us.autoPunc,
-        setter: (val) => us.setConfig('us/auto_punc', us.autoPunc = val)));
+        setter: (val) => us.autoPunc = val));
 
     return group;
+  }
+  
+  /// 初始化内容感知部分
+  AppSettingGroups getContentPerceptionGroup() {
+    AppSettingGroups group = new AppSettingGroups();
+    
+    return group;
+
+    group.addItem(new AppSettingItem(
+        'emotion_filter', Icon(Icons.scatter_plot), '情绪滤镜', UserDataType.U_Bool,
+        getter: () => us.emotionFilter,
+        setter: (val) => us.emotionFilter = val));
   }
 
   /// 初始化数据部分
@@ -149,7 +171,7 @@ class AppSettingFactory {
         'auto_save', Icon(Icons.format_quote), '自动保存', UserDataType.U_Bool,
         description: '每修改一个字就保存',
         getter: () => us.autoSave,
-        setter: (val) => us.setConfig('us/auto_save', us.autoSave = val)));
+        setter: (val) => us.autoSave = val));
 
     return group;
   }
@@ -163,14 +185,14 @@ class AppSettingFactory {
         description: '据说有人担心投稿？',
         getter: () => us.syncEnabled,
         setter: (val) =>
-            us.setConfig('us/sync_enabled', us.syncEnabled = val)));
+            us.syncEnabled = val));
 
     group.addItem(new AppSettingItem(
         'rank_enabled', Icon(Icons.format_quote), '参与排行榜', UserDataType.U_Bool,
         description: '传说大神都是默默无闻的',
         getter: () => us.rankEnabled,
         setter: (val) =>
-            us.setConfig('us/rank_enabled', us.rankEnabled = val)));
+            us.rankEnabled = val));
 
     return group;
   }
@@ -178,8 +200,6 @@ class AppSettingFactory {
   /// 初始化词库部分
   AppSettingGroups getLexiconGroup() {
     AppSettingGroups group = new AppSettingGroups();
-    
-    
 
     return group;
   }

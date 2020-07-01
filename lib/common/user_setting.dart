@@ -54,7 +54,8 @@ class UserSetting {
   String smartEnterNoPunc; // 智能回车 不添加标点的正则表达式
   bool paraAfterQuote; // 多段后引号
 
-  // ----------------------- 文字感知 -----------------------
+  // ----------------------- 内容感知 -----------------------
+  bool emotionFilter;
 
   // ----------------------- 数据 -----------------------
   bool autoSave; // 每改一个字就自动保存
@@ -100,6 +101,8 @@ class UserSetting {
     smartEnterNoPunc = getStr('us/smart_enter_no_punc', '');
     paraAfterQuote = getBool('us/para_after_quote', false);
 
+    emotionFilter = getBool('us/emotion_filter', true);
+    
     autoSave = getBool('us/auto_save', true);
 
     syncEnabled = getBool('us/sync_enabled', true);
