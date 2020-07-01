@@ -5,6 +5,7 @@ import 'package:ini/ini.dart';
 
 enum BookShelfMode { List, Page, Grid }
 enum BookCatalogMode { Tree, Flat }
+enum RestartPageIndex { Auto, Catalog, Editor, Assist }
 
 class UserSetting {
   UserSetting({@required this.iniPath}) {
@@ -63,6 +64,7 @@ class UserSetting {
   bool rankEnabled; // 同步积分并参加排行榜
 
   // ----------------------- 交互 -----------------------
+  RestartPageIndex restartPageIndex;
 
   // ----------------------- 素材 -----------------------
 
@@ -102,6 +104,9 @@ class UserSetting {
 
     syncEnabled = getBool('us/sync_enabled', true);
     rankEnabled = getBool('us/rank_enabled', true);
+
+    restartPageIndex = RestartPageIndex
+        .values[getInt('us/restart_page_index', 0)];
 
     typesetLongPara = getBool('us/typesetLongPara', true);
     typesetWordsBlank = getBool('us/typesetWordsBlank', true);
@@ -148,7 +153,7 @@ class UserSetting {
     if (s is String) return int.parse(s);
     return s;
   }
-  
+
   String getStr(String key, String def) {
     var s = getConfig(key, def);
     return s.toString();
