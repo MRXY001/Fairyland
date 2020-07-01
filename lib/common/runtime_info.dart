@@ -14,9 +14,10 @@ class RuntimeInfo {
   String recyclesPath;
   String recyclesBooksPath; // 回收站路径
 
-  // 运行时 Key
+  // 运行时 Key、index
   GlobalKey<NavigatorState> navigatorKey = GlobalKey(); // 获取全局context
   GlobalKey<ScaffoldState> mainHomeKey;
+  int mainPageIndex = 0;
 
   // 当前配置
   String currentBookName;

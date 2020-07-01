@@ -1,3 +1,4 @@
+import 'package:fairyland/common/global.dart';
 import 'package:flutter/material.dart';
 
 /// 保存页面的List
@@ -32,7 +33,7 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar>
 
   //  MainPageChangedCallback get pageChangedCallback => widget.pageChangedCallback;
 
-  int selectedIndex = 0;
+  int selectedIndex = G.rt.mainPageIndex;
   int aimIndex = -1;
   static const double BAR_HEIGHT = 60;
   static const double INDICATOR_HEIGHT = 2;
@@ -44,7 +45,6 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar>
 
   @override
   void initState() {
-    _select(selectedIndex);
     controller.addListener(() {
       setState(() {
         final pageWidth = MediaQuery.of(context).size.width;
@@ -57,22 +57,6 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar>
         // controller.offset is pixel of screen width
         // -1: align left, 0 align center, 1 align right
         indicatorAlignX = -1 + controller.offset / width * 2 / (items.length-1);
-        /*switch (items.length) {
-          case 2:
-            indicatorAlignX = -1 + controller.offset / width * 2;
-            break;
-          case 3:
-            indicatorAlignX = -1 + controller.offset / width;
-            break;
-          case 4:
-            indicatorAlignX = -1 + controller.offset / width * 2 / 3;
-            break;
-          case 5:
-            indicatorAlignX = -1 + controller.offset / width * 2 / 4;
-            break;
-          default:
-            indicatorAlignX = -1 + controller.offset / width;
-        }*/
 
         if (aimIndex == selectedIndex) {
           // 点击按钮跳转进来的
@@ -84,6 +68,9 @@ class _TitledBottomNavigationBarState extends State<TitledBottomNavigationBar>
         }
       });
     });
+
+    indicatorAlignX = -1 + (selectedIndex * 2)/ (items.length-1);
+    
     super.initState();
   }
 

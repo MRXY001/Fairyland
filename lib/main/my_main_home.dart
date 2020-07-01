@@ -67,6 +67,7 @@ class _MyHomePageState extends State<MyHomePage>
 		} else {
 			pageIndex = G.us.restartPageIndex.index - 1;
 		}
+		G.rt.mainPageIndex = pageIndex;
 		
 		pageController = PageController(initialPage: pageIndex);
 		
