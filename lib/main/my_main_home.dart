@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage>
 			renameChapterCallback: _renameChapterCallback,
 			deleteChapterCallback: _deleteChapterCallback,
 		);
-		editorPage = new EditorPage();
+		editorPage = new EditorPage(restoreOpeningChapter: _restoreOpeningChapterCallback,);
 		assistPage = new AssistPage();
 		chapterEditor = editorPage.chapterEditor;
 		_pages = <PageBean>[
@@ -98,6 +98,7 @@ class _MyHomePageState extends State<MyHomePage>
 	/// 让用户觉得没有彻底关闭似的
 	void _restoreRecent() {
 	
+		
 	}
 	
 	@override
@@ -142,6 +143,7 @@ class _MyHomePageState extends State<MyHomePage>
 				editorPage.myState.setState(() {});
 			}
 		});
+		G.us.setConfig('recent/opening_chapter', chapter.id);
 	}
 	
 	/// 重命名章节 callback
@@ -155,6 +157,26 @@ class _MyHomePageState extends State<MyHomePage>
 		// 如果是正在编辑的章节
 		if (editorPage.currentChapter == chapter) {
 			editorPage.closeChapter();
+			G.us.setConfig('recent/opening_chapter', '');
 		}
 	}
+	
+	/// 编辑器恢复上次打开的章节
+	void _restoreOpeningChapterCallback() {
+		
+		Future.delayed(const Duration(milliseconds: 100), () {
+			print(dirPage.state != null);
+			// 恢复上次打开的作品
+			String chapterId = G.us.getStr('recent/opening_chapter', '');
+			if (chapterId != null && chapterId.isNotEmpty) {
+				print('_restoreOpeningChapterCallback');
+//						  dirPage.openChapterById(chapterId);
+			}
+			setState(() {
+			
+			});
+		});
+		
+	}
+	
 }

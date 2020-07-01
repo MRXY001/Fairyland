@@ -16,7 +16,7 @@ import 'novel_ai.dart';
 
 // ignore: must_be_immutable
 class EditorPage extends StatefulWidget {
-  EditorPage({Key key}) : super(key: key) {
+  EditorPage({Key key, this.restoreOpeningChapter}) : super(key: key) {
     _editController = new TextEditingController();
     chapterEditor = new ChapterEditor(
       controller: _editController,
@@ -31,6 +31,9 @@ class EditorPage extends StatefulWidget {
   VCItem currentChapter; // 当前打开的章节
   String savedPath;
   State<StatefulWidget> myState;
+  
+  // 回调方法
+  final restoreOpeningChapter;
 
   @override
   State<StatefulWidget> createState() {
@@ -62,6 +65,15 @@ class EditorPage extends StatefulWidget {
 }
 
 class _EditPageState extends State<EditorPage> {
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    print('init editor page state');
+    widget.restoreOpeningChapter();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

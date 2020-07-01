@@ -120,7 +120,8 @@ class BookObject {
       } else if (item.isChapter()) {
         format = config.chapterDisplayFormat;
       }
-      item.setDisplayName(format.replaceAll('%1', number).replaceAll('%2', name));
+      item.setDisplayName(
+          format.replaceAll('%1', number).replaceAll('%2', name));
     } else {
       item.setDisplayName(item.name);
     }
@@ -181,6 +182,16 @@ class BookObject {
       }
     }
     return true;
+  }
+
+  VCItem getChapterById(String id) {
+    for (int i = 0; i < catalog.length; i++) {
+      VCItem item = catalog[i].getChapterById(id);
+      if (item != null) {
+        return item;
+      }
+    }
+    return null;
   }
 }
 
@@ -335,6 +346,32 @@ class VCItem {
       });
     }
     return item;
+  }
+
+  VCItem getChapterById(String id) {
+    if (this.isChapter()) {
+      if (this.id == id) {
+        return this;
+      } else {
+        return null;
+      }
+    }
+    if (this.isVolume()) {
+      for (int i = 0; i < vcList.length; i++) {
+        VCItem item = vcList[i];
+        if (item.isChapter()) {
+          if (item.id == id) {
+            return item;
+          }
+        } else if (item.isVolume()) {
+          item = item.getChapterById(id);
+          if (item != null) {
+            return item;
+          }
+        }
+      }
+    }
+    return null;
   }
 }
 

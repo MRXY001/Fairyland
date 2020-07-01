@@ -75,7 +75,7 @@ class AppSettingFactory {
     
     var initAppearanceItems = (index) => ['列表', '页面', '网格'][index.index];
     group.addItem(new AppSettingItem(
-        'book_catalog_mode', Icon(Icons.list), '目录风格', UserDataType.U_Enum,
+        'book_catalog_mode', Icon(Icons.list), '书架风格', UserDataType.U_Enum,
         showedValue: () => initAppearanceItems(us.bookShelfMode),
         data: BookShelfMode.values,
         getter: initAppearanceItems,

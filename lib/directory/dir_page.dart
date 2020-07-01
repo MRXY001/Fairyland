@@ -10,6 +10,18 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class DirPage extends StatefulWidget {
+  
+  final openBookCallback;
+  final renameBookCallback;
+  final closeBookCallback;
+  final openChapterCallback;
+  final renameChapterCallback;
+  final deleteChapterCallback;
+  
+  _DirPageState state;
+  var openChapterById;
+  var currentBook;
+  
   DirPage(
       {Key key,
       this.openBookCallback,
@@ -18,18 +30,14 @@ class DirPage extends StatefulWidget {
       this.openChapterCallback,
       this.renameChapterCallback,
       this.deleteChapterCallback})
-      : super(key: key);
-
-  final openBookCallback;
-  final renameBookCallback;
-  final closeBookCallback;
-  final openChapterCallback;
-  final renameChapterCallback;
-  final deleteChapterCallback;
+      : super(key: key) {
+    
+  }
 
   @override
   State<StatefulWidget> createState() {
-    return new _DirPageState();
+    print('createstate');
+    return state = new _DirPageState();
   }
 }
 
@@ -50,12 +58,24 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
   BookObject currentBook;
   List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
   List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
+  bool inited = false;
 
   @override
   void initState() {
     super.initState();
+print('_DirPageState.initState');
+    widget.openChapterById = (String id) {
+      if (currentBook != null) {
+        openChapter(currentBook.getChapterById(id));
+      }
+    };
+
+    widget.currentBook = () {
+      return this.currentBook;
+    };
 
     _initRecent();
+    inited = true;
   }
 
   @override
@@ -809,7 +829,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
   /// 编辑器打开章节
   void openChapter(VCItem chapter) {
-    widget.openChapterCallback(chapter);
+    if (chapter != null) {
+      widget.openChapterCallback(chapter);
+    }
   }
 
   /// 下拉刷新，快捷云同步方式

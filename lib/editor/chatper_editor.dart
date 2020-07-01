@@ -12,6 +12,7 @@ class ChapterEditor extends TextField {
   final onContentChanged;
   final onEditSave;
   final onWordsChanged;
+  
   NovelAI ai = new NovelAI();
   OperatorManager undoRedoManager;
   int _systemChanging = 0;
