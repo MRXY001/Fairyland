@@ -38,7 +38,6 @@ class DirPage extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    print('DirPage.createState');
     return myState = new _DirPageState();
   }
 
@@ -110,69 +109,7 @@ class DirPage extends StatefulWidget {
     updateState();
   }
 
-  /// 获取当前查看的分卷
-  /// 如果是根目录，返回 null
-  VCItem getCurrentVolume() {
-    if (currentRoute == null || currentRoute.length == 0) {
-      return null;
-    }
-    return currentRoute.last;
-  }
-
-  /// 保存目录结构
-  void saveCatalog() {
-    if (currentBook == null) {
-      return;
-    }
-    FileUtil.writeText(
-        G.rt.cBookCatalogPathD(), jsonEncode(currentBook.toJson()));
-  }
-
-  /// 打开当前分卷下的子分卷
-  void actionEnterChildVolume(VCItem volume) {
-    if (currentBook == null) {
-      return;
-    }
-    // 加到route末尾
-    currentRoute.add(volume);
-    _loadVolume(volume);
-  }
-
-  /// 打开上一层或者某一层的分卷
-  void actionEnterParentVolume(VCItem volume) {
-    if (currentBook == null) {
-      return;
-    }
-    if (volume == null) {
-      currentRoute = [];
-      _loadVolume(null);
-    } else if (currentRoute.length > 0 && currentRoute.last == volume) {
-      // 如果打开的当前分卷，则相当于刷新
-      _loadVolume(volume);
-    } else {
-      // 路径中，取消route后半部分
-      while (currentRoute.length > 0) {
-        if (currentRoute.last == volume) {
-          break;
-        }
-        currentRoute.removeLast();
-      }
-      _loadVolume(volume);
-    }
-  }
-
-  /// 加载某一分卷
-  void _loadVolume(VCItem volume) {
-    // 如果是空的，则表示加载根目录
-    if (volume == null) {
-      currentList = currentBook.catalog;
-    } else {
-      currentList = volume.vcList;
-    }
-
-    updateState();
-  }
-
+  /// 重命名当前作品
   void renameCurrentBook(String newName) {
     if (newName == null || newName.isEmpty) {
       return;
@@ -192,7 +129,7 @@ class DirPage extends StatefulWidget {
     G.us.setConfig('recent/book_name', newName);
   }
 
-  /// 删除作品
+  /// 删除当前作品
   void deleteCurrentBook() {
     String name = currentBook.name.toString();
     closeCurrentBook();
@@ -209,11 +146,48 @@ class DirPage extends StatefulWidget {
     FileUtil.moveDir(bookPath, recyclePath);
   }
 
+  /// 获取当前查看的分卷
+  /// 如果是根目录，返回 null
+  VCItem getCurrentVolume() {
+    if (currentRoute == null || currentRoute.length == 0) {
+      return null;
+    }
+    return currentRoute.last;
+  }
+
+  /// 加载某一分卷
+  void loadVolume(VCItem volume) {
+    // 如果是空的，则表示加载根目录
+    if (volume == null) {
+      currentList = currentBook.catalog;
+    } else {
+      currentList = volume.vcList;
+    }
+
+    updateState();
+  }
+
+  /// 保存目录结构
+  void saveCatalog() {
+    if (currentBook == null) {
+      return;
+    }
+    FileUtil.writeText(
+        G.rt.cBookCatalogPathD(), jsonEncode(currentBook.toJson()));
+  }
+
   /// 编辑器打开章节
   void openChapter(VCItem chapter) {
     if (chapter != null) {
       openChapterCallback(chapter);
     }
+  }
+
+  /// 根据ID打开章节
+  void openChapterById(String id) {
+    if (currentBook == null) return;
+    VCItem chapter = currentBook.getChapterById(id);
+    openChapter(chapter);
   }
 }
 
@@ -378,7 +352,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
                             ? new Text(' / ')
                             : new Text(widget.currentRoute[index - 1].name),
                       ),
-                      onTap: () => widget.actionEnterParentVolume(
+                      onTap: () => actionEnterParentVolume(
                           index == 0 ? null : widget.currentRoute[index - 1]),
                     );
                   },
@@ -502,7 +476,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       ),
       onTap: () {
         if (item.isVolume()) {
-          widget.actionEnterChildVolume(item);
+          actionEnterChildVolume(item);
         } else if (item.isChapter()) {
           widget.openChapter(item);
         }
@@ -809,6 +783,40 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       widget.closeCurrentBook();
       widget.openBook(result);
     });
+  }
+
+  /// 打开当前分卷下的子分卷
+  void actionEnterChildVolume(VCItem volume) {
+    if (widget.currentBook == null) {
+      return;
+    }
+    // 加到route末尾
+    widget.currentRoute.add(volume);
+    widget.loadVolume(volume);
+  }
+
+  /// 打开上一层或者某一层的分卷
+  void actionEnterParentVolume(VCItem volume) {
+    if (widget.currentBook == null) {
+      return;
+    }
+    if (volume == null) {
+      widget.currentRoute = [];
+      widget.loadVolume(null);
+    } else if (widget.currentRoute.length > 0 &&
+        widget.currentRoute.last == volume) {
+      // 如果打开的当前分卷，则相当于刷新
+      widget.loadVolume(volume);
+    } else {
+      // 路径中，取消route后半部分
+      while (widget.currentRoute.length > 0) {
+        if (widget.currentRoute.last == volume) {
+          break;
+        }
+        widget.currentRoute.removeLast();
+      }
+      widget.loadVolume(volume);
+    }
   }
 
   /// 添加新的章节

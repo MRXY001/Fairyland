@@ -16,7 +16,7 @@ import 'novel_ai.dart';
 
 // ignore: must_be_immutable
 class EditorPage extends StatefulWidget {
-  EditorPage({Key key, this.restoreOpeningChapter}) : super(key: key) {
+  EditorPage({Key key}) : super(key: key) {
     _editController = new TextEditingController();
     chapterEditor = new ChapterEditor(
       controller: _editController,
@@ -32,9 +32,6 @@ class EditorPage extends StatefulWidget {
   String savedPath;
   State<StatefulWidget> myState;
   
-  // 回调方法
-  final restoreOpeningChapter;
-
   @override
   State<StatefulWidget> createState() {
     return (myState = new _EditPageState());
@@ -69,9 +66,6 @@ class _EditPageState extends State<EditorPage> {
   @override
   void initState() {
     super.initState();
-    
-    print('init editor page state');
-    widget.restoreOpeningChapter();
   }
   
   @override
@@ -104,10 +98,10 @@ class _EditPageState extends State<EditorPage> {
                 child: RawKeyboardListener(
                   focusNode: FocusNode(),
                   onKey: (RawKeyEvent event) {
-                    //                    RawKeyDownEvent rawKeyDownEvent = event;
+                    // RawKeyDownEvent rawKeyDownEvent = event;
                     RawKeyEventDataAndroid rawKeyEventDataAndroid = event.data;
                     int keyCode = rawKeyEventDataAndroid.keyCode;
-                    //                    print("键盘 keyCode: $keyCode");
+                    // print("键盘 keyCode: $keyCode");
                   },
                   child: Container(child: widget.chapterEditor),
                 ),
