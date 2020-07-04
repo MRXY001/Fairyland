@@ -165,7 +165,7 @@ class _MyHomePageState extends State<MyHomePage>
 	void _restoreOpeningChapterCallback() {
 		
 		Future.delayed(const Duration(milliseconds: 100), () {
-			print(dirPage.state != null);
+			print(dirPage.myState != null);
 			// 恢复上次打开的作品
 			String chapterId = G.us.getStr('recent/opening_chapter', '');
 			if (chapterId != null && chapterId.isNotEmpty) {

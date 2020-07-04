@@ -9,19 +9,21 @@ import 'package:flutter_beautiful_popup/main.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+// ignore: must_be_immutable
 class DirPage extends StatefulWidget {
-  
+  BookObject currentBook;
+  List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
+  List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
+
   final openBookCallback;
   final renameBookCallback;
   final closeBookCallback;
   final openChapterCallback;
   final renameChapterCallback;
   final deleteChapterCallback;
-  
-  _DirPageState state;
-  var openChapterById;
-  var currentBook;
-  
+
+  _DirPageState myState;
+
   DirPage(
       {Key key,
       this.openBookCallback,
@@ -31,13 +33,187 @@ class DirPage extends StatefulWidget {
       this.renameChapterCallback,
       this.deleteChapterCallback})
       : super(key: key) {
-    
+    _initRecent();
   }
 
   @override
   State<StatefulWidget> createState() {
-    print('createstate');
-    return state = new _DirPageState();
+    print('DirPage.createState');
+    return myState = new _DirPageState();
+  }
+
+  void updateState() {
+    if (myState != null) {
+      // ignore: invalid_use_of_protected_member
+      myState.setState(() {});
+    }
+  }
+
+  void _initRecent() {
+    // 恢复上次打开的作品
+    String bookName = G.us.getConfig('recent/book_name', '');
+    if (bookName.isNotEmpty && FileUtil.isDirExists(G.rt.bookPathD(bookName))) {
+      openBook(bookName);
+    }
+  }
+
+  /// 从头打开作品
+  /// 如果已经有打开的了，需要先调用 closeCurrentBook()
+  void openBook(String name) {
+    // 如果目录不存在或者文件有错误，弹出警告
+    String path = G.rt.bookPathD(name);
+    if (FileUtil.isDirNotExists(path) ||
+        FileUtil.isFileNotExist(G.rt.bookCatalogPathD(name))) {
+      Fluttertoast.showToast(
+        msg: '无法读取作品：《' + name + '》所在数据',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+      );
+      return;
+    }
+
+    // 读取作品目录
+    G.rt.currentBookName = name;
+    String str = FileUtil.readText(G.rt.cBookCatalogPathD());
+    try {
+      // 解析JSON
+      currentBook = BookObject.fromJson(json.decode(str));
+      currentBook.setVCItemsContext();
+      currentList = currentBook.catalog;
+
+      if (openBookCallback != null) {
+        openBookCallback(currentBook);
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: '解析目录树错误');
+      currentList = [];
+    } finally {
+      currentRoute = [];
+    }
+    G.us.setConfig('recent/book_name', name);
+    updateState();
+  }
+
+  /// 关闭当前一打开的作品
+  /// 并且保存一些状态变量，以便下次打开时恢复
+  void closeCurrentBook() {
+    if (closeBookCallback != null) {
+      closeBookCallback(currentBook);
+    }
+
+    G.rt.currentBookName = currentBook = null;
+    currentRoute = null;
+    currentList = null;
+    G.us.setConfig('recent/book_name', '');
+
+    updateState();
+  }
+
+  /// 获取当前查看的分卷
+  /// 如果是根目录，返回 null
+  VCItem getCurrentVolume() {
+    if (currentRoute == null || currentRoute.length == 0) {
+      return null;
+    }
+    return currentRoute.last;
+  }
+
+  /// 保存目录结构
+  void saveCatalog() {
+    if (currentBook == null) {
+      return;
+    }
+    FileUtil.writeText(
+        G.rt.cBookCatalogPathD(), jsonEncode(currentBook.toJson()));
+  }
+
+  /// 打开当前分卷下的子分卷
+  void actionEnterChildVolume(VCItem volume) {
+    if (currentBook == null) {
+      return;
+    }
+    // 加到route末尾
+    currentRoute.add(volume);
+    _loadVolume(volume);
+  }
+
+  /// 打开上一层或者某一层的分卷
+  void actionEnterParentVolume(VCItem volume) {
+    if (currentBook == null) {
+      return;
+    }
+    if (volume == null) {
+      currentRoute = [];
+      _loadVolume(null);
+    } else if (currentRoute.length > 0 && currentRoute.last == volume) {
+      // 如果打开的当前分卷，则相当于刷新
+      _loadVolume(volume);
+    } else {
+      // 路径中，取消route后半部分
+      while (currentRoute.length > 0) {
+        if (currentRoute.last == volume) {
+          break;
+        }
+        currentRoute.removeLast();
+      }
+      _loadVolume(volume);
+    }
+  }
+
+  /// 加载某一分卷
+  void _loadVolume(VCItem volume) {
+    // 如果是空的，则表示加载根目录
+    if (volume == null) {
+      currentList = currentBook.catalog;
+    } else {
+      currentList = volume.vcList;
+    }
+
+    updateState();
+  }
+
+  void renameCurrentBook(String newName) {
+    if (newName == null || newName.isEmpty) {
+      return;
+    }
+    if (FileUtil.isDirExists(G.rt.bookPathD(newName))) {
+      Fluttertoast.showToast(msg: '作品《' + newName + '》已存在');
+      return;
+    }
+    if (!BookObject.canBeBookName(newName)) {
+      Fluttertoast.showToast(msg: '名字《' + newName + '》包含特殊字符，无法用作书名');
+      return;
+    }
+    // 修改书名
+    currentBook.name = newName;
+
+    // 设置配置项
+    G.us.setConfig('recent/book_name', newName);
+  }
+
+  /// 删除作品
+  void deleteCurrentBook() {
+    String name = currentBook.name.toString();
+    closeCurrentBook();
+
+    FileUtil.createDir(G.rt.recyclesBooksPath);
+    String bookPath = G.rt.booksPath + name;
+    String recyclePath = G.rt.rBookPath(name);
+    int index = 0;
+    String tempPath = recyclePath;
+    while (FileUtil.isDirExists(tempPath)) {
+      tempPath = recyclePath + '(' + (++index).toString() + ')';
+    }
+    if (index > 0) recyclePath = tempPath;
+    FileUtil.moveDir(bookPath, recyclePath);
+  }
+
+  /// 编辑器打开章节
+  void openChapter(VCItem chapter) {
+    if (chapter != null) {
+      openChapterCallback(chapter);
+    }
   }
 }
 
@@ -55,27 +231,9 @@ enum VCItemActions {
 }
 
 class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
-  BookObject currentBook;
-  List<VCItem> currentRoute = []; // 当前列表所在路径的id集合，一开始length =0
-  List<VCItem> currentList; // 当前分卷下的子分卷/子章节的list
-  bool inited = false;
-
   @override
   void initState() {
     super.initState();
-print('_DirPageState.initState');
-    widget.openChapterById = (String id) {
-      if (currentBook != null) {
-        openChapter(currentBook.getChapterById(id));
-      }
-    };
-
-    widget.currentBook = () {
-      return this.currentBook;
-    };
-
-    _initRecent();
-    inited = true;
   }
 
   @override
@@ -103,8 +261,9 @@ print('_DirPageState.initState');
             builder: (BuildContext context) {
               // 获取context后才能跳转页面
               return new InkWell(
-                child: new Text(
-                    currentBook == null ? '创建或切换作品' : currentBook.name),
+                child: new Text(widget.currentBook == null
+                    ? '创建或切换作品'
+                    : widget.currentBook.name),
                 onTap: () {
                   actionOpenBookShelf();
                 },
@@ -117,20 +276,20 @@ print('_DirPageState.initState');
               tooltip: '添加新章',
               onPressed: () => actionAppendChapter(),
             ),
-            getBookMenu()
+            _buildBookMenu()
           ]),
-      body: _getCatalogGroup(),
+      body: _buildCatalogGroup(),
     );
   }
 
   /// 根据类型获取不同的列表
-  Widget _getCatalogGroup() {
+  Widget _buildCatalogGroup() {
     if (G.us.bookCatalogMode == BookCatalogMode.Tree) {
-      if (currentBook == null || currentBook.catalog == null) {
+      if (widget.currentBook == null || widget.currentBook.catalog == null) {
         return new Text('请创建作品');
       }
       // 树状模式
-      var showedList = currentBook.catalog
+      var showedList = widget.currentBook.catalog
           .where((element) => G.us.showCatalogRecycle || !element.deleted)
           .toList();
       return ListView.builder(
@@ -176,13 +335,14 @@ print('_DirPageState.initState');
       onExpansionChanged: (bool exp) {
         if (exp) {
           // 展开
-          currentList = item.vcList;
+          widget.currentList = item.vcList;
         } else {
           // 收起
           // 如果有父分卷，则聚焦至父分卷
           // 如果没有父分卷，则使用全书最外层分卷
-          currentList =
-              item.parent != null ? item.parent.vcList : currentBook.catalog;
+          widget.currentList = item.parent != null
+              ? item.parent.vcList
+              : widget.currentBook.catalog;
         }
       },
     );
@@ -202,23 +362,24 @@ print('_DirPageState.initState');
         ),
         child: new Padding(
           padding: EdgeInsets.only(left: 16, top: 4),
-          child: (currentRoute == null || currentRoute.length == 0)
+          child: (widget.currentRoute == null ||
+                  widget.currentRoute.length == 0)
               ? new Text(
                   '总字数：待统计',
                 )
               : new ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: currentRoute.length + 1,
+                  itemCount: widget.currentRoute.length + 1,
                   itemBuilder: (context, index) {
                     return InkWell(
                       child: Padding(
                         padding: EdgeInsets.only(left: 8, right: 8),
                         child: index == 0
                             ? new Text(' / ')
-                            : new Text(currentRoute[index - 1].name),
+                            : new Text(widget.currentRoute[index - 1].name),
                       ),
-                      onTap: () => actionEnterParentVolume(
-                          index == 0 ? null : currentRoute[index - 1]),
+                      onTap: () => widget.actionEnterParentVolume(
+                          index == 0 ? null : widget.currentRoute[index - 1]),
                     );
                   },
                   separatorBuilder: (context, index) {
@@ -234,7 +395,7 @@ print('_DirPageState.initState');
   /// 获取 Flat 模式下 ListView 整体
   /// 如果为空则显示一个添加按钮
   Widget _buildCatalogFlatVCListView() {
-    if (currentBook == null) {
+    if (widget.currentBook == null) {
       return new Center(
           child: new InkWell(
         onTap: () {
@@ -244,7 +405,7 @@ print('_DirPageState.initState');
             new Text('↑ ↑ ↑\n请点击上方标题\n创建或切换作品', style: TextStyle(fontSize: 20)),
       ));
     }
-    if (currentBook.catalog.length == 0) {
+    if (widget.currentBook.catalog.length == 0) {
       return new Center(
           child: new InkWell(
         onTap: () => actionAppendChapter(),
@@ -254,18 +415,18 @@ print('_DirPageState.initState');
     return AnimationLimiter(
       // 这个会报很多警告
       child: ListView.builder(
-          itemCount: currentList.length,
+          itemCount: widget.currentList.length,
           itemBuilder: (context, index) {
             return Offstage(
-              offstage:
-                  !G.us.showCatalogRecycle && currentList[index].deleted ??
-                      false,
+              offstage: !G.us.showCatalogRecycle &&
+                      widget.currentList[index].deleted ??
+                  false,
               child: AnimationConfiguration.staggeredList(
                   position: index,
                   child: SlideAnimation(
                     verticalOffset: 50.0,
                     child: FadeInAnimation(
-                      child: _buildVolumeChapterTile(currentList[index]),
+                      child: _buildVolumeChapterTile(widget.currentList[index]),
                     ),
                   )),
             );
@@ -337,29 +498,30 @@ print('_DirPageState.initState');
       subtitle: timeDisplayed.isNotEmpty ? new Text(timeDisplayed) : null,
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[getVCItemPopupMenuButton(item)],
+        children: <Widget>[_buildVCItemPopupMenuButton(item)],
       ),
       onTap: () {
         if (item.isVolume()) {
-          actionEnterChildVolume(item);
+          widget.actionEnterChildVolume(item);
         } else if (item.isChapter()) {
-          openChapter(item);
+          widget.openChapter(item);
         }
       },
       onLongPress: () => {},
     );
   }
 
-  PopupMenuButton getVCItemPopupMenuButton(VCItem item) {
+  PopupMenuButton _buildVCItemPopupMenuButton(VCItem item) {
     return PopupMenuButton<VCItemActions>(
         icon: Icon(Icons.more_vert),
         itemBuilder: (BuildContext context) => item.isVolume()
-            ? getVolumeActions(context, item)
-            : getChapterActions(context, item),
-        onSelected: (VCItemActions result) => handleVCItemAction(item, result));
+            ? _buildVolumeActions(context, item)
+            : _buildChapterActions(context, item),
+        onSelected: (VCItemActions result) =>
+            _handleVCItemAction(item, result));
   }
 
-  List<PopupMenuEntry<VCItemActions>> getVolumeActions(
+  List<PopupMenuEntry<VCItemActions>> _buildVolumeActions(
       BuildContext context, VCItem item) {
     return <PopupMenuEntry<VCItemActions>>[
       const PopupMenuItem<VCItemActions>(
@@ -389,13 +551,13 @@ print('_DirPageState.initState');
           value: VCItemActions.MoveDown,
           enabled: item.indexInList <
               (item.parent == null
-                      ? currentBook.catalog.length
+                      ? widget.currentBook.catalog.length
                       : item.parent.vcList.length) -
                   1),
     ];
   }
 
-  List<PopupMenuEntry<VCItemActions>> getChapterActions(
+  List<PopupMenuEntry<VCItemActions>> _buildChapterActions(
       BuildContext context, VCItem item) {
     return <PopupMenuEntry<VCItemActions>>[
       const PopupMenuItem<VCItemActions>(
@@ -435,20 +597,20 @@ print('_DirPageState.initState');
           value: VCItemActions.MoveDown,
           enabled: item.indexInList <
               (item.parent == null
-                      ? currentBook.catalog.length
+                      ? widget.currentBook.catalog.length
                       : item.parent.vcList.length) -
                   1),
     ];
   }
 
-  void handleVCItemAction(VCItem item, VCItemActions result) {
+  void _handleVCItemAction(VCItem item, VCItemActions result) {
     switch (result) {
       case VCItemActions.Rename:
         inputName('修改名字', item.isVolume() ? '卷名' : '章名', item.name,
             (String result) {
           setState(() {
             item.name = result;
-            currentBook.setVCItemsContext();
+            widget.currentBook.setVCItemsContext();
             saveCatalog();
             if (widget.renameBookCallback != null) {
               widget.renameBookCallback(item);
@@ -458,12 +620,12 @@ print('_DirPageState.initState');
         break;
       case VCItemActions.Insert:
         inputName('插入章节', '章名', '', (String result) {
-          int index = currentList.indexOf(item);
+          int index = widget.currentList.indexOf(item);
           if (index < 0) // 出错了，没找到
             return;
           _insertVCItemInCurrentList(
               index, new VCItem(name: result, type: VCItemType.ChapterType));
-          currentBook.setVCItemsContext();
+          widget.currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
@@ -471,7 +633,7 @@ print('_DirPageState.initState');
         setState(() {
           item.deleted = true;
           item.deleteTime = DateTime.now().millisecondsSinceEpoch;
-          currentBook.setVCItemsContext();
+          widget.currentBook.setVCItemsContext();
           saveCatalog();
           if (widget.deleteChapterCallback != null) {
             widget.deleteChapterCallback(item);
@@ -481,7 +643,7 @@ print('_DirPageState.initState');
       case VCItemActions.Restore:
         setState(() {
           item.deleted = false;
-          currentBook.setVCItemsContext();
+          widget.currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
@@ -493,64 +655,65 @@ print('_DirPageState.initState');
         break;
       case VCItemActions.MoveUp:
         setState(() {
-          int index = currentList.indexOf(item);
+          int index = widget.currentList.indexOf(item);
           if (index <= 0) return;
-          currentList.removeAt(index);
+          widget.currentList.removeAt(index);
           int target = index - 1;
           if (!G.us.showCatalogRecycle) {
-            while (target > 0 && currentList[target].deleted) {
+            while (target > 0 && widget.currentList[target].deleted) {
               target--;
             }
           }
-          currentList.insert(target, item);
-          currentBook.setVCItemsContext();
+          widget.currentList.insert(target, item);
+          widget.currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
       case VCItemActions.MoveDown:
         setState(() {
-          int index = currentList.indexOf(item);
-          if (index < 0 || index >= currentList.length) return;
-          currentList.removeAt(index);
+          int index = widget.currentList.indexOf(item);
+          if (index < 0 || index >= widget.currentList.length) return;
+          widget.currentList.removeAt(index);
           int target = index;
           if (!G.us.showCatalogRecycle) {
-            while (target < currentList.length && currentList[target].deleted) {
+            while (target < widget.currentList.length &&
+                widget.currentList[target].deleted) {
               target++;
             }
           }
-          if (target >= currentList.length - 1)
-            currentList.add(item);
+          if (target >= widget.currentList.length - 1)
+            widget.currentList.add(item);
           else
-            currentList.insert(target + 1, item);
-          currentBook.setVCItemsContext();
+            widget.currentList.insert(target + 1, item);
+          widget.currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
       case VCItemActions.MoveTop:
         setState(() {
-          int index = currentList.indexOf(item);
-          if (index < 0 || index >= currentList.length) return;
-          currentList.removeAt(index);
-          currentList.insert(0, item);
-          currentBook.setVCItemsContext();
+          int index = widget.currentList.indexOf(item);
+          if (index < 0 || index >= widget.currentList.length) return;
+          widget.currentList.removeAt(index);
+          widget.currentList.insert(0, item);
+          widget.currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
       case VCItemActions.MoveBottom:
         setState(() {
-          int index = currentList.indexOf(item);
-          if (index < 0 || index >= currentList.length) return;
-          currentList.removeAt(index);
-          currentList.add(item);
-          currentBook.setVCItemsContext();
+          int index = widget.currentList.indexOf(item);
+          if (index < 0 || index >= widget.currentList.length) return;
+          widget.currentList.removeAt(index);
+          widget.currentList.add(item);
+          widget.currentBook.setVCItemsContext();
           saveCatalog();
         });
         break;
     }
   }
 
-  PopupMenuButton getBookMenu() {
-    if (currentBook == null) {
+  PopupMenuButton _buildBookMenu() {
+    if (widget.currentBook == null) {
       return PopupMenuButton<String>(
         itemBuilder: (BuildContext content) => <PopupMenuItem<String>>[
           PopupMenuItem<String>(
@@ -614,8 +777,8 @@ print('_DirPageState.initState');
           case 'book_recycles':
             setState(() {
               G.us.showCatalogRecycle = !G.us.showCatalogRecycle;
-              if (currentBook != null) {
-                currentBook.setVCItemsContext();
+              if (widget.currentBook != null) {
+                widget.currentBook.setVCItemsContext();
               }
             });
             break;
@@ -630,13 +793,7 @@ print('_DirPageState.initState');
     );
   }
 
-  void _initRecent() {
-    // 恢复上次打开的作品
-    String bookName = G.us.getConfig('recent/book_name', '');
-    if (bookName.isNotEmpty && FileUtil.isDirExists(G.rt.bookPathD(bookName))) {
-      openBook(bookName);
-    }
-  }
+  void saveCatalog() => widget.saveCatalog();
 
   void actionOpenBookShelf() {
     Navigator.push<String>(context,
@@ -649,66 +806,14 @@ print('_DirPageState.initState');
       }
 
       // 读取作品
-      closeCurrentBook();
-      openBook(result);
-    });
-  }
-
-  /// 从头打开作品
-  /// 如果已经有打开的了，需要先调用 closeCurrentBook()
-  void openBook(String name) {
-    // 如果目录不存在或者文件有错误，弹出警告
-    String path = G.rt.bookPathD(name);
-    if (FileUtil.isDirNotExists(path) ||
-        FileUtil.isFileNotExist(G.rt.bookCatalogPathD(name))) {
-      Fluttertoast.showToast(
-        msg: '无法读取作品：《' + name + '》所在数据',
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-      );
-      return;
-    }
-
-    // 读取作品目录
-    G.rt.currentBookName = name;
-    String str = FileUtil.readText(G.rt.cBookCatalogPathD());
-    try {
-      // 解析JSON
-      currentBook = BookObject.fromJson(json.decode(str));
-      currentBook.setVCItemsContext();
-      currentList = currentBook.catalog;
-
-      if (widget.openBookCallback != null) {
-        widget.openBookCallback(currentBook);
-      }
-    } catch (e) {
-      Fluttertoast.showToast(msg: '解析目录树错误');
-      currentList = [];
-    } finally {
-      currentRoute = [];
-    }
-    G.us.setConfig('recent/book_name', name);
-    setState(() {});
-  }
-
-  /// 关闭当前一打开的作品
-  /// 并且保存一些状态变量，以便下次打开时恢复
-  void closeCurrentBook() {
-    if (widget.closeBookCallback != null) {
-      widget.closeBookCallback(currentBook);
-    }
-    setState(() {
-      G.rt.currentBookName = currentBook = null;
-      currentRoute = null;
-      currentList = null;
-      G.us.setConfig('recent/book_name', '');
+      widget.closeCurrentBook();
+      widget.openBook(result);
     });
   }
 
   /// 添加新的章节
   void actionAppendChapter() {
-    if (currentBook == null) {
+    if (widget.currentBook == null) {
       Fluttertoast.showToast(msg: '请点击左上方标题创建一部作品');
       return;
     }
@@ -718,14 +823,14 @@ print('_DirPageState.initState');
       // 添加章节到末尾
       _insertVCItemInCurrentList(
           -1, new VCItem(name: result, type: VCItemType.ChapterType));
-      currentBook.setVCItemsContext();
+      widget.currentBook.setVCItemsContext();
       saveCatalog();
     });
   }
 
   /// 添加新的分卷
   void actionAppendVolume() {
-    if (currentBook == null) {
+    if (widget.currentBook == null) {
       Fluttertoast.showToast(msg: '请点击左上方标题创建一部作品');
       return;
     }
@@ -735,19 +840,19 @@ print('_DirPageState.initState');
       // 添加分卷到末尾
       _insertVCItemInCurrentList(-1,
           new VCItem(name: result, type: VCItemType.VolumeType, vcList: []));
-      currentBook.setVCItemsContext();
+      widget.currentBook.setVCItemsContext();
       saveCatalog();
     });
   }
 
   void _insertVCItemInCurrentList(int index, VCItem item) {
-    if (currentBook == null) {
+    if (widget.currentBook == null) {
       Fluttertoast.showToast(msg: '请点击左上方标题创建一部作品');
       return;
     }
     if (item.id == null) {
       // 获取唯一ID
-      item.id = currentBook.createRandomID();
+      item.id = widget.currentBook.createRandomID();
       if (item.id.isEmpty) {
         Fluttertoast.showToast(msg: '章节过多，请将该需求反馈给开发者');
         return;
@@ -756,90 +861,12 @@ print('_DirPageState.initState');
     if (item.isVolume() && item.vcList == null) {
       item.vcList = [];
     }
-    if (index > 0 && index < currentList.length) {
-      currentList.insert(index, item);
+    if (index > 0 && index < widget.currentList.length) {
+      widget.currentList.insert(index, item);
     } else {
-      currentList.add(item);
+      widget.currentList.add(item);
     }
     setState(() {});
-  }
-
-  /// 获取当前查看的分卷
-  /// 如果是根目录，返回 null
-  VCItem getCurrentVolume() {
-    if (currentRoute == null || currentRoute.length == 0) {
-      return null;
-    }
-    return currentRoute.last;
-  }
-
-  /// 保存目录结构
-  void saveCatalog() {
-    if (currentBook == null) {
-      return;
-    }
-    FileUtil.writeText(
-        G.rt.cBookCatalogPathD(), jsonEncode(currentBook.toJson()));
-  }
-
-  /// 打开当前分卷下的子分卷
-  void actionEnterChildVolume(VCItem volume) {
-    if (currentBook == null) {
-      return;
-    }
-    // 加到route末尾
-    currentRoute.add(volume);
-    _loadVolume(volume);
-  }
-
-  /// 打开上一层或者某一层的分卷
-  void actionEnterParentVolume(VCItem volume) {
-    if (currentBook == null) {
-      return;
-    }
-    if (volume == null) {
-      currentRoute = [];
-      _loadVolume(null);
-    } else if (currentRoute.length > 0 && currentRoute.last == volume) {
-      // 如果打开的当前分卷，则相当于刷新
-      _loadVolume(volume);
-    } else {
-      // 路径中，取消route后半部分
-      while (currentRoute.length > 0) {
-        if (currentRoute.last == volume) {
-          break;
-        }
-        currentRoute.removeLast();
-      }
-      _loadVolume(volume);
-    }
-  }
-
-  /// 加载某一分卷
-  void _loadVolume(VCItem volume) {
-    setState(() {
-      // 如果是空的，则表示加载根目录
-      if (volume == null) {
-        currentList = currentBook.catalog;
-      } else {
-        currentList = volume.vcList;
-      }
-    });
-  }
-
-  /// 编辑器打开章节
-  void openChapter(VCItem chapter) {
-    if (chapter != null) {
-      widget.openChapterCallback(chapter);
-    }
-  }
-
-  /// 下拉刷新，快捷云同步方式
-  Future<void> actionSync() async {
-    // 模拟延迟（现在还是什么都不做的）
-    await Future.delayed(Duration(seconds: 1), () {
-      setState(() {});
-    });
   }
 
   /// 输入一行名字的操作（非空）
@@ -895,33 +922,26 @@ print('_DirPageState.initState');
         });
   }
 
+  /// 下拉刷新，快捷云同步方式
+  Future<void> actionSync() async {
+    // 模拟延迟（现在还是什么都不做的）
+    await Future.delayed(Duration(seconds: 1), () {
+      setState(() {});
+    });
+  }
+
   void actionRenameBook() {
-    if (currentBook == null) {
+    if (widget.currentBook == null) {
       return;
     }
-    inputName('修改书名', '书名', currentBook.name, (String result) {
-      if (result == null || result.isEmpty) {
-        return;
-      }
-      if (FileUtil.isDirExists(G.rt.bookPathD(result))) {
-        Fluttertoast.showToast(msg: '作品《' + result + '》已存在');
-        return;
-      }
-      if (!BookObject.canBeBookName(result)) {
-        Fluttertoast.showToast(msg: '名字《' + result + '》包含特殊字符，无法用作书名');
-        return;
-      }
-      // 修改书名
-      currentBook.name = result;
-
-      // 设置配置项
-      G.us.setConfig('recent/book_name', result);
+    inputName('修改书名', '书名', widget.currentBook.name, (String result) {
+      widget.renameCurrentBook(result);
     });
   }
 
   /// 删除作品操作
   void actionDeleteBook() {
-    if (currentBook == null) {
+    if (widget.currentBook == null) {
       return;
     }
     final popup = BeautifulPopup(
@@ -934,26 +954,9 @@ print('_DirPageState.initState');
       popup.button(
           label: '我已想好，确定删除',
           onPressed: () {
-            _deleteCurrentBook();
+            widget.deleteCurrentBook();
             Navigator.of(context).pop();
           })
     ]);
-  }
-
-  /// 删除作品
-  _deleteCurrentBook() {
-    String name = currentBook.name.toString();
-    closeCurrentBook();
-
-    FileUtil.createDir(G.rt.recyclesBooksPath);
-    String bookPath = G.rt.booksPath + name;
-    String recyclePath = G.rt.rBookPath(name);
-    int index = 0;
-    String tempPath = recyclePath;
-    while (FileUtil.isDirExists(tempPath)) {
-      tempPath = recyclePath + '(' + (++index).toString() + ')';
-    }
-    if (index > 0) recyclePath = tempPath;
-    FileUtil.moveDir(bookPath, recyclePath);
   }
 }
