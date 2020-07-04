@@ -187,7 +187,9 @@ class DirPage extends StatefulWidget {
   void openChapterById(String id) {
     if (currentBook == null) return;
     VCItem chapter = currentBook.getChapterById(id);
-    openChapter(chapter);
+    if (chapter != null) {
+      openChapter(chapter);
+    }
   }
 }
 

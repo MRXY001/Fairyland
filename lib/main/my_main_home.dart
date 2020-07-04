@@ -25,6 +25,8 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+enum PageIndex { dirPageIndex, editorPageIndex, assistPageIndex }
+
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -34,15 +36,16 @@ class _MyHomePageState extends State<MyHomePage>
   AssistPage assistPage;
 
   ChapterEditor chapterEditor;
+  bool _needRestoreRecentOpeningChapter = true;
 
   List<PageBean> _pages;
   PageController pageController;
+  TitledBottomNavigationBar bottomBar;
+
   static const dirPageIndex = 0;
   static const editorPageIndex = 1;
   static const assistPageIndex = 2; // ignore: unused_field
-  var currentPage = dirPageIndex;
-
-  TitledBottomNavigationBar bottomBar;
+  int currentPage = dirPageIndex;
 
   @override
   void initState() {
@@ -69,8 +72,8 @@ class _MyHomePageState extends State<MyHomePage>
     }
     G.rt.mainPageIndex = pageIndex;
 
+    // 初始化页面
     pageController = PageController(initialPage: pageIndex);
-
     dirPage = new DirPage(
       openBookCallback: _openBookCallback,
       renameBookCallback: _renameBookCallback,
@@ -79,8 +82,7 @@ class _MyHomePageState extends State<MyHomePage>
       renameChapterCallback: _renameChapterCallback,
       deleteChapterCallback: _deleteChapterCallback,
     );
-    editorPage = new EditorPage(
-    );
+    editorPage = new EditorPage();
     assistPage = new AssistPage();
     chapterEditor = editorPage.chapterEditor;
     _pages = <PageBean>[
@@ -89,11 +91,18 @@ class _MyHomePageState extends State<MyHomePage>
       PageBean(title: '助手', icon: Icons.school, widget: assistPage),
     ];
 
+    // 初始化其他控件
     bottomBar = new TitledBottomNavigationBar(
       items: _pages,
       controller: pageController,
     );
     
+    // 恢复上次打开的章节
+    if (pageIndex == editorPageIndex) {
+      if (_needRestoreRecentOpeningChapter) {
+        _restoreLastOpeningChapter();
+      }
+    }
   }
 
   /// 恢复上次使用的数据
@@ -119,6 +128,12 @@ class _MyHomePageState extends State<MyHomePage>
             setState(() {
               currentPage = page;
               G.us.setConfig('recent/main_page', page);
+              
+              if (page == editorPageIndex) {
+                if (_needRestoreRecentOpeningChapter) {
+                  _restoreLastOpeningChapter();
+                }
+              }
             });
           },
         ),
@@ -134,15 +149,20 @@ class _MyHomePageState extends State<MyHomePage>
 
   /// 打开章节
   void _openChapterCallback(VCItem chapter) {
-    setState(() {
-      pageController.animateToPage(editorPageIndex,
-          duration: Duration(milliseconds: 300), curve: Curves.easeOutQuad);
-      editorPage.openChapter(chapter);
-      if (editorPage.myState != null) {
-        editorPage.myState.setState(() {});
-      }
-    });
-    G.us.setConfig('recent/opening_chapter', chapter.id);
+    pageController.animateToPage(editorPageIndex,
+        duration: Duration(milliseconds: 300), curve: Curves.easeOutQuad);
+    editorPage.openChapter(chapter);
+    if (editorPage.myState != null) {
+      editorPage.myState.setState(() {});
+    }
+
+    if (_needRestoreRecentOpeningChapter) {
+      // 是恢复上次打开的章节，不需要保存最近打开的章节
+      _needRestoreRecentOpeningChapter = false;
+    } else {
+      // 便于下次启动时恢复打开的章节
+      G.us.setConfig('recent/opening_chapter', chapter.id);
+    }
   }
 
   /// 重命名章节 callback
@@ -161,9 +181,9 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   /// 编辑器恢复上次打开的章节
-  void _restoreOpeningChapter() {
-    Future.delayed(const Duration(milliseconds: 100), () {
-        print('_restoreOpeningChapterCallback');
+  void _restoreLastOpeningChapter() {
+    Future.delayed(const Duration(milliseconds: 0), () {
+      print('_restoreOpeningChapterCallback');
       // 恢复上次打开的作品
       String chapterId = G.us.getStr('recent/opening_chapter', '');
       if (chapterId != null && chapterId.isNotEmpty) {
