@@ -830,6 +830,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
     // 添加新章
     inputName('添加新章', '章名', '', (String result) {
+      if (result == null || result.isEmpty)
+        return ;
+      print('插入名字：' + result);
       // 添加章节到末尾
       _insertVCItemInCurrentList(
           -1, new VCItem(name: result, type: VCItemType.ChapterType));

@@ -132,7 +132,7 @@ class BookObject {
     // 如果是分卷，递归遍历
     if (item.isVolume() && recursive) {
       item.vcList.forEach((item) {
-        setVCItemDisplayName(item);
+        setVCItemDisplayName(item, recursive: true);
       });
     }
   }
