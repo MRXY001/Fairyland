@@ -454,8 +454,8 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
       title: Row(
         children: <Widget>[
           !item.deleted
-              ? new Text(name, style: TextStyle(fontSize: 16))
-              : new Text(name,
+              ? new Text(name ?? '', style: TextStyle(fontSize: 16))
+              : new Text(name ?? '',
                   style: TextStyle(fontSize: 16, color: Colors.grey)),
           new Spacer(
             flex: 1,

@@ -96,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage>
       items: _pages,
       controller: pageController,
     );
-    
+
     // 恢复上次打开的章节
     if (pageIndex == editorPageIndex) {
       if (_needRestoreRecentOpeningChapter) {
@@ -128,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage>
             setState(() {
               currentPage = page;
               G.us.setConfig('recent/main_page', page);
-              
+
               if (page == editorPageIndex) {
                 if (_needRestoreRecentOpeningChapter) {
                   _restoreLastOpeningChapter();
@@ -168,7 +168,9 @@ class _MyHomePageState extends State<MyHomePage>
   /// 重命名章节 callback
   void _renameChapterCallback(VCItem chapter) {
     // 如果是正在编辑的章节
-    if (editorPage.currentChapter == chapter) {}
+    if (editorPage.currentChapter == chapter) {
+      // 重命名标题栏
+    }
   }
 
   /// 删除章节 callback
@@ -183,7 +185,6 @@ class _MyHomePageState extends State<MyHomePage>
   /// 编辑器恢复上次打开的章节
   void _restoreLastOpeningChapter() {
     Future.delayed(const Duration(milliseconds: 0), () {
-      print('_restoreOpeningChapterCallback');
       // 恢复上次打开的作品
       String chapterId = G.us.getStr('recent/opening_chapter', '');
       if (chapterId != null && chapterId.isNotEmpty) {

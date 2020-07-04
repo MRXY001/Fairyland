@@ -54,20 +54,23 @@ class BookObject {
 
   /// 递归设置每一项的 index 和 displayedName
   void setVCItemsContext() {
-    int bookV = 0, bookC = 0, volumeV = 0, volumeC = 0, inList = 0;
+    int bookV = 0, bookC = 0; // 全书中的总数
+    int volumeV = 0, volumeC = 0; // 在某一分卷中的索引（不包含子分卷）
+    int inList = 0; // 在同级列表的索引（包含分卷和章节）
     for (int i = 0; i < catalog.length; i++) {
+      // 不显示已删除，则跳过删除的
       if (!G.us.showCatalogRecycle && catalog[i].isDeleted()) continue;
       if (catalog[i].isVolume()) {
         // TODO: 如果是分卷，忽略序号<=0的
-        VCBundle bundle = catalog[i].setIndexes(bookV, volumeV);
+        VCBundle bundle = catalog[i].setIndexes(bookV, bookC, volumeV);
         if (!catalog[i].isDeleted()) {
-          bookV += bundle.volume;
+          bookV += bundle.volume; // 卷里的子分卷
           bookC += bundle.chapter;
-          volumeV++;
+          volumeV++; // 当前卷中自己的
         }
       } else if (catalog[i].isChapter()) {
         // 如果是章节，直接加上（注意序号<=0）
-        catalog[i].setIndexes(bookC, volumeC);
+        catalog[i].setIndexes(bookV, bookC, volumeC);
         if (!catalog[i].isDeleted()) {
           volumeC++;
           bookC++;
@@ -142,10 +145,13 @@ class BookObject {
     int repeat = 0;
     do {
       result = '';
-      int r = Random().nextInt(chi.length);
-      for (int i = 0; i < len; i++) result += chi.substring(r - 1, r);
-      if (++repeat > 10000) // 次数太频繁，有问题
+      for (int i = 0; i < len; i++) {
+        int r = Random().nextInt(chi.length);
+        result += chi.substring(r - 1, r);
+      }
+      if (++repeat > 10000) { // 次数太频繁，有问题
         return '000000';
+      }
     } while (_isIdExist(result, catalog));
     return result;
   }
@@ -208,7 +214,7 @@ class VCBundle {
 /// 记录了分卷/章节的信息
 class VCItem {
   String id; // 分卷/章节在全书中的唯一ID
-  String name; // 分卷/章节显示的名字
+  String name = ''; // 分卷/章节显示的名字
   VCItemType type; // 0: Book, 1: Volume, 2: Chapter, ?; Other
   int wordCount; // 章节有效字数/该分卷章节总有效字数
   String content; // 章节内容/分卷内容
@@ -246,28 +252,28 @@ class VCItem {
   bool isDeleted() => deleted;
 
   /// 递归设置当前索引
-  VCBundle setIndexes(int inBook, int inVolume) {
-    indexInBook = inBook;
+  VCBundle setIndexes(int bookV, int bookC, int inVolume) {
     indexInVolume = inVolume;
 
     // 如果是 volume，则需要继续递归设置下面
     if (isVolume()) {
-      int vCount = 0, cCount = 0; // 自己子级的
-      int vSum = 1, cSum = 0; // 全书的，自己也算 vSum
+      indexInBook = bookV;
+      int vCount = 0, cCount = 0; // 自己子级的（不包括自己）
+      int vSum = 1, cSum = 0; // 包括自己
       int inList = 0;
-      // 递归子章节
+      // 递归子项目
       for (int i = 0; i < vcList.length; i++) {
         if (!G.us.showCatalogRecycle && vcList[i].isDeleted()) continue;
         if (vcList[i].isVolume()) {
-          VCBundle bundle = vcList[i].setIndexes(inBook + vSum, vCount);
+          // 子分卷
+          VCBundle bundle = vcList[i].setIndexes(bookV + vSum, bookC+cSum, vCount);
           if (!vcList[i].isDeleted()) {
             vCount++;
-            vSum++;
-            vSum += bundle.volume;
+            vSum += bundle.volume; // 子分卷本身的1 + 子分卷的再子分卷
             cSum += bundle.chapter;
           }
         } else if (vcList[i].isChapter()) {
-          vcList[i].setIndexes(inBook + cSum, cCount);
+          vcList[i].setIndexes(-1, bookC + cSum, cCount);
           if (!vcList[i].isDeleted()) {
             cCount++;
             cSum++;
@@ -278,6 +284,7 @@ class VCItem {
       }
       return VCBundle(volume: vSum, chapter: cSum);
     } else {
+      indexInBook = bookC;
       return VCBundle(volume: 0, chapter: 0);
     }
   }
