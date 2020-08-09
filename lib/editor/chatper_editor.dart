@@ -235,7 +235,7 @@ class ChapterEditor extends TextField implements EditorInterface {
 
   /// 设置光标位置
   @override
-  void setPosition(int pos, {aim: -1}) {
+  void setPosition(int pos, {sel: 0}) {
     controller.selection = TextSelection.fromPosition(TextPosition(
         affinity: TextAffinity.upstream, // 必须要上游，downstream不行
         offset: pos));
@@ -244,18 +244,15 @@ class ChapterEditor extends TextField implements EditorInterface {
   /// 是否选中了文本
   @override
   bool hasSelection() {
-    return controller.selection.start != controller.selection.end;
+    TextSelection sel = controller.selection;
+    return sel.start != sel.end;
   }
 
   @override
-  int selectionStart() {
-    return controller.selection.start;
-  }
+  int selectionStart() => controller.selection.start;
 
   @override
-  int selectionEnd() {
-    return controller.selection.end;
-  }
+  int selectionEnd() => controller.selection.end;
 
   @override
   String selectionText() {
@@ -283,13 +280,23 @@ class ChapterEditor extends TextField implements EditorInterface {
   }
 
   @override
-  void copy() {}
+  void copy() => Clipboard.setData(
+        ClipboardData(text: selectionText()));
 
   @override
-  void cut() {}
+  void cut() {
+    if (!hasSelection())
+      return ;
+    String text = selectionText();
+    _selectionStart = selectionStart();
+    _selectionEnd = selectionEnd();
+    deleteTextByPos(_selectionStart, _selectionEnd);
+    Clipboard.setData(
+        ClipboardData(text: text));
+  }
 
   @override
-  void paste() {}
+  void paste() => insertTextByPos(Clipboard.getData(Clipboard.kTextPlain).toString());
 
   @override
   void clear() {
@@ -337,14 +344,33 @@ class ChapterEditor extends TextField implements EditorInterface {
 
   /// 在指定光标位置插入文字
   /// 任意非计算时都可调用
+  /// 如果pos==-1，则在当前光标；若有选中 则清除选中
   @override
   void insertTextByPos(String text, {pos: -1}) {
     prepareAnalyze();
     _insertText(text, pos: pos);
     finishAnalyze();
   }
+  
+  @override
+  void deleteTextByPos(int start, int end) {
+    prepareAnalyze();
+    _deleteText(start, end);
+    finishAnalyze();
+  }
+  
+  @override
+  void replaceTextByPos(int start, int length, String text) {
+    prepareAnalyze();
+    _deleteText(start, start+length);
+    if (length < 0)
+      start -= length;
+    _insertText(text, pos: start);
+    finishAnalyze();
+  }
 
   /// 插入指定文本
+  /// 如果pos==-1，则在当前光标；若有选中 则清除选中
   void _insertText(String text, {pos: -1}) {
     if (pos == -1) {
       // 使用光标位置

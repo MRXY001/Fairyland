@@ -138,7 +138,18 @@ class _EditPageState extends State<EditorPage> {
         ],
       );
     } else {
-      return ZefyrScaffold(child: widget.zefyrEditor);
+//      return ZefyrScaffold(child: widget.zefyrEditor);
+      return Column(
+        children: <Widget>[
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
+              child: ZefyrScaffold(child: widget.zefyrEditor),
+            ),
+          ),
+          getQuickInputBar()
+        ],
+      );
     }
   }
 
@@ -264,8 +275,7 @@ class _EditPageState extends State<EditorPage> {
   /// warning: 插入的文字似乎无法撤销
   void actionInsertTextInCursor(String text) {
     setState(() {
-      if (widget.chapterEditor != null)
-        widget.chapterEditor.insertTextByPos(text);
+        widget.editor.insertTextByPos(text);
     });
   }
 }

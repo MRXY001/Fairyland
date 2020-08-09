@@ -9,10 +9,10 @@ abstract class EditorInterface {
 
   int getPosition();
 
-  void setPosition(int pos, {aim: -1});
+  void setPosition(int pos, {sel: 0});
 
   String getSelectionOrFull();
-  
+
   bool hasSelection();
 
   int selectionStart();
@@ -35,6 +35,10 @@ abstract class EditorInterface {
 
   void insertTextByPos(String text, {pos: -1});
 
+  void deleteTextByPos(int start, int end);
+
+  void replaceTextByPos(int start, int length, String text);
+
   void saveToFile(String path);
 
   void loadFromFile(String path);
@@ -42,9 +46,9 @@ abstract class EditorInterface {
   void undo();
 
   void redo();
-  
+
   bool canUndo();
-  
+
   bool canRedo();
 
   void initUndoRedo();
