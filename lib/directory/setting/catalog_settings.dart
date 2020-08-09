@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CatalogSettingWidget extends StatelessWidget {
+class CatalogSettingsWidget extends StatelessWidget {
 	@override
 	Widget build(BuildContext context) {
 		return Container(

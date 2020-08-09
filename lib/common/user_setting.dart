@@ -40,6 +40,7 @@ class UserSetting {
   bool bookCatalogWordCount; // 目录显示章节的字数
 
   // ----------------------- 编辑 -----------------------
+  bool enableMarkdown;
   int indentSpace; // 段首缩进全角空格数量
   int indentLine; // 空行数量（不包括自己的空行）
 
@@ -88,6 +89,7 @@ class UserSetting {
         .values[getInt('us/book_catalog_mode', BookCatalogMode.Tree.index)];
     bookCatalogWordCount = getBool('us/book_catalog_word_count', false);
 
+    enableMarkdown = getBool('us/enable_markdown', false);
     indentSpace = getInt('us/indent_space', 2);
     indentLine = getInt('us/indent_line', 1);
 

@@ -7,31 +7,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_beautiful_popup/main.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:quill_delta/quill_delta.dart';
 import 'package:zefyr/zefyr.dart';
-
 import 'novel_ai.dart';
+import 'package:fairyland/editor/zefyr_editor.dart';
+import 'package:quill_delta/quill_delta.dart';
 
 // 输入框教程：https://flutterchina.club/text-input/
 
 // ignore: must_be_immutable
 class EditorPage extends StatefulWidget {
   EditorPage({Key key}) : super(key: key) {
-    _editController = new TextEditingController();
-    chapterEditor = new ChapterEditor(
-      controller: _editController,
-      onViewTapped: () => chapterEditor.viewTappedEvent(),
-      onContentChanged: (text) => chapterEditor.contentChangedEvent(text),
-      onEditSave: onEditSave,
-    );
+    if (!G.us.enableMarkdown) {
+      _editController = new TextEditingController();
+      chapterEditor = new ChapterEditor(
+        controller: _editController,
+        onViewTapped: () => chapterEditor.viewTappedEvent(),
+        onContentChanged: (text) => chapterEditor.contentChangedEvent(text),
+        onEditSave: onEditSave,
+      );
+    } else {
+      final document = _loadDocument();
+      _zefyrController = ZefyrController(document);
+      _zefyrFocusNode = FocusNode();
+      zefyrEditor = new MyZefyrEditor(
+        controller: _zefyrController,
+        focusNode: _zefyrFocusNode,
+      );
+    }
   }
 
+  // 普通编辑器
   TextEditingController _editController;
   ChapterEditor chapterEditor;
   VCItem currentChapter; // 当前打开的章节
   String savedPath;
   State<StatefulWidget> myState;
-  
+
+  // Markdown编辑器
+  ZefyrEditor zefyrEditor;
+  ZefyrController _zefyrController;
+  FocusNode _zefyrFocusNode;
+
   @override
   State<StatefulWidget> createState() {
     return (myState = new _EditPageState());
@@ -43,14 +59,14 @@ class EditorPage extends StatefulWidget {
     currentChapter = chapter;
     savedPath = G.rt.cBookChapterPath(chapter.id);
     String content = FileUtil.readText(savedPath);
-    chapterEditor.initContent(content);
+    if (chapterEditor != null) chapterEditor.initContent(content);
   }
 
   /// 关闭章节
   void closeChapter() {
     currentChapter = null;
     savedPath = null;
-    chapterEditor.clear(); // 可撤销
+    if (chapterEditor != null) chapterEditor.clear(); // 可撤销
   }
 
   /// 保存章节
@@ -59,15 +75,19 @@ class EditorPage extends StatefulWidget {
       FileUtil.writeText(savedPath, text);
     }
   }
+
+  NotusDocument _loadDocument() {
+    final Delta delta = Delta()..insert('Zefyr Quick Start\n');
+    return NotusDocument.fromDelta(delta);
+  }
 }
 
 class _EditPageState extends State<EditorPage> {
-  
   @override
   void initState() {
     super.initState();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,26 +110,34 @@ class _EditPageState extends State<EditorPage> {
               ),
               getEditMenu()
             ]),
-        body: Column(
-          children: <Widget>[
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
-                child: RawKeyboardListener(
-                  focusNode: FocusNode(),
-                  onKey: (RawKeyEvent event) {
-                    // RawKeyDownEvent rawKeyDownEvent = event;
-                    RawKeyEventDataAndroid rawKeyEventDataAndroid = event.data;
-                    int keyCode = rawKeyEventDataAndroid.keyCode;
-                    // print("键盘 keyCode: $keyCode");
-                  },
-                  child: Container(child: widget.chapterEditor),
-                ),
+        body: getEditorWidget());
+  }
+
+  Widget getEditorWidget() {
+    if (widget.chapterEditor != null) {
+      return Column(
+        children: <Widget>[
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
+              child: RawKeyboardListener(
+                focusNode: FocusNode(),
+                onKey: (RawKeyEvent event) {
+                  // RawKeyDownEvent rawKeyDownEvent = event;
+                  RawKeyEventDataAndroid rawKeyEventDataAndroid = event.data;
+                  int keyCode = rawKeyEventDataAndroid.keyCode;
+                  // print("键盘 keyCode: $keyCode");
+                },
+                child: Container(child: widget.chapterEditor),
               ),
             ),
-            getQuickInputBar()
-          ],
-        ));
+          ),
+          getQuickInputBar()
+        ],
+      );
+    } else {
+      return ZefyrScaffold(child: widget.zefyrEditor);
+    }
   }
 
   PopupMenuButton getEditMenu() {
@@ -135,12 +163,16 @@ class _EditPageState extends State<EditorPage> {
         PopupMenuItem<String>(
           value: "undo",
           child: Text('撤销'),
-          enabled: widget.chapterEditor.undoRedoManager.canUndo(),
+          enabled: widget.chapterEditor != null
+              ? widget.chapterEditor.undoRedoManager.canUndo()
+              : false,
         ),
         PopupMenuItem<String>(
           value: "redo",
           child: Text('重做'),
-          enabled: widget.chapterEditor.undoRedoManager.canRedo(),
+          enabled: widget.chapterEditor != null
+              ? widget.chapterEditor.undoRedoManager.canRedo()
+              : false,
         ),
         PopupMenuItem<String>(
           value: "paste",
@@ -166,21 +198,25 @@ class _EditPageState extends State<EditorPage> {
       onSelected: (String value) {
         switch (value) {
           case 'word_count':
-            actionWordCount(widget.chapterEditor.getSelectionOrFull());
+            actionWordCount(widget.chapterEditor != null
+                ? widget.chapterEditor.getSelectionOrFull()
+                : '');
             break;
           case 'undo':
-            widget.chapterEditor.undo();
+            if (widget.chapterEditor != null) widget.chapterEditor.undo();
             break;
           case 'redo':
-            widget.chapterEditor.redo();
+            if (widget.chapterEditor != null) widget.chapterEditor.redo();
             break;
           case 'paste':
-            widget.chapterEditor.onlyInsertText(
-                Clipboard.getData(Clipboard.kTextPlain).toString());
+            if (widget.chapterEditor != null)
+              widget.chapterEditor.onlyInsertText(
+                  Clipboard.getData(Clipboard.kTextPlain).toString());
             break;
           case 'copy':
-            Clipboard.setData(
-                ClipboardData(text: widget.chapterEditor.getText()));
+            if (widget.chapterEditor != null)
+              Clipboard.setData(
+                  ClipboardData(text: widget.chapterEditor.getText()));
             Fluttertoast.showToast(msg: '复制成功');
             break;
           case 'typeset':
@@ -204,7 +240,7 @@ class _EditPageState extends State<EditorPage> {
         MaterialButton(
           onPressed: () {
             setState(() {
-              widget.chapterEditor.onlyInsertText('输入1');
+              actionInsertTextInCursor('输入1');
             });
           },
           child: Text('输入1'),
@@ -230,41 +266,13 @@ class _EditPageState extends State<EditorPage> {
           })
     ]);
   }
-}
 
-class _ZefyrState extends State<EditorPage> {
-  ZefyrController _controller;
-  FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-
-    final document = _loadDocument();
-    _controller = ZefyrController(document);
-    _focusNode = FocusNode();
+  /// 在当前光标的位置插入文字
+  /// warning: 插入的文字似乎无法撤销
+  void actionInsertTextInCursor(String text) {
+    setState(() {
+      if (widget.chapterEditor != null)
+        widget.chapterEditor.onlyInsertText(text);
+    });
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: new AppBar(
-        title: Text('编辑'),
-      ),
-      body: ZefyrScaffold(
-        child: ZefyrEditor(
-          padding: EdgeInsets.all(16),
-          controller: _controller,
-          focusNode: _focusNode,
-        ),
-      ),
-    );
-  }
-
-  NotusDocument _loadDocument() {
-    final Delta delta = Delta()..insert('Zefyr Quick Start\n');
-    return NotusDocument.fromDelta(delta);
-  }
-
-  void save() {}
 }

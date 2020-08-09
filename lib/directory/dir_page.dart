@@ -3,6 +3,7 @@ import 'package:fairyland/common/global.dart';
 import 'package:fairyland/common/user_setting.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/directory/bookshelf/bookshelf.dart';
+import 'package:fairyland/directory/setting/catalog_settings.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_beautiful_popup/main.dart';
@@ -736,9 +737,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
           child: Text('删除作品'),
         ),
         PopupMenuItem<String>(
-          value: "book_settings",
+          value: "catalog_settings",
           child: Text('目录设置'),
-          enabled: false,
+          enabled: true,
         ),
         PopupMenuItem<String>(
           value: "book_recycles",
@@ -760,6 +761,9 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             break;
           case 'book_delete':
             actionDeleteBook();
+            break;
+          case 'catalog_settings':
+            actionShowCatalogSettings();
             break;
           default:
             {}
@@ -830,8 +834,7 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
 
     // 添加新章
     inputName('添加新章', '章名', '', (String result) {
-      if (result == null || result.isEmpty)
-        return ;
+      if (result == null || result.isEmpty) return;
       print('插入名字：' + result);
       // 添加章节到末尾
       _insertVCItemInCurrentList(
@@ -971,5 +974,12 @@ class _DirPageState extends State<DirPage> with AutomaticKeepAliveClientMixin {
             Navigator.of(context).pop();
           })
     ]);
+  }
+
+  void actionShowCatalogSettings() {
+    Navigator.push<String>(context,
+        new MaterialPageRoute(builder: (BuildContext context) {
+      return new CatalogSettingsWidget();
+    }));
   }
 }

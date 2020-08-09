@@ -86,7 +86,7 @@ class ChapterEditor extends TextField {
   bool isSystemChanging() => _systemChanging > 0;
 
   String deb(String str) {
-    print(str);
+//    print(str);
     return str;
   }
 

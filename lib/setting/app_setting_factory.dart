@@ -112,6 +112,11 @@ class AppSettingFactory {
     AppSettingGroups group = new AppSettingGroups();
 
     group.addItem(new AppSettingItem(
+        'enable_markdown', Icon(Icons.format_quote), '使用Markdown', UserDataType.U_Bool,
+        description: '切换为Markdown编辑器（重启生效）',
+        getter: () => us.getBool('enable_markdown', false),));
+    
+    group.addItem(new AppSettingItem(
         'indent_space', Icon(Icons.space_bar), '行首缩进', UserDataType.U_Int,
         getter: () => us.indentSpace,
         setter: (val) =>
@@ -127,7 +132,7 @@ class AppSettingFactory {
   /// 初始化智能编辑部分
   AppSettingGroups getEditorAIGroup() {
     AppSettingGroups group = new AppSettingGroups();
-
+    
     group.addItem(new AppSettingItem(
         'smart_quote', Icon(Icons.format_quote), '智能引号', UserDataType.U_Bool,
         getter: () => us.smartQuote,
@@ -156,11 +161,6 @@ class AppSettingFactory {
     AppSettingGroups group = new AppSettingGroups();
     
     return group;
-
-    group.addItem(new AppSettingItem(
-        'emotion_filter', Icon(Icons.scatter_plot), '情绪滤镜', UserDataType.U_Bool,
-        getter: () => us.emotionFilter,
-        setter: (val) => us.emotionFilter = val));
   }
 
   /// 初始化数据部分

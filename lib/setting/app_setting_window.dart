@@ -228,9 +228,9 @@ class AppSettingWindowState extends State<AppSettingWindow> {
       // 切换开关
       return () {
         setState(() {
-          bool val =!item.getter();
-          item.setter(val);
-          G.us.setConfig('us/'+item.key, val);
+          bool val = !item.getter();
+          if (item.setter != null) item.setter(val);
+          G.us.setConfig('us/' + item.key, val);
         });
       };
     } else if (item.dataType == UserDataType.U_Int) {
@@ -266,7 +266,7 @@ class AppSettingWindowState extends State<AppSettingWindow> {
             // 设置枚举类型
             if (item.setter != null) {
               item.setter(element);
-              G.us.setConfig('us/'+item.key, element.index);
+              G.us.setConfig('us/' + item.key, element.index);
             }
           });
           Navigator.pop(context);
