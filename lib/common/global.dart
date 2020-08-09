@@ -34,7 +34,7 @@ class G {
   // 是否为release版
   static bool get isRelease => bool.fromEnvironment("dart.vm.product");
 
-  // 设置
+  // 程序设置
   static SharedPreferences sp;
 
   //初始化全局信息，会在APP启动时执行
