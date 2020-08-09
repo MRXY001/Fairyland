@@ -51,6 +51,7 @@ class ChapterEditor extends TextField implements EditorInterface {
   /// =====================================================
   ///                       状态操作
   /// =====================================================
+  @override
   void initContent(String content) {
     initUndoRedo();
 
@@ -61,6 +62,7 @@ class ChapterEditor extends TextField implements EditorInterface {
     endSystemChanging();
   }
 
+  @override
   void disableContent() {
     beginSystemChanging();
     controller.clear();
@@ -190,6 +192,7 @@ class ChapterEditor extends TextField implements EditorInterface {
   /// =====================================================
 
   /// 设置文本
+  @override
   void setText(String text, {undoable: true, pos: -1}) {
     beginSystemChanging();
     controller.text = text;
@@ -203,6 +206,7 @@ class ChapterEditor extends TextField implements EditorInterface {
   }
 
   /// 获取文本
+  @override
   String getText() {
     return controller.text;
   }
@@ -211,6 +215,7 @@ class ChapterEditor extends TextField implements EditorInterface {
   /// 区别于 selectionText
   /// 如果有选中，则返回选中文本
   /// 如果没有选中，则返回全部文本
+  @override
   String getSelectionOrFull() {
     if (hasSelection()) {
       return selectionText();
@@ -223,11 +228,13 @@ class ChapterEditor extends TextField implements EditorInterface {
   String toPlainText() => getText();
 
   /// 获取光标位置
+  @override
   int getPosition() {
     return controller.selection.start;
   }
 
   /// 设置光标位置
+  @override
   void setPosition(int pos, {aim: -1}) {
     controller.selection = TextSelection.fromPosition(TextPosition(
         affinity: TextAffinity.upstream, // 必须要上游，downstream不行
@@ -235,18 +242,22 @@ class ChapterEditor extends TextField implements EditorInterface {
   }
 
   /// 是否选中了文本
+  @override
   bool hasSelection() {
     return controller.selection.start != controller.selection.end;
   }
 
+  @override
   int selectionStart() {
     return controller.selection.start;
   }
 
+  @override
   int selectionEnd() {
     return controller.selection.end;
   }
 
+  @override
   String selectionText() {
     _selectionStart = getSelection().start;
     _selectionEnd = getSelection().end;
@@ -255,11 +266,13 @@ class ChapterEditor extends TextField implements EditorInterface {
   }
 
   /// 设置选中范围
+  @override
   void setSelection(int start, int end) {
     controller.selection = TextSelection(baseOffset: start, extentOffset: end);
   }
 
   /// 全选文本
+  @override
   void selectAll() {
     setSelection(0, getText().length);
   }
@@ -269,12 +282,16 @@ class ChapterEditor extends TextField implements EditorInterface {
     return controller.selection;
   }
 
+  @override
   void copy() {}
 
+  @override
   void cut() {}
 
+  @override
   void paste() {}
 
+  @override
   void clear() {
     setText('');
   }
@@ -318,7 +335,10 @@ class ChapterEditor extends TextField implements EditorInterface {
     return _textChanged;
   }
 
-  void onlyInsertText(String text, {pos: -1}) {
+  /// 在指定光标位置插入文字
+  /// 任意非计算时都可调用
+  @override
+  void insertTextByPos(String text, {pos: -1}) {
     prepareAnalyze();
     _insertText(text, pos: pos);
     finishAnalyze();
@@ -378,26 +398,37 @@ class ChapterEditor extends TextField implements EditorInterface {
   /// =====================================================
 
   /// 保存到文件
+  @override
   void saveToFile(String path) {}
 
   /// 从文件读入
+  @override
   void loadFromFile(String path) {}
 
   /// =====================================================
   ///                       撤销重做
   /// =====================================================
 
+  @override
   void undo() {
     undoRedoManager.undo(controller);
   }
 
+  @override
   void redo() {
     undoRedoManager.redo(controller);
   }
 
+  @override
   void initUndoRedo() {
     undoRedoManager.clearUndoRedo();
   }
+
+  @override
+  bool canUndo() => undoRedoManager.canUndo();
+
+  @override
+  bool canRedo() => undoRedoManager.canRedo();
 
   /// =====================================================
   ///                       高级操作

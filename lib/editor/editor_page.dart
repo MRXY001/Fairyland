@@ -1,6 +1,7 @@
 import 'package:fairyland/common/global.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/editor/chatper_editor.dart';
+import 'package:fairyland/editor/editor_interface.dart';
 import 'package:fairyland/main/my_drawer.dart';
 import 'package:fairyland/utils/file_util.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ class EditorPage extends StatefulWidget {
   EditorPage({Key key}) : super(key: key) {
     if (!G.us.enableMarkdown) {
       _editController = new TextEditingController();
-      chapterEditor = new ChapterEditor(
+      editor = chapterEditor = new ChapterEditor(
         controller: _editController,
         onViewTapped: () => chapterEditor.viewTappedEvent(),
         onContentChanged: (text) => chapterEditor.contentChangedEvent(text),
@@ -29,13 +30,14 @@ class EditorPage extends StatefulWidget {
       final document = _loadDocument();
       _zefyrController = ZefyrController(document);
       _zefyrFocusNode = FocusNode();
-      zefyrEditor = new MyZefyrEditor(
+      editor = zefyrEditor = new MyZefyrEditor(
         controller: _zefyrController,
         focusNode: _zefyrFocusNode,
       );
     }
   }
 
+  EditorInterface editor; // 包含用到的多种编辑器的API
   // 普通编辑器
   TextEditingController _editController;
   ChapterEditor chapterEditor;
@@ -59,14 +61,14 @@ class EditorPage extends StatefulWidget {
     currentChapter = chapter;
     savedPath = G.rt.cBookChapterPath(chapter.id);
     String content = FileUtil.readText(savedPath);
-    if (chapterEditor != null) chapterEditor.initContent(content);
+    editor.initContent(content);
   }
 
   /// 关闭章节
   void closeChapter() {
     currentChapter = null;
     savedPath = null;
-    if (chapterEditor != null) chapterEditor.clear(); // 可撤销
+    editor.clear(); // 可撤销
   }
 
   /// 保存章节
@@ -163,16 +165,12 @@ class _EditPageState extends State<EditorPage> {
         PopupMenuItem<String>(
           value: "undo",
           child: Text('撤销'),
-          enabled: widget.chapterEditor != null
-              ? widget.chapterEditor.undoRedoManager.canUndo()
-              : false,
+          enabled: widget.editor.canUndo(),
         ),
         PopupMenuItem<String>(
           value: "redo",
           child: Text('重做'),
-          enabled: widget.chapterEditor != null
-              ? widget.chapterEditor.undoRedoManager.canRedo()
-              : false,
+          enabled: widget.editor.canRedo(),
         ),
         PopupMenuItem<String>(
           value: "paste",
@@ -198,25 +196,20 @@ class _EditPageState extends State<EditorPage> {
       onSelected: (String value) {
         switch (value) {
           case 'word_count':
-            actionWordCount(widget.chapterEditor != null
-                ? widget.chapterEditor.getSelectionOrFull()
-                : '');
+            actionWordCount(widget.editor.getSelectionOrFull());
             break;
           case 'undo':
-            if (widget.chapterEditor != null) widget.chapterEditor.undo();
+            widget.editor.undo();
             break;
           case 'redo':
-            if (widget.chapterEditor != null) widget.chapterEditor.redo();
+            widget.editor.redo();
             break;
           case 'paste':
-            if (widget.chapterEditor != null)
-              widget.chapterEditor.onlyInsertText(
-                  Clipboard.getData(Clipboard.kTextPlain).toString());
+            actionInsertTextInCursor(Clipboard.getData(Clipboard.kTextPlain).toString());
             break;
           case 'copy':
-            if (widget.chapterEditor != null)
               Clipboard.setData(
-                  ClipboardData(text: widget.chapterEditor.getText()));
+                  ClipboardData(text: widget.editor.getText()));
             Fluttertoast.showToast(msg: '复制成功');
             break;
           case 'typeset':
@@ -272,7 +265,7 @@ class _EditPageState extends State<EditorPage> {
   void actionInsertTextInCursor(String text) {
     setState(() {
       if (widget.chapterEditor != null)
-        widget.chapterEditor.onlyInsertText(text);
+        widget.chapterEditor.insertTextByPos(text);
     });
   }
 }

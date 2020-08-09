@@ -11,6 +11,8 @@ abstract class EditorInterface {
 
   void setPosition(int pos, {aim: -1});
 
+  String getSelectionOrFull();
+  
   bool hasSelection();
 
   int selectionStart();
@@ -31,6 +33,8 @@ abstract class EditorInterface {
 
   void clear();
 
+  void insertTextByPos(String text, {pos: -1});
+
   void saveToFile(String path);
 
   void loadFromFile(String path);
@@ -38,6 +42,10 @@ abstract class EditorInterface {
   void undo();
 
   void redo();
+  
+  bool canUndo();
+  
+  bool canRedo();
 
   void initUndoRedo();
 }
