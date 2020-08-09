@@ -30,7 +30,18 @@ class MyZefyrEditor extends ZefyrEditor implements EditorInterface {
           padding: EdgeInsets.all(16),
           controller: controller,
           focusNode: focusNode,
-        ) {}
+        ) {
+    controller.addListener(onContentChanged);
+  }
+  
+  /// 改变事件（不知道改变的是什么）
+  /// - 内容改变（必定触发）
+  /// - 中文输入法开始输入（候选）
+  /// - 中文输入法更改光标位置（一般会）
+  /// - 英文输入法更改光标位置
+  void onContentChanged() {
+  
+  }
 
   @override
   void initContent(String content) {
