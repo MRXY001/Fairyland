@@ -34,8 +34,7 @@ class MyZefyrEditor extends ZefyrEditor implements EditorInterface {
 
   @override
   void initContent(String content) {
-    print('init content, but skip');
-    //    setText(content);
+    setText(content);
   }
 
   @override
@@ -48,7 +47,8 @@ class MyZefyrEditor extends ZefyrEditor implements EditorInterface {
   @override
   void setText(String text, {undoable = true, pos = -1}) {
     if (pos == -1) {
-      controller.replaceText(0, toPlainText().length, '');
+      int end =controller.document.length-1;
+      controller.replaceText(0, end, text);
     } else {
       insertTextByPos(text, pos: pos);
     }

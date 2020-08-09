@@ -151,9 +151,11 @@ class _MyHomePageState extends State<MyHomePage>
   void _openChapterCallback(VCItem chapter) {
     pageController.animateToPage(editorPageIndex,
         duration: Duration(milliseconds: 300), curve: Curves.easeOutQuad);
-    editorPage.openChapter(chapter);
+
     if (editorPage.myState != null) {
-      editorPage.myState.setState(() {});
+      editorPage.myState.setState(() {
+        editorPage.openChapter(chapter);
+      });
     }
 
     if (_needRestoreRecentOpeningChapter) {

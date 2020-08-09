@@ -138,8 +138,8 @@ class _EditPageState extends State<EditorPage> {
         ],
       );
     } else {
-//      return ZefyrScaffold(child: widget.zefyrEditor);
-      return Column(
+      return ZefyrScaffold(child: widget.zefyrEditor);
+      /*return Column(
         children: <Widget>[
           Expanded(
             child: Padding(
@@ -149,7 +149,7 @@ class _EditPageState extends State<EditorPage> {
           ),
           getQuickInputBar()
         ],
-      );
+      );*/
     }
   }
 
