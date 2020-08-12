@@ -2,10 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fairyland/editor/editor_interface.dart';
+import 'package:fairyland/editor/novel_ai.dart';
+import 'package:fairyland/editor/undo_redo_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zefyr/zefyr.dart';
+import 'package:fairyland/common/global.dart';
 import 'package:quill_delta/quill_delta.dart';
 
 // ignore: must_be_immutable
@@ -14,6 +17,10 @@ class MyZefyrEditor extends ZefyrEditor implements EditorInterface {
   ZefyrController controller;
   FocusNode focusNode;
   final onEditSave;
+
+  NovelAI ai = new NovelAI();
+  OperatorManager undoRedoManager;
+  int _systemChanging = 0;
 
   // 编辑属性
   String _text;
@@ -33,32 +40,78 @@ class MyZefyrEditor extends ZefyrEditor implements EditorInterface {
         ) {
     controller.addListener(onContentChanged);
   }
-  
+
+  /// =====================================================
+  ///                       各类方法
+  /// =====================================================
+
   /// 改变事件（不知道改变的是什么）
   /// - 内容改变（必定触发）
   /// - 中文输入法开始输入（候选）
   /// - 中文输入法更改光标位置（一般会）
   /// - 英文输入法更改光标位置
   void onContentChanged() {
-  
+    if (isSystemChanging()) return;
+
+    // 自动保存
+    if (G.us.autoSave) {
+      if (onEditSave != null) {
+        onEditSave(toJsonString());
+      }
+    }
   }
 
   @override
   void initContent(String content) {
-    setText(content);
+    initUndoRedo();
+
+    beginSystemChanging();
+    if (content.startsWith('[') && content.endsWith(']'))
+      setJson(content);
+    else
+      setText(content);
+    endSystemChanging();
   }
 
   @override
   void disableContent() {
-    // TODO: implement disableContent
+    beginSystemChanging();
+    clear();
+    initUndoRedo();
+    endSystemChanging();
   }
+
+  /// 开始系统批量改变
+  void beginSystemChanging() {
+    _systemChanging++;
+  }
+
+  /// 结束系统批量改变
+  void endSystemChanging() {
+    _systemChanging--;
+    if (_systemChanging < 0) {
+      _systemChanging = 0;
+    }
+  }
+
+  /// 是否是系统引起的变化
+  bool isSystemChanging() => _systemChanging > 0;
+
+  String deb(String str) {
+    print(str);
+    return str;
+  }
+
+  /// =====================================================
+  ///                       编辑器接口
+  /// =====================================================
 
   /// 设置为纯文本
   /// 这不是Markdown！
   @override
   void setText(String text, {undoable = true, pos = -1}) {
     if (pos == -1) {
-      int end =controller.document.length-1;
+      int end = controller.document.length - 1;
       controller.replaceText(0, end, text);
     } else {
       insertTextByPos(text, pos: pos);
@@ -67,14 +120,18 @@ class MyZefyrEditor extends ZefyrEditor implements EditorInterface {
 
   /// 从JSON（文件）中恢复数据
   void setJson(String json) {
+    print('setJson-------------------'+json);
     NotusDocument document = NotusDocument.fromJson(jsonDecode(json));
     controller = ZefyrController(document);
+    print(controller.document.toPlainText());
   }
 
   @override
   String getText() => controller.document.toString();
 
   String toPlainText() => controller.document.toPlainText();
+
+  String toJsonString() => jsonEncode(controller.document);
 
   @override
   int getPosition() {
@@ -178,12 +235,10 @@ class MyZefyrEditor extends ZefyrEditor implements EditorInterface {
   @override
   void saveToFile(String path) {
     final contents = jsonEncode(controller.document);
+    onEditSave(contents);
     // 临时路径：Directory.systemTemp.path + "/quick_start.json"
-    final file = File(path);
-    // And show a snack bar on success.
-    file.writeAsString(contents).then((_) {
-      // 保存结束
-    });
+    //    final file = File(path);
+    //    file.writeAsString(contents).then((_) { });
   }
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fairyland/common/global.dart';
 import 'package:fairyland/directory/book_beans.dart';
 import 'package:fairyland/editor/chatper_editor.dart';
@@ -33,6 +35,7 @@ class EditorPage extends StatefulWidget {
       editor = zefyrEditor = new MyZefyrEditor(
         controller: _zefyrController,
         focusNode: _zefyrFocusNode,
+        onEditSave: onEditSave,
       );
     }
   }
@@ -43,7 +46,7 @@ class EditorPage extends StatefulWidget {
   ChapterEditor chapterEditor;
   VCItem currentChapter; // 当前打开的章节
   String savedPath;
-  State<StatefulWidget> myState;
+  _EditPageState myState;
 
   // Markdown编辑器
   ZefyrEditor zefyrEditor;
@@ -61,7 +64,21 @@ class EditorPage extends StatefulWidget {
     currentChapter = chapter;
     savedPath = G.rt.cBookChapterPath(chapter.id);
     String content = FileUtil.readText(savedPath);
-    editor.initContent(content);
+    if (!G.us.enableMarkdown ||
+        !content.startsWith('[') ||
+        !content.endsWith(']')) {
+      editor.initContent(content);
+    } else {
+      myState.resetByJson(content);
+      //      NotusDocument document = NotusDocument.fromJson(jsonDecode(content));
+      //      _zefyrController = ZefyrController(document);
+      //      _zefyrFocusNode = FocusNode();
+      //      editor = zefyrEditor = new MyZefyrEditor(
+      //        controller: _zefyrController,
+      //        focusNode: _zefyrFocusNode,
+      //        onEditSave: onEditSave,
+      //      );
+    }
   }
 
   /// 关闭章节
@@ -216,11 +233,11 @@ class _EditPageState extends State<EditorPage> {
             widget.editor.redo();
             break;
           case 'paste':
-            actionInsertTextInCursor(Clipboard.getData(Clipboard.kTextPlain).toString());
+            actionInsertTextInCursor(
+                Clipboard.getData(Clipboard.kTextPlain).toString());
             break;
           case 'copy':
-              Clipboard.setData(
-                  ClipboardData(text: widget.editor.getText()));
+            Clipboard.setData(ClipboardData(text: widget.editor.getText()));
             Fluttertoast.showToast(msg: '复制成功');
             break;
           case 'typeset':
@@ -253,6 +270,19 @@ class _EditPageState extends State<EditorPage> {
     );
   }
 
+  void resetByJson(String content) {
+    NotusDocument document = NotusDocument.fromJson(jsonDecode(content));
+    widget._zefyrController = ZefyrController(document);
+    widget._zefyrFocusNode = FocusNode();
+    widget.editor = widget.zefyrEditor = new MyZefyrEditor(
+      controller: widget._zefyrController,
+      focusNode: widget._zefyrFocusNode,
+      onEditSave: widget.onEditSave,
+    );
+
+    setState(() {});
+  }
+
   /// 字数统计操作
   void actionWordCount(String text) {
     String result = NovelAI.wordCount(text).toString();
@@ -275,7 +305,7 @@ class _EditPageState extends State<EditorPage> {
   /// warning: 插入的文字似乎无法撤销
   void actionInsertTextInCursor(String text) {
     setState(() {
-        widget.editor.insertTextByPos(text);
+      widget.editor.insertTextByPos(text);
     });
   }
 }

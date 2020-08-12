@@ -87,7 +87,7 @@ class ChapterEditor extends TextField implements EditorInterface {
   bool isSystemChanging() => _systemChanging > 0;
 
   String deb(String str) {
-    //    print(str);
+    print(str);
     return str;
   }
 
@@ -138,7 +138,7 @@ class ChapterEditor extends TextField implements EditorInterface {
     }
 
     // 保存
-    if (onEditSave != null) onEditSave(getText());
+    if (G.us.autoSave && onEditSave != null) onEditSave(getText());
     if (onWordsChanged != null) onWordsChanged();
   }
 
@@ -280,23 +280,21 @@ class ChapterEditor extends TextField implements EditorInterface {
   }
 
   @override
-  void copy() => Clipboard.setData(
-        ClipboardData(text: selectionText()));
+  void copy() => Clipboard.setData(ClipboardData(text: selectionText()));
 
   @override
   void cut() {
-    if (!hasSelection())
-      return ;
+    if (!hasSelection()) return;
     String text = selectionText();
     _selectionStart = selectionStart();
     _selectionEnd = selectionEnd();
     deleteTextByPos(_selectionStart, _selectionEnd);
-    Clipboard.setData(
-        ClipboardData(text: text));
+    Clipboard.setData(ClipboardData(text: text));
   }
 
   @override
-  void paste() => insertTextByPos(Clipboard.getData(Clipboard.kTextPlain).toString());
+  void paste() =>
+      insertTextByPos(Clipboard.getData(Clipboard.kTextPlain).toString());
 
   @override
   void clear() {
@@ -351,20 +349,19 @@ class ChapterEditor extends TextField implements EditorInterface {
     _insertText(text, pos: pos);
     finishAnalyze();
   }
-  
+
   @override
   void deleteTextByPos(int start, int end) {
     prepareAnalyze();
     _deleteText(start, end);
     finishAnalyze();
   }
-  
+
   @override
   void replaceTextByPos(int start, int length, String text) {
     prepareAnalyze();
-    _deleteText(start, start+length);
-    if (length < 0)
-      start -= length;
+    _deleteText(start, start + length);
+    if (length < 0) start -= length;
     _insertText(text, pos: start);
     finishAnalyze();
   }
